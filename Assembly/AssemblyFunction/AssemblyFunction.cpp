@@ -3,24 +3,19 @@
 
 #include <iostream>
 
-void __stdcall Test(int a, int b)
+void Test()
 {
-    int x = a;
-    int y = b;
-    x++;
-}
-
-void __cdecl Test2(int a, int b)
-{
-	int x = a;
-	int y = b;
-	x++;
+    int x = 0;
+    int* y = nullptr;
+    y = &x;
+    y += 3;
+    *y = 10;
 }
 
 int main()
 {
-    Test(10, 20);
-    Test2(10, 20);
-
+    int t = 0;
     std::cout << "Hello World!\n";
+
+    Test();
 }
