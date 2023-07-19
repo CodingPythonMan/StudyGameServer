@@ -2,20 +2,35 @@
 //
 
 #include <iostream>
+#include <Windows.h>
 
 void Test()
 {
     int x = 0;
-    int* y = nullptr;
-    y = &x;
-    y += 3;
-    *y = 10;
+    int* p = &x;
+    *p = 0;
+    *(p + 2) = 0;
+}
+
+void a()
+{
+    int debug = 0xaabbccddee;
+    int x = 0;
+    int y = 0;
+
+    Test();
+    if (debug != 0xaabbccddee)
+    {
+        DebugBreak();
+        int x = 0;
+    }
+
+    x++;
+    y++;
 }
 
 int main()
 {
     int t = 0;
-    std::cout << "Hello World!\n";
-
-    Test();
+    a();
 }

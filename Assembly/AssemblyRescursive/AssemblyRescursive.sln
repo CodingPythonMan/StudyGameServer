@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33815.320
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AssemblyRescursive", "AssemblyRescursive.vcxproj", "{53D648D0-CBAE-40CC-860A-9EB1E3C414FD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{53D648D0-CBAE-40CC-860A-9EB1E3C414FD}.Debug|x64.ActiveCfg = Debug|x64
+		{53D648D0-CBAE-40CC-860A-9EB1E3C414FD}.Debug|x64.Build.0 = Debug|x64
+		{53D648D0-CBAE-40CC-860A-9EB1E3C414FD}.Debug|x86.ActiveCfg = Debug|Win32
+		{53D648D0-CBAE-40CC-860A-9EB1E3C414FD}.Debug|x86.Build.0 = Debug|Win32
+		{53D648D0-CBAE-40CC-860A-9EB1E3C414FD}.Release|x64.ActiveCfg = Release|x64
+		{53D648D0-CBAE-40CC-860A-9EB1E3C414FD}.Release|x64.Build.0 = Release|x64
+		{53D648D0-CBAE-40CC-860A-9EB1E3C414FD}.Release|x86.ActiveCfg = Release|Win32
+		{53D648D0-CBAE-40CC-860A-9EB1E3C414FD}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F74FBBFC-430C-4179-B49E-177A0027FE97}
+	EndGlobalSection
+EndGlobal
