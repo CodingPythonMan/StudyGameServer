@@ -1,19 +1,16 @@
 ﻿#include <iostream>
+#include <Windows.h>
+
+struct data {
+	int a : 4;
+	int b : 5;
+	int c : 1;
+};
 
 int main()
 {
-    int r;
-
-	srand(10);
-
-    r = rand();
-    printf("%d \n", r);
-	r = rand();
-	printf("%d \n", r);
-	r = rand();
-	printf("%d \n", r);
-	r = rand();
-	printf("%d \n", r);
-	r = rand();
-	printf("%d \n", r);
+	data d;
+	d.a = 4;
+	d.b = 2;
+	d.c = 1;
 }
