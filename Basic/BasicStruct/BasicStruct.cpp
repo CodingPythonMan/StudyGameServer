@@ -1,16 +1,12 @@
 ﻿#include <iostream>
 #include <Windows.h>
 
-struct data {
-	int a : 4;
-	int b : 5;
-	int c : 1;
-};
+int g_dd[1000000] = { 1,2,3,4,5 };
+
+int g_dddd[1000];
 
 int main()
 {
-	data d;
-	d.a = 4;
-	d.b = 2;
-	d.c = 1;
+	int x = g_dd[0];
+	int y = g_dddd[0];
 }
