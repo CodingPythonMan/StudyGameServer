@@ -1,12 +1,23 @@
 ﻿#include <iostream>
 #include <Windows.h>
 
-int g_dd[1000000] = { 1,2,3,4,5 };
+struct stData
+{
+	char a;
+	alignas(32) __int64 b;
+	int c;
+	__int64 d;
+	char e;
+	__int64 f;
+};
 
-int g_dddd[1000];
+void Test()
+{
+	stData a;
+	a.a = 0;
+}
 
 int main()
 {
-	int x = g_dd[0];
-	int y = g_dddd[0];
+	Test();
 }
