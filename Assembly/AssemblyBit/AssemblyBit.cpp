@@ -6,27 +6,19 @@
 void PrintBit(unsigned char a)
 {
     printf("a : ");
-    int bit[8];
     for (int i = 0; i < sizeof(a) * 8; i++)
     {
-        bit[i] = a % 2;
-        a /= 2;
-    }
-
-    for (int i = sizeof(bit) / sizeof(int) -1; i >= 0; i--)
-    {
-        printf("%d", bit[i]);
+        printf("%d", (a & 1 << (7 - i)) >> (7 - i));
     }
 }
 
 void ChangeBit()
 {
-    int bit[16];
-
+    unsigned short a = 0;
     while (true)
     {
         int pos = 0;
-        printf("비트 자리 : ");
+        printf("비트위치 : ");
         scanf_s("%d", &pos);
         if (pos <= 0 || pos > 16)
         {
@@ -34,21 +26,37 @@ void ChangeBit()
             continue;
         }
         int input = 0;
-        printf("입력 : ");
+        printf("OFF/ON [0,1] : ");
         scanf_s("%d", &input);
-        bit[pos] = input;
+
+        if (input == 0)
+        {
+            a = a & (0 << pos);
+        }
+        else if(input == 1)
+        {
+            a = a | (1 << pos);
+        }
+        else
+        {
+            continue;
+        }
 
         for (int i = 0; i < 16; i++)
         {
-            printf("%d의 자리 : %d", i + 1, bit[i]);
+            printf("%d의 자리 : %d\n", i + 1, (a & 1 <<(16-i)) >> (16-i));
         }
     }
+}
+
+void SharedBit()
+{
+
 }
 
 int main()
 {
     //unsigned char a = 101;
-    unsigned char a = 101;
 
     //PrintBit(a);
     ChangeBit();
