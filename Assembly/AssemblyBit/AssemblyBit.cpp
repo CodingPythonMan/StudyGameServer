@@ -51,7 +51,23 @@ void ChangeBit()
 
 void SharedBit()
 {
+    unsigned int a = 0;
 
+    for (;;)
+    {
+		int pos = 0;
+        printf("바이트 위치 : ");
+		scanf_s("%d", &pos);
+
+        if (pos < 1 || pos > 4)
+        {
+            printf("잘못된 값이 입력 되었습니다.");
+            continue;
+        }
+
+        printf("0~255 : ");
+        
+    }
 }
 
 int main()
