@@ -63,62 +63,47 @@ void ChangeBit()
 
 void SharedBit()
 {
-    unsigned int value = 0;
-    unsigned int temp;
+	unsigned int data = 0;
+	unsigned int mask = 0;
+	unsigned char byByteData = 0;
 
-    int byteSize = sizeof(value);
-    int bitSize = byteSize * 8;
+	int inputPos;
+	int inputData;
+	unsigned char byInputData;
+	int count;
 
-    for (;;)
-    {
-        unsigned int mask = 0xFFFFFF00;
-		int pos = 0;
-        printf("바이트 위치 : ");
-		scanf_s("%d", &pos);
+	while (1)
+	{
+		printf("위치 (1~4) : ");
+		scanf_s("%d", &inputPos);
+		printf("값 [0~255] : ");
+		scanf_s("%d", &inputData);
 
-        if (pos < 1 || pos > byteSize)
-        {
-            printf("잘못된 값이 입력 되었습니다.\n");
-            continue;
-        }
-
-        printf("0~255 : ");
-        scanf_s("%d", &temp);
-
-        if (temp < 1 || temp > 255)
-        {
-			printf("잘못된 값이 입력 되었습니다.\n");
+		if (inputPos <= 0 || inputPos >= 5)
+		{
+			printf("위치 범위를 초과하였습니다. \n\n");
 			continue;
-        }
+		}
 
-        mask = mask << (pos - 1);
-        value = value & mask;
-        temp = temp << ((pos - 1) * 8);
-        value = value | temp;
+		if (inputData < 0 || inputData > 255)
+		{
+			printf("데이터 범위를 초과하였습니다. \n\n");
+			continue;
+		}
+		byInputData = inputData;
+		mask = 0xff << (inputPos - 1) * 8;
+		data = data & ~mask;
+		data = data | (byInputData << (inputPos - 1) * 8);
 
-        // Bit 단위 출력
-        printf("Bit : ");
-        for (int i = 0; i < bitSize; i++)
-        {
-            temp = value & (1 << (bitSize - i - 1));
-
-            if (temp != 0)
-                printf("%d", 1);
-            else
-                printf("%d", 0);
-        }
-
-        printf("\nByte : 0x");
-        // Byte 단위 출력
-        for (int i = 0; i < byteSize; i++)
-        {
-            mask = 0x000000FF;
-            temp = value & (mask << (byteSize - i - 1));
-            unsigned char a = temp >> (byteSize - i - 1);
-            printf("%x", a);
-        }
-        printf("\n");
-    }
+		for (count = 0; count < 4; count++)
+		{
+			mask = 0xff << count * 8;
+			byByteData = (data & mask) >> count * 8;
+			printf("%d 번째 바이트 값 : %d\n", count + 1, byByteData);
+		}
+		printf("\n");
+		printf("전체 4바이트 값 : 0x%08x \n\n", data);
+	}
 }
 
 int main()
