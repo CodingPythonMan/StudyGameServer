@@ -6,9 +6,19 @@
 void PrintBit(unsigned char a)
 {
     printf("a : ");
-    for (int i = 0; i < sizeof(a) * 8; i++)
+
+    int bitSize = sizeof(a) * 8;
+    unsigned char mask = 0x01;
+
+    int temp;
+    for (int i = 0; i < bitSize; i++)
     {
-        printf("%d", (a & 1 << (7 - i)) >> (7 - i));
+        temp = a & (mask << (bitSize -1 -i));
+        
+        if (temp != 0)
+            printf("1");
+        else
+            printf("0");
     }
 }
 
@@ -108,9 +118,9 @@ void SharedBit()
 
 int main()
 {
-    //unsigned char a = 101;
+    unsigned char a = 101;
 
-    //PrintBit(a);
+    PrintBit(a);
     //ChangeBit();
-    SharedBit();
+    //SharedBit();
 }
