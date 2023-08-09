@@ -12,7 +12,10 @@ Cache cache[64];
 
 void CashSimulate(int* pointer)
 {
-    printf("%p\n", pointer);
+    unsigned int* address = reinterpret_cast<unsigned int*>(pointer);
+    unsigned int value = reinterpret_cast<unsigned int>(address);
+
+    printf("%p\n", value);
 
     //printf("Cache Hit!");
 
