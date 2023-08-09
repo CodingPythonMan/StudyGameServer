@@ -25,6 +25,11 @@ int main()
         DWORD t2 = GetTickCount();
 
         printf("%d / %d \n", t1, t2);
+
+        if (_kbhit())
+        {
+            printf("키눌림 \n");
+        }
     }
-    clock();
+    Sleep(100);
 }
