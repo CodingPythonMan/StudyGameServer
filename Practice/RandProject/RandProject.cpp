@@ -58,12 +58,12 @@ void Gatcha()
 	{
 		if (item.WinTime == iCount)
 		{
+			printf("%d 가차 결과 : %s\n", iCount, item.Name);
 			if (iCount == max)
 			{
 				iCount = 0;
 			}
-
-			printf("%d 가차 결과 : %s", iCount, item.Name);
+			
 			return;
 		}
 	}
@@ -78,7 +78,7 @@ void Gatcha()
 	// 위에서 구한 Rand 값에 해당 지점의 아이템을 찾는다.
 	for (const auto& item : g_Gatcha)
 	{
-		if (random < item.Rate)
+		if (random <= item.Rate)
 		{
 			printf("%d 가차 결과 : %s\n", iCount, item.Name);
 			break;
