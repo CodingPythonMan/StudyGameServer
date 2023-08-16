@@ -36,7 +36,7 @@ int main()
 {
 	const int timingSize = sizeof(g_Timing) / sizeof(int);
 	double timing[timingSize];
-	char* grade[timingSize];
+	const char* grade[timingSize];
 	for (int i = 0; i < timingSize; i++)
 	{
 		timing[i] = g_Timing[i];
@@ -56,26 +56,32 @@ int main()
 			// 牧刨明 肺流
 			timing[index] = sec;
 			index++;
-			
-			if (timingSize <= index)
-			{
-				break;
-			}
 		}
 
 		// 肺流何
+		double difference = abs(sec - timing[index]);
 		for (int i = 0; i < timingSize; i++)
 		{
-			double g_time = 
-			abs(1);
+			if (sec - timing[i] > 1 && grade[i] == nullptr)
+			{
+				index++;
+				timing[index] = 0;
+				grade[index] = "Bad";
+			}
+			
+			abs(timing);
+		}
+
+		if (timingSize <= index)
+		{
+			break;
 		}
 		
-
 		// 罚歹何
 		printf("%06.3f Sec\n\n", sec);
-		for (const int time : g_Timing)
+		for (int i=0; i<timingSize; i++)
 		{
-			printf("%d Sec : \n", time);
+			printf("%d Sec : %s\n", g_Timing[i], grade[i]);
 		}
 		system("cls");
     }
