@@ -40,6 +40,7 @@ int main()
 	for (int i = 0; i < timingSize; i++)
 	{
 		timing[i] = g_Timing[i];
+		grade[i] = "";
 	}
 
 	int index = 0;
@@ -49,27 +50,40 @@ int main()
 		// 涝仿何
 		clock_t time = clock();
 		double sec = static_cast<double>(time) / CLOCKS_PER_SEC;
+		double difference;
 		
 		if (_kbhit())
 		{
 			_getch();
 			// 牧刨明 肺流
-			timing[index] = sec;
+			difference = abs(sec - timing[index]);
+			
+			if (difference > 1)
+			{
+				grade[index] = "Bad";
+			}
+			else if (difference > 0.75)
+			{
+				grade[index] = "NoGood";
+			}
+			else if (difference > 0.5)
+			{
+				grade[index] = "Good";
+			}
+			else
+			{
+				grade[index] = "Great";
+			}
+
 			index++;
 		}
 
 		// 肺流何
-		double difference = abs(sec - timing[index]);
-		for (int i = 0; i < timingSize; i++)
+		difference = sec - timing[index];
+		if (difference > 1)
 		{
-			if (sec - timing[i] > 1 && grade[i] == nullptr)
-			{
-				index++;
-				timing[index] = 0;
-				grade[index] = "Bad";
-			}
-			
-			abs(timing);
+			grade[index] = "Fail";
+			index++;
 		}
 
 		if (timingSize <= index)
