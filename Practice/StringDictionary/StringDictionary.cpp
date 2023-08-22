@@ -23,6 +23,7 @@ char* my_strcpy(char *strDest, const char *strSrc)
         strDest++;
         strSrc++;
     }
+    *strDest = '\0';
 
     return strDest;
 }
@@ -46,20 +47,55 @@ int my_strcmp(const char* string1, const char* string2)
 // 4. strcat - 문자열 붙이기
 char* my_strcat(char* strDest, const char* strAdd)
 {
+    while (*strDest != '\0')
+    {
+        strDest++;
+    }
 
+    while (*strAdd != '\0')
+    {
+        *strDest = *strAdd;
+        strDest++;
+        strAdd++;
+    }
+    *strDest = '\0';
+
+    return strDest;
 }
 
 // 5. strchr - 문자열 내에서 특정 문자 검색 (포인터 리턴)
+char* my_strchr(const char* string, int c)
+{
+    while (*string != '\0')
+    {
+		if (*string == c)
+		{
+			break;
+		}
+        string++;
+        
+        if (*string == '\0')
+        {
+            return NULL;
+        }
+    }
+
+    return const_cast<char*>(string);
+}
+
 // 6. strstr - 문자열 내에서 특정 문자열 검색 (포인터 리턴)
 // 7. strlwr - 문자열을 소문자로 변환
 
 int main()
 {
-    char name[50] = "12312435";
-    char name2[50];
+    int ch = '1';
+    int result;
 
-    my_strcpy(name2, name);
-    int cmp = my_strcmp(name, name2);
-    
-    printf("%d\n", cmp);
+    char* dest;
+    char string[80] = "abcdefghijklmn";
+
+    dest = my_strchr(string, ch);
+    result = (int)(dest - string + 1);
+
+    printf("%d\n", result);
 }
