@@ -66,12 +66,8 @@ char* my_strcat(char* strDest, const char* strAdd)
 // 5. strchr - 문자열 내에서 특정 문자 검색 (포인터 리턴)
 char* my_strchr(const char* string, int c)
 {
-    while (*string != '\0')
+    while (*string != c)
     {
-		if (*string == c)
-		{
-			break;
-		}
         string++;
         
         if (*string == '\0')
@@ -84,18 +80,43 @@ char* my_strchr(const char* string, int c)
 }
 
 // 6. strstr - 문자열 내에서 특정 문자열 검색 (포인터 리턴)
+char* my_strstr(const char* string, const char* search)
+{
+	const char* stringPos;
+    const char* searchPos;
+
+    while (*string != '\0')
+    {
+        
+
+        
+        while (*stringPos == *searchPos)
+        {
+            stringPos = string + 1;
+            searchPos = search + 1;
+
+
+        }
+
+        string++;
+    }
+
+    return NULL;
+}
+
 // 7. strlwr - 문자열을 소문자로 변환
+char* my_strlwr(char* string)
+{
+    
+}
 
 int main()
 {
-    int ch = '1';
     int result;
-
     char* dest;
-    char string[80] = "abcdefghijklmn";
+    char string[] = "abcdefghijklmn";
+    char search[] = "hij";
 
-    dest = my_strchr(string, ch);
+    dest = my_strstr(string, search);
     result = (int)(dest - string + 1);
-
-    printf("%d\n", result);
 }
