@@ -55,13 +55,15 @@
 //
 // 키가 눌릴 때 최초 1회만 체크 하고자 한다면 추가 변수를 할당하여 알아서 해결 해야 함!
 //
-char ScreenBuffer[dfSCREEN_HEIGHT][dfSCREEN_WIDTH];
+char szScreenBuffer[dfSCREEN_HEIGHT][dfSCREEN_WIDTH];
+
+
 
 
 //--------------------------------------------------------------------
 // 아군 구조체 선언
 //--------------------------------------------------------------------
-struct PLAYER
+struct _PLAYER
 {
 	int HP;					// 플레이어 HP
 
@@ -75,7 +77,11 @@ struct PLAYER
 //--------------------------------------------------------------------
 // 플레이어 인스턴스 선언, (1인용 이니 하나만 하자)
 //--------------------------------------------------------------------
-PLAYER _Player;
+_PLAYER _Player;
+
+
+
+
 
 
 //--------------------------------------------------------------------
@@ -103,12 +109,15 @@ void Buffer_Flip(void);
 // 안그러면 이전 프레임의 잔상이 남으니까
 //--------------------------------------------------------------------
 void Buffer_Clear(void);
+
 //--------------------------------------------------------------------
 // 버퍼의 특정 위치에 원하는 문자를 출력.
 //
 // 입력 받은 X,Y 좌표에 아스키코드 하나를 출력한다. (버퍼에 그림)
 //--------------------------------------------------------------------
-void Sprite_Draw(int X, int Y, char Sprite);
+void Sprite_Draw(int X, int Y, char chSprite);
+
+
 
 
 //////////////////////////////////////////////////////////////////////
@@ -122,10 +131,14 @@ void Sprite_Draw(int X, int Y, char Sprite);
 // ESC 를 누를 경우 false 리턴, (종료처리)
 //--------------------------------------------------------------------
 bool KeyProcess(void);
+
 //--------------------------------------------------------------------
 // 스크린 버퍼에 플레이어 그리기
 //--------------------------------------------------------------------
 void Draw_Player(void);
+
+
+
 
 
 //--------------------------------------------------------------------
@@ -156,7 +169,7 @@ void Buffer_Flip(void)
 	for (int count = 0; count < dfSCREEN_HEIGHT; count++)
 	{
 		cs_MoveCursor(0, count);
-		printf(ScreenBuffer[count]);
+		printf(szScreenBuffer[count]);
 	}
 }
 
@@ -171,8 +184,8 @@ void Buffer_Clear(void)
 {
 	for (int count = 0; count < dfSCREEN_HEIGHT; count++)
 	{
-		memset(ScreenBuffer[count], ' ', dfSCREEN_WIDTH);
-		ScreenBuffer[count][dfSCREEN_WIDTH - 1] = (char)NULL;
+		memset(szScreenBuffer[count], ' ', dfSCREEN_WIDTH);
+		szScreenBuffer[count][dfSCREEN_WIDTH - 1] = (char)NULL;
 	}
 }
 
@@ -181,12 +194,12 @@ void Buffer_Clear(void)
 //
 // 입력 받은 X,Y 좌표에 아스키코드 하나를 출력한다. (버퍼에 그림)
 //--------------------------------------------------------------------
-void Sprite_Draw(int X, int Y, char Sprite)
+void Sprite_Draw(int X, int Y, char chSprite)
 {
 	if (X < 0 || Y < 0 || X >= dfSCREEN_WIDTH - 1 || Y >= dfSCREEN_HEIGHT)
 		return;
 
-	ScreenBuffer[Y][X] = Sprite;
+	szScreenBuffer[Y][X] = chSprite;
 }
 
 
@@ -228,6 +241,7 @@ bool KeyProcess(void)
 	_Player.Y = max(_Player.Y, 0);
 	_Player.Y = min(_Player.Y, 23);
 
+
 	// 콘트롤 키. (미사일 키)
 	if (GetAsyncKeyState(VK_CONTROL))
 	{
@@ -238,11 +252,21 @@ bool KeyProcess(void)
 	if (GetAsyncKeyState(VK_ESCAPE) & 0x8001)
 	{
 		// 종료 방법
-		return false;
 	}
 
 	return true;
 }
+
+//--------------------------------------------------------------------
+// 스크린 버퍼에 플레이어 그리기
+//--------------------------------------------------------------------
+void Draw_Player(void)
+{
+	if (_Player.Visible)
+		Sprite_Draw(_Player.X, _Player.Y, '#');
+
+}
+
 
 int main(void)
 {
@@ -257,20 +281,15 @@ int main(void)
 	while (1)
 	{
 		// 키보드 입력
-		bool keyResult = KeyProcess();
+		KeyProcess();
 
 		// 로직부
-		if (keyResult == false)
-			return;
+		
 
 		// 랜더링
 		Buffer_Clear();
-		dw_Draw_Player();
-		Draw_Monster();
-		Draw_Missile();
+		Draw_Player();
 		Buffer_Flip();
-
-		dw_Rendering();
 
 		// 프레임 조절
 		Sleep(200);
