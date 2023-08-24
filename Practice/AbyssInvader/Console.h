@@ -5,8 +5,8 @@
 #ifndef __CONSOLE__
 #define __CONSOLE__
 
-#define dfSCREEN_WIDTH	81		// 콘솔 가로 80칸 + NULL
-#define dfSCREEN_HEIGHT	24		// 콘솔 세로 25칸 + NULL
+#define SCREEN_WIDTH	81		// 콘솔 가로 80칸 + NULL
+#define SCREEN_HEIGHT	24		// 콘솔 세로 25칸 + NULL
 //-------------------------------------------------------------
 // 콘솔 제어를 위한 준비 작업.
 //

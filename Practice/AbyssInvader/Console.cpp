@@ -74,9 +74,9 @@ void cs_ClearScreen(void)
 	// 화면 크기만큼 세로, 가로 이중 for 문을 사용하여
 	// 각각의 좌표마다 printf(" ");  공백을 전부 출력 해준다.
 	//-------------------------------------------------------------
-	for (iCountY = 0; iCountY < dfSCREEN_HEIGHT; iCountY++)
+	for (iCountY = 0; iCountY < SCREEN_HEIGHT; iCountY++)
 	{
-		for (iCountX = 0; iCountX < dfSCREEN_WIDTH; iCountX++)
+		for (iCountX = 0; iCountX < SCREEN_WIDTH; iCountX++)
 		{
 			cs_MoveCursor(iCountX, iCountY);
 			printf(" ");
