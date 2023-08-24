@@ -95,6 +95,7 @@ bool KeyProcess(void)
 		return false;
 	}
 
+
 	return true;
 }
 
@@ -113,8 +114,6 @@ void Missile_Move(void)
 		{
 			_Missiles[i].Y += -1;
 		}
-
-		// 몬스터 충돌 판정 필요
 
 		// 벽 부딪힘
 		if (_Missiles[i].Y < 0 || _Missiles[i].Y >= SCREEN_HEIGHT)
@@ -139,36 +138,91 @@ void Draw_Missile(void)
 	}
 }
 
+void Draw_Monster(void)
+{
+	for (int i = 0; i < _MonsterCount; i++)
+	{
+		if (_Monsters[i].Visible)
+		{
+			Sprite_Draw(_Monsters[i].X, _Monsters[i].Y, 'M');
+		}
+	}
+}
+
+void Monster_Set(int stage)
+{
+	FILE* file = nullptr;
+	fopen_s(&file, _Stages[stage], "r");
+	fseek(file, 0, SEEK_END);
+	int size = ftell(file);
+	fseek(file, 0, SEEK_SET);
+
+	char* buffer = (char*)malloc(size);
+
+	fread(buffer, 1, size, file);
+	fclose(file);
+
+	int defaultX = 31;
+	int defaultY = 5;
+	for (int i = 0; i < size; i++)
+	{
+		if (buffer[i] == '\t')
+		{
+			defaultX += 4;
+		}
+		if (buffer[i] == '\n')
+		{
+			defaultX = 31;
+			defaultY += 1;
+		}
+		if (buffer[i] == 'M')
+		{
+			_Monsters[_MonsterCount].X = defaultX;
+			_Monsters[_MonsterCount].Y = defaultY;
+			_Monsters[_MonsterCount].Visible = 1;
+			_MonsterCount++;
+		}
+	}
+}
+
 int main(void)
 {
 	cs_Initial();
-
-	Player_Initial();
 	//Map_Set();
-	//Monster_Set();
 
-	//--------------------------------------------------------------------
-	// 게임의 메인 루프
-	// 이 루프가  1번 돌면 1프레임 이다.
-	//--------------------------------------------------------------------
-	while (1)
+	for (int stage = 0; stage < _StageCount; stage++)
 	{
-		// 키보드 입력
-		bool keyResult = KeyProcess();
+		Monster_Set(stage);
+		Player_Initial();
 
-		// 로직부
-		if (keyResult == false)
-			return 0;
+		//--------------------------------------------------------------------
+		// 게임의 메인 루프
+		// 이 루프가  1번 돌면 1프레임 이다.
+		//--------------------------------------------------------------------
+		while (1)
+		{
+			// 키보드 입력
+			bool keyResult = KeyProcess();
 
-		Missile_Move();
+			// 로직부
+			if (keyResult == false)
+				return 0;
 
-		// 랜더링
-		Buffer_Clear();
-		Draw_Player();
-		Draw_Missile();
-		Buffer_Flip();
+			// 몬스터가 쏜 미사일도 있을 순 있다. 후에 구현.
+			Missile_Move();
 
-		// 프레임 조절
-		Sleep(200);
+			// 몬스터 전멸 판정 후 break
+			//bool monResult = 
+
+			// 랜더링
+			Buffer_Clear();
+			Draw_Player();
+			Draw_Missile();
+			Draw_Monster();
+			Buffer_Flip();
+
+			// 프레임 조절
+			Sleep(200);
+		}
 	}
 }
