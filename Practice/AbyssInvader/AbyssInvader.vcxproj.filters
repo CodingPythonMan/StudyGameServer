@@ -7,6 +7,9 @@
     <ClCompile Include="Console.cpp">
       <Filter>Console</Filter>
     </ClCompile>
+    <ClCompile Include="StageRead.cpp">
+      <Filter>File</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Main">
@@ -15,6 +18,9 @@
     <Filter Include="Console">
       <UniqueIdentifier>{cd93121e-cbe5-458e-a24c-c07aa3f11a5c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="File">
+      <UniqueIdentifier>{867973ab-4bf3-4853-9020-e2ae9caeb5e5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Console.h">
@@ -22,6 +28,9 @@
     </ClInclude>
     <ClInclude Include="Main.h">
       <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="StageRead.h">
+      <Filter>File</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

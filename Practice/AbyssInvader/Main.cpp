@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include "Console.h"
 #include "Main.h"
+#include "StageRead.h"
 
 void Player_Initial(void)
 {
@@ -151,20 +152,11 @@ void Draw_Monster(void)
 
 void Monster_Set(int stage)
 {
-	FILE* file = nullptr;
-	fopen_s(&file, _Stages[stage], "r");
-	fseek(file, 0, SEEK_END);
-	int size = ftell(file);
-	fseek(file, 0, SEEK_SET);
-
-	char* buffer = (char*)malloc(size);
-
-	fread(buffer, 1, size, file);
-	fclose(file);
+	char* buffer = sr_Stage_Read(_Stages[stage]);
 
 	int defaultX = 31;
 	int defaultY = 5;
-	for (int i = 0; i < size; i++)
+	for (int i = 0; i < strlen(buffer); i++)
 	{
 		if (buffer[i] == '\t')
 		{
@@ -210,6 +202,7 @@ int main(void)
 
 			// 몬스터가 쏜 미사일도 있을 순 있다. 후에 구현.
 			Missile_Move();
+			//Monster_Move();
 
 			// 몬스터 전멸 판정 후 break
 			//bool monResult = 
