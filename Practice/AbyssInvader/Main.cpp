@@ -156,7 +156,7 @@ void Monster_Set(int stage)
 
 	int defaultX = 31;
 	int defaultY = 5;
-	for (int i = 0; i < strlen(buffer); i++)
+	for (int i = 0; i < (int)strlen(buffer); i++)
 	{
 		if (buffer[i] == '\t')
 		{
@@ -173,6 +173,31 @@ void Monster_Set(int stage)
 			_Monsters[_MonsterCount].Y = defaultY;
 			_Monsters[_MonsterCount].Visible = 1;
 			_MonsterCount++;
+		}
+	}
+}
+
+void Monster_Move()
+{
+	for (int i = 0; i < _MonsterCount; i++)
+	{
+		if (_Monsters[i].Visible)
+		{
+			if (_Monsters[i].left > 0)
+			{
+				_Monsters[i].left--;
+				_Monsters[i].X -= 1;
+			}
+			else if (_Monsters[i].left == 0 && _Monsters[i].right > 0)
+			{
+				_Monsters[i].right--;
+				_Monsters[i].X += 1;
+			}
+			else if (_Monsters[i].left == 0 && _Monsters[i].right == 0)
+			{
+				_Monsters[i].left = 4;
+				_Monsters[i].right = 4;
+			}
 		}
 	}
 }
@@ -202,7 +227,7 @@ int main(void)
 
 			// 몬스터가 쏜 미사일도 있을 순 있다. 후에 구현.
 			Missile_Move();
-			//Monster_Move();
+			Monster_Move();
 
 			// 몬스터 전멸 판정 후 break
 			//bool monResult = 
