@@ -120,10 +120,11 @@ void Missile_Move(void)
 		if (_Missiles[i].Y < 0 || _Missiles[i].Y >= SCREEN_HEIGHT)
 		{
 			_MissileCount--;
-			for (int j = 0; j < _MissileCount; j++)
+			for (int j = i; j < _MissileCount; j++)
 			{
 				_Missiles[j] = _Missiles[j + 1];
 			}
+			i--;
 		}
 	}
 }
@@ -202,6 +203,33 @@ void Monster_Move()
 	}
 }
 
+bool Check_Survive()
+{
+	for (int i = 0; i < _MissileCount; i++)
+	{
+		for (int j = 0; j < _MonsterCount; j++)
+		{
+			if (_Missiles[i].X == _Monsters[j].X && _Missiles[i].Y == _Monsters[j].Y)
+			{
+				_MissileCount--;
+				for (int k = i; k < _MissileCount; k++)
+				{
+					_Missiles[k] = _Missiles[k + 1];
+				}
+				i--;
+
+				_MonsterCount--;
+				_Monsters[j].Visible = 0;
+			}
+		}
+	}
+
+	if (_MonsterCount == 0)
+		return true;
+
+	return false;
+}
+
 int main(void)
 {
 	cs_Initial();
@@ -225,12 +253,12 @@ int main(void)
 			if (keyResult == false)
 				return 0;
 
-			// 몬스터가 쏜 미사일도 있을 순 있다. 후에 구현.
 			Missile_Move();
 			Monster_Move();
 
-			// 몬스터 전멸 판정 후 break
-			//bool monResult = 
+			bool result = Check_Survive();
+			if (result == true)
+				break;
 
 			// 랜더링
 			Buffer_Clear();
