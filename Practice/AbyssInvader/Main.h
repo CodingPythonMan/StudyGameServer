@@ -102,10 +102,10 @@ struct _Monster
 	int X;
 	int Y;
 
+	int Visible;
+
 	int left = 2;
 	int right = 4;
-
-	int Visible;
 };
 
 //--------------------------------------------------------------------

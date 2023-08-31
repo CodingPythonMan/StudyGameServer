@@ -6,6 +6,8 @@
 #include "Main.h"
 #include "StageRead.h"
 
+#pragma comment(lib, "winmm.lib")
+
 void Player_Initial(void)
 {
 	//-------------------------------------------------------------------
@@ -212,7 +214,7 @@ bool Check_Survive()
 			if (_Missiles[i].X == _Monsters[j].X && _Missiles[i].Y == _Monsters[j].Y)
 			{
 				_MissileCount--;
-				for (int k = i; k < _MissileCount; k++)
+				for (int k = i; k < _MissileCount-1; k++)
 				{
 					_Missiles[k] = _Missiles[k + 1];
 				}
@@ -232,8 +234,12 @@ bool Check_Survive()
 
 int main(void)
 {
+	timeBeginPeriod(1);
+
 	cs_Initial();
 	//Map_Set();
+
+
 
 	for (int stage = 0; stage < _StageCount; stage++)
 	{
@@ -244,8 +250,14 @@ int main(void)
 		// 게임의 메인 루프
 		// 이 루프가  1번 돌면 1프레임 이다.
 		//--------------------------------------------------------------------
+
+		unsigned long delay = 0;
+		unsigned long beforeTime = timeGetTime();
+		int FrameCount = 0;
+		DWORD Tick = timeGetTime();
 		while (1)
 		{
+			
 			// 키보드 입력
 			bool keyResult = KeyProcess();
 
@@ -267,8 +279,21 @@ int main(void)
 			Draw_Monster();
 			Buffer_Flip();
 
+			FrameCount++;
+			if (timeGetTime() - Tick >= 1000)
+			{
+				printf("%d \n", FrameCount);
+				FrameCount = 0;
+				//Tick = timeGetTime();
+				Tick += 20;
+			}
+
+			Sleep(20);
+
 			// 프레임 조절
-			Sleep(200);
+			//Sleep(20 - delay);
+			//delay = timeGetTime();
+
 		}
 	}
 }
