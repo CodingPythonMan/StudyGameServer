@@ -239,8 +239,6 @@ int main(void)
 	cs_Initial();
 	//Map_Set();
 
-
-
 	for (int stage = 0; stage < _StageCount; stage++)
 	{
 		Monster_Set(stage);
@@ -284,16 +282,16 @@ int main(void)
 			{
 				printf("%d \n", FrameCount);
 				FrameCount = 0;
-				//Tick = timeGetTime();
-				Tick += 20;
+				Tick = timeGetTime();
 			}
 
-			Sleep(20);
-
 			// 프레임 조절
-			//Sleep(20 - delay);
-			//delay = timeGetTime();
-
+			if (delay < 20)
+			{
+				Sleep(20 - delay);
+				beforeTime += 20;
+				delay = timeGetTime() - beforeTime;
+			}
 		}
 	}
 }
