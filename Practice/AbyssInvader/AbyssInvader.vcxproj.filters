@@ -7,7 +7,7 @@
     <ClCompile Include="Console.cpp">
       <Filter>Console</Filter>
     </ClCompile>
-    <ClCompile Include="StageRead.cpp">
+    <ClCompile Include="DataRead.cpp">
       <Filter>File</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,7 +29,7 @@
     <ClInclude Include="Main.h">
       <Filter>Main</Filter>
     </ClInclude>
-    <ClInclude Include="StageRead.h">
+    <ClInclude Include="DataRead.h">
       <Filter>File</Filter>
     </ClInclude>
   </ItemGroup>

@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include "Console.h"
 #include "Main.h"
-#include "StageRead.h"
+#include "DataRead.h"
 
 #pragma comment(lib, "winmm.lib")
 
@@ -155,7 +155,7 @@ void Draw_Monster(void)
 
 void Monster_Set(int stage)
 {
-	char* buffer = sr_Stage_Read(_Stages[stage]);
+	char* buffer = d_Data_Read(_MonsterInfo);
 
 	int defaultX = 31;
 	int defaultY = 5;
@@ -239,9 +239,14 @@ int main(void)
 	cs_Initial();
 	//Map_Set();
 
+	d_MovePattern_Set();
+	d_Monster_Set(_MonsterInfo);
+	d_Stage_Set(_StageInfo);
+
 	for (int stage = 0; stage < _StageCount; stage++)
 	{
-		Monster_Set(stage);
+		Stage_Set(stage);
+
 		Player_Initial();
 
 		//--------------------------------------------------------------------

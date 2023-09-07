@@ -131,12 +131,12 @@
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Console.cpp" />
-    <ClCompile Include="StageRead.cpp" />
+    <ClCompile Include="DataRead.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Console.h" />
     <ClInclude Include="Main.h" />
-    <ClInclude Include="StageRead.h" />
+    <ClInclude Include="DataRead.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
