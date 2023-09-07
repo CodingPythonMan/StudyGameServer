@@ -15,5 +15,9 @@ const char* _MonsterInfo = "MonsterInfo.data";
 //--------------------------------------------------------------------
 const char* _MovePatternInfo = "MovePatternInfo.data";
 
-
+//--------------------------------------------------------------------
+// 이동 패턴 고정 파일
+//--------------------------------------------------------------------
 char* d_Data_Read(const char* data);
+
+void d_MovePattern_Set(const char* data);
