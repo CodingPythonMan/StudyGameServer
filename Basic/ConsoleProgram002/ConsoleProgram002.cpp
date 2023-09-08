@@ -3,9 +3,20 @@
 class A
 {
 public:
+	A()
+	{
+		printf("A 생성\n");
+	}
+
+	~A()
+	{
+		printf("A 소멸\n");
+	}
+
 	virtual void F1()
 	{
 		printf("A::F1 함수입니다.\n");
+		delete this;
 	}
 };
 
@@ -28,8 +39,10 @@ public:
 	}
 };
 
+A g_A;
+
 int main()
 {
-	A* a = new C();
+	A* a = new A();
 	a->F1();
 }
