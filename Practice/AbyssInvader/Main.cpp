@@ -153,31 +153,36 @@ void Draw_Monster(void)
 	}
 }
 
-void Monster_Set(int stage)
+void MovePattern_Set()
 {
-	/*const char* buffer = d_Data_Read(_MonsterInfo);
+	char* movePatternInfo = d_Data_Read("MovePatternInfo.data");
 
-	int defaultX = 31;
-	int defaultY = 5;
-	for (int i = 0; i < (int)strlen(buffer); i++)
+	int pos = 0;
+	while (*movePatternInfo != '\0')
 	{
-		if (buffer[i] == '\t')
+		if (*movePatternInfo == '\n')
 		{
-			defaultX += 4;
+			for (int i = 0; i < pos; i++)
+			{
+				static_cast<int>(*movePatternInfo);
+			}
+			
 		}
-		if (buffer[i] == '\n')
-		{
-			defaultX = 31;
-			defaultY += 1;
-		}
-		if (buffer[i] == 'M')
-		{
-			_Monsters[_MonsterCount].X = defaultX;
-			_Monsters[_MonsterCount].Y = defaultY;
-			_Monsters[_MonsterCount].Visible = 1;
-			_MonsterCount++;
-		}
-	}*/
+		pos++;
+	}	
+}
+
+void Monster_Set()
+{
+	char* stageInfo = d_Data_Read("MonsterInfo.data");
+
+	
+}
+
+void Stage_Set()
+{
+	char* stageInfo = d_Data_Read("StageInfo.data");
+
 }
 
 void Monster_Move()
@@ -241,9 +246,9 @@ int main(void)
 	cs_Initial();
 	//Map_Set();
 
-	d_MovePattern_Set();
-	//Monster_Set(_MonsterInfo);
-	//Stage_Set(_StageInfo);
+	MovePattern_Set();
+	Monster_Set();
+	Stage_Set();
 
 	for (int stage = 0; stage < _StageCount; stage++)
 	{

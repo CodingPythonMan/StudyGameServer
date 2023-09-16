@@ -31,12 +31,3 @@ char* d_Data_Read(const char* data)
 
 	return buffer;
 }
-
-void d_MovePattern_Set()
-{
-	const char* MovePatternInfo = "MovePatternInfo.data";
-
-	d_Data_Read(MovePatternInfo);
-
-
-}
