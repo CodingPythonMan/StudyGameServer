@@ -155,7 +155,7 @@ void Draw_Monster(void)
 
 void Monster_Set(int stage)
 {
-	char* buffer = d_Data_Read(_MonsterInfo);
+	/*const char* buffer = d_Data_Read(_MonsterInfo);
 
 	int defaultX = 31;
 	int defaultY = 5;
@@ -177,7 +177,7 @@ void Monster_Set(int stage)
 			_Monsters[_MonsterCount].Visible = 1;
 			_MonsterCount++;
 		}
-	}
+	}*/
 }
 
 void Monster_Move()
@@ -186,6 +186,7 @@ void Monster_Move()
 	{
 		if (_Monsters[i].Visible)
 		{
+			/*
 			if (_Monsters[i].left > 0)
 			{
 				_Monsters[i].left--;
@@ -200,7 +201,7 @@ void Monster_Move()
 			{
 				_Monsters[i].left = 4;
 				_Monsters[i].right = 4;
-			}
+			}*/
 		}
 	}
 }
@@ -211,6 +212,7 @@ bool Check_Survive()
 	{
 		for (int j = 0; j < _MonsterCount; j++)
 		{
+			/*
 			if (_Missiles[i].X == _Monsters[j].X && _Missiles[i].Y == _Monsters[j].Y)
 			{
 				_MissileCount--;
@@ -222,7 +224,7 @@ bool Check_Survive()
 
 				_MonsterCount--;
 				_Monsters[j].Visible = 0;
-			}
+			}*/
 		}
 	}
 
@@ -240,12 +242,12 @@ int main(void)
 	//Map_Set();
 
 	d_MovePattern_Set();
-	d_Monster_Set(_MonsterInfo);
-	d_Stage_Set(_StageInfo);
+	//Monster_Set(_MonsterInfo);
+	//Stage_Set(_StageInfo);
 
 	for (int stage = 0; stage < _StageCount; stage++)
 	{
-		Stage_Set(stage);
+		//Stage_Set(stage);
 
 		Player_Initial();
 

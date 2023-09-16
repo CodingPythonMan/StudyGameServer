@@ -1,17 +1,30 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <string.h>
-#include "DataRead.h"
 
 char* d_Data_Read(const char* data)
 {
+	char* buffer = nullptr;
 	FILE* file = nullptr;
 	fopen_s(&file, data, "r");
+
+	if (file == nullptr) // warning C6387 : 파일 없음 예외 처리를 해 주어야 한다.
+	{
+		printf("There is No File. \n");
+		return buffer;
+	}
+
 	fseek(file, 0, SEEK_END);
 	int size = ftell(file);
 	fseek(file, 0, SEEK_SET);
 
-	char* buffer = (char*)malloc(size);
+	buffer = (char*)malloc(size);
+
+	if (buffer == nullptr)
+	{
+		printf("There is No Buffer. \n");
+		return buffer;
+	}
 
 	fread(buffer, 1, size, file);
 	fclose(file);
@@ -19,19 +32,11 @@ char* d_Data_Read(const char* data)
 	return buffer;
 }
 
-void d_MovePattern_Set(const char* data)
+void d_MovePattern_Set()
 {
-	char* buffer = d_Data_Read(_MonsterInfo);
+	const char* MovePatternInfo = "MovePatternInfo.data";
 
-	for (int i = 0; i < (int)strlen(buffer); i++)
-	{
-		if (buffer[i] == '\n')
-		{
-			defaultX = 31;
-			defaultY += 1;
-		}
-	}
+	d_Data_Read(MovePatternInfo);
+
+
 }
-
-d_Monster_Set(_MonsterInfo);
-d_Stage_Set(_StageInfo);
