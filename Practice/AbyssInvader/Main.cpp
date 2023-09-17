@@ -155,21 +155,44 @@ void Draw_Monster(void)
 
 void MovePattern_Set()
 {
-	char* movePatternInfo = d_Data_Read("MovePatternInfo.data");
+	char* movePatternInfo = d_Data_Read("MovePattern/MovePatternInfo.data");
+	char* movePattern;
 
 	int pos = 0;
-	while (*movePatternInfo != '\0')
+	int fileCount = 0;
+	char word[100] = "";
+	memset(word, 0, 100);
+	while (*(movePatternInfo+pos) != '\0')
 	{
-		if (*movePatternInfo == '\n')
+		if (*(movePatternInfo+pos) == '\n')
 		{
-			for (int i = 0; i < pos; i++)
-			{
-				static_cast<int>(*movePatternInfo);
-			}
-			
+			memcpy(word, movePatternInfo, pos);
+			fileCount = atoi(word);
+			movePatternInfo += pos+1;
+			break;
 		}
 		pos++;
-	}	
+	}
+
+	for (int i = 0; i < fileCount; i++)
+	{
+		for (;;)
+		{
+			if (*(movePatternInfo + pos) == '\n')
+			{
+				char file[100] = "MovePattern/";
+				memset(word, 0, 100);
+				memcpy(word, movePatternInfo, pos);
+				strcat_s(file, sizeof(file), word);
+
+				movePattern = d_Data_Read(file);
+
+
+				break;
+			}
+			pos++;
+		}
+	}
 }
 
 void Monster_Set()
