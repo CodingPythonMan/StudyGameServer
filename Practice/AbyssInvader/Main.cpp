@@ -187,6 +187,33 @@ void MovePattern_Set()
 
 				movePattern = d_Data_Read(file);
 
+				int movePos = 0;
+				int move = 1;
+				MovePattern movePatternStruct;
+				_MovePatterns[i] = &movePatternStruct;
+				while(*(movePattern + movePos) != '\0')
+				{
+					if (*(movePattern + movePos) == ' ')
+					{
+						memset(word, 0, 100);
+						memcpy(word, movePattern, movePos);
+						movePattern += movePos + 1;
+						movePos = 0;
+						_MovePatterns[i]->_dX[move] = atoi(word);
+					}
+					
+					if (*(movePattern + movePos) == '\n')
+					{
+						memset(word, 0, 100);
+						memcpy(word, movePattern, movePos);
+						movePattern += movePos + 1;
+						movePos = 0;
+						_MovePatterns[i]->_dY[move] = atoi(word);
+						move++;
+					}
+					movePos++;
+				}
+				_MovePatterns[i]->_move = move;
 
 				break;
 			}
