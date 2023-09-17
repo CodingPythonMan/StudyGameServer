@@ -5,6 +5,7 @@
 #include "Console.h"
 #include "Main.h"
 #include "DataRead.h"
+#include "Game.h"
 
 #pragma comment(lib, "winmm.lib")
 
@@ -46,60 +47,6 @@ void Sprite_Draw(int X, int Y, char Sprite)
 		return;
 
 	ScreenBuffer[Y][X] = Sprite;
-}
-
-bool KeyProcess(void)
-{
-	// 왼쪽 방향키.
-	if (GetAsyncKeyState(VK_LEFT))
-	{
-		_Player.X -= 1;
-	}
-	// 오른쪽 방향키.
-	if (GetAsyncKeyState(VK_RIGHT))
-	{
-		_Player.X += 1;
-	}
-	// 위쪽 방향키.
-	if (GetAsyncKeyState(VK_UP) & 0x8001)
-	{
-		_Player.Y--;
-	}
-	// 아래쪽 방향키.
-	if (GetAsyncKeyState(VK_DOWN) & 0x8001)
-	{
-		_Player.Y++;
-	}
-
-	//-------------------------------------------------------------
-	// 플레이어 이동 반경 제한.
-	// 게임 화면에서 플레이어가 이동 가능한 구역을 제한한다.
-	//-------------------------------------------------------------
-
-	_Player.X = max(_Player.X, 0);
-	_Player.X = min(_Player.X, 79);
-	_Player.Y = max(_Player.Y, 0);
-	_Player.Y = min(_Player.Y, 23);
-
-
-	// 콘트롤 키. (미사일 키)
-	if (GetAsyncKeyState(VK_CONTROL))
-	{
-		_Missiles[_MissileCount].X = _Player.X;
-		_Missiles[_MissileCount].Y = _Player.Y - 1;
-		_Missiles[_MissileCount].Visible = 1;
-
-		_MissileCount++;
-	}
-
-	// ESC 키. (종료)
-	if (GetAsyncKeyState(VK_ESCAPE) & 0x8001)
-	{
-		return false;
-	}
-
-
-	return true;
 }
 
 void Draw_Player(void)
@@ -146,9 +93,9 @@ void Draw_Monster(void)
 {
 	for (int i = 0; i < _MonsterCount; i++)
 	{
-		if (_Monsters[i].Visible)
+		if (_Monsters[i]->Visible)
 		{
-			Sprite_Draw(_Monsters[i].X, _Monsters[i].Y, 'M');
+			Sprite_Draw(_Monsters[i]->X, _Monsters[i]->Y, 'M');
 		}
 	}
 }
@@ -224,9 +171,63 @@ void MovePattern_Set()
 
 void Monster_Set()
 {
-	char* stageInfo = d_Data_Read("MonsterInfo.data");
+	/*
+	char* monsterInfo = d_Data_Read("Monster/MonsterInfo.data");
+	char* monster;
 
-	
+	int pos = 0;
+	int fileCount = 0;
+	char word[100] = "";
+	memset(word, 0, 100);
+	while (*(monsterInfo + pos) != '\0')
+	{
+		if (*(monsterInfo + pos) == '\n')
+		{
+			memcpy(word, monster, pos);
+			fileCount = atoi(word);
+			monsterInfo += pos + 1;
+			break;
+		}
+		pos++;
+	}
+
+	for (int i = 0; i < fileCount; i++)
+	{
+		for (;;)
+		{
+			if (*(monsterInfo + pos) == '\n')
+			{
+				char file[100] = "Monster/";
+				memset(word, 0, 100);
+				memcpy(word, monsterInfo, pos);
+				strcat_s(file, sizeof(file), word);
+
+				monster = d_Data_Read(file);
+
+				int monsterPos = 0;
+				int move = 1;
+				Monster monsterStruct;
+				_Monsters[i] = &monsterStruct;
+				while (*(monster + monsterPos) != '\0')
+				{
+					if (*(monster + monsterPos) == '\n')
+					{
+						memset(word, 0, 100);
+						memcpy(word, monster, monsterPos);
+						monster += monsterPos + 1;
+						monsterPos = 0;
+						_MovePatterns[i]->_dY[move] = atoi(word);
+						move++;
+					}
+					movePos++;
+				}
+				_MovePatterns[i]->_move = move;
+
+				break;
+			}
+			pos++;
+		}
+	}*/
 }
 
 void Stage_Set()
@@ -239,7 +240,7 @@ void Monster_Move()
 {
 	for (int i = 0; i < _MonsterCount; i++)
 	{
-		if (_Monsters[i].Visible)
+		if (_Monsters[i]->Visible)
 		{
 			/*
 			if (_Monsters[i].left > 0)
@@ -293,6 +294,8 @@ int main(void)
 {
 	timeBeginPeriod(1);
 
+	//Game_Initialize();
+
 	cs_Initial();
 	//Map_Set();
 
@@ -319,7 +322,7 @@ int main(void)
 		{
 			
 			// 키보드 입력
-			bool keyResult = KeyProcess();
+			bool keyResult = Game_KeyProcess();
 
 			// 로직부
 			if (keyResult == false)

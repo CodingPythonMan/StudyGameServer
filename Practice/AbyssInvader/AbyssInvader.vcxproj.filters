@@ -7,8 +7,14 @@
     <ClCompile Include="Console.cpp">
       <Filter>Console</Filter>
     </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="DataRead.cpp">
-      <Filter>File</Filter>
+      <Filter>Data</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -18,8 +24,14 @@
     <Filter Include="Console">
       <UniqueIdentifier>{cd93121e-cbe5-458e-a24c-c07aa3f11a5c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="File">
-      <UniqueIdentifier>{867973ab-4bf3-4853-9020-e2ae9caeb5e5}</UniqueIdentifier>
+    <Filter Include="Game">
+      <UniqueIdentifier>{e71a10d4-145b-47c8-9ab2-cce365a24ab7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data">
+      <UniqueIdentifier>{59ceabb1-2671-4e55-977e-066410cd736a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render">
+      <UniqueIdentifier>{9c18f0a6-04f4-46e2-9ad3-f2d58d03816a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -29,8 +41,14 @@
     <ClInclude Include="Main.h">
       <Filter>Main</Filter>
     </ClInclude>
+    <ClInclude Include="Game.h">
+      <Filter>Game</Filter>
+    </ClInclude>
     <ClInclude Include="DataRead.h">
-      <Filter>File</Filter>
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
