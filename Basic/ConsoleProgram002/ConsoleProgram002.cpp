@@ -35,6 +35,11 @@ public:
 		printf("A::F1 함수입니다.\n");
 		delete this;
 	}
+
+	void F2()
+	{
+		printf("A::F2 함수입니다.\n");
+	}
 };
 
 
@@ -65,8 +70,12 @@ A g_A;
 
 int main()
 {
-	A* a = new B();
-	a->F1();
+	//A* a = new B();
+	//a->F1();
 
-	Me m;
+	//Me m;
+
+	// nullptr 을 찌르고 있어도 멤버를 안쓰는 멤버 함수는 호출이 된다.
+	A* a = nullptr;
+	a->F2();
 }
