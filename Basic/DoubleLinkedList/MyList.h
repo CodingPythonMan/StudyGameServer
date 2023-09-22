@@ -16,43 +16,54 @@ public:
 	private:
 		Node* _Node;
 	public:
-		iterator(Node* node = nullptr) : _Node(nullptr)
+		iterator(Node* node = nullptr)
 		{
-
+			_Node = node;
 		}
 
 		iterator operator++(int)
 		{
+			iterator it(_Node);
 			// 현재 노드를 다음 노드로 이동
-
+			_Node = _Node->_Next;
+			return it;
 		}
 
 		iterator& operator++()
 		{
+			_Node = _Node->_Next;
 			return *this;
 		}
 
 		iterator operator--(int)
 		{
-
+			iterator it(_Node);
+			_Node = _Node->_Prev;
+			return it;
 		}
 
 		iterator& operator--()
 		{
+			_Node = _Node->_Prev;
 			return *this;
 		}
 
 		T& operator*()
 		{
 			// 현재 노드의 데이터 뽑음
+			return _Node->_Data;
 		}
 		bool operator==(const iterator& other)
 		{
-
+			if (_Node == other._Node)
+				return true;
+			return false;
 		}
 		bool operator!=(const iterator& other)
 		{
-
+			if (_Node == other._Node)
+				return false;
+			return true;
 		}
 	};
 
@@ -69,12 +80,16 @@ public:
 	iterator begin()
 	{
 		// 첫번째 데이터 노드를 가리키는 이터레이터 리턴
+		iterator it(_Head);
+		return it;
 	}
 
 	iterator end()
 	{
 		// Tail 노드를 가리키는 (데이터가 없는 진짜 더미 끝 노드) 이터레이터를 리턴
 		// 또는 끝으로 인지할 수 있는 이터레이터를 리턴
+		iterator it(_Tail);
+		return it;
 	}
 
 	void push_front(T data)
@@ -106,7 +121,7 @@ public:
 
 	int size()
 	{
-		return _size;
+		return _Size;
 	}
 
 	bool empty()
