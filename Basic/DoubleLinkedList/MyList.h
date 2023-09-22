@@ -70,17 +70,17 @@ public:
 public:
 	MyList()
 	{
-
+		_Head._Next = &_Tail;
+		_Tail._Prev = &_Head;
 	}
 	~MyList()
 	{
-
 	}
 
 	iterator begin()
 	{
 		// 첫번째 데이터 노드를 가리키는 이터레이터 리턴
-		iterator it(_Head);
+		iterator it(_Head._Next);
 		return it;
 	}
 
@@ -88,20 +88,30 @@ public:
 	{
 		// Tail 노드를 가리키는 (데이터가 없는 진짜 더미 끝 노드) 이터레이터를 리턴
 		// 또는 끝으로 인지할 수 있는 이터레이터를 리턴
-		iterator it(_Tail);
+		iterator it(&_Tail);
 		return it;
 	}
 
 	void push_front(T data)
 	{
-		Node node;
-		node._Data = data;
+		Node* node = new Node();
+		node->_Data = data;
 
+		_Head._Next->_Prev = node;
+		node->_Next = _Head._Next;
+		node->_Prev = &_Head;
+		_Head._Next = node;
 	}
 
 	void push_back(T data)
 	{
+		Node* node = new Node();
+		node->_Data = data;
 
+		_Tail._Prev->_Next = node;
+		node->_Prev = _Tail._Prev;
+		node->_Next = &_Tail;
+		_Tail._Prev = node;
 	}
 
 	void pop_front()
@@ -142,6 +152,6 @@ public:
 
 private:
 	int _Size = 0;
-	Node* _Head;
-	Node* _Tail;
+	Node _Head;
+	Node _Tail;
 };
