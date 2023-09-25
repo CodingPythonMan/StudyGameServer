@@ -21,6 +21,9 @@ int main()
 	ListInt.push_front(3);
 	ListInt.push_back(4);
 	ListInt.push_back(5);
+	ListInt.push_back(5);
+	ListInt.push_back(5);
+	ListInt.push_back(5);
 	ListInt.push_front(6);
 
 	ListInt.pop_front();

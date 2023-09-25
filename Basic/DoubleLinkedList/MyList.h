@@ -174,18 +174,27 @@ public:
 	{
 		// 이터레이터의 그 노드를 지움.
 		// 그리고 지운 노드의 다음 노드를 가리키는 이터레이터 리턴
-		iterator newIter = ++iter;
-		delete(iter._Node);
+		Node* node = iter._Node;
+		iterator newIter(node);
+		++newIter;
+
+		node->_Prev->_Next = node->_Next;
+		node->_Next->_Prev = node->_Prev;
+
+		delete(node);
 		return newIter;
 	}
 
 	void remove(T data)
 	{
-		for (iterator iter = begin(); iter != end(); ++iter)
+		if (_Size > 0)
 		{
-			if (*iter == data)
+			for (iterator iter = begin(); iter != end();)
 			{
-				erase(iter);
+				if (*iter == data)
+				{
+					iter = erase(iter);
+				}
 			}
 		}
 	}
