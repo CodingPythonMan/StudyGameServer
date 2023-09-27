@@ -182,6 +182,7 @@ public:
 		node->_Next->_Prev = node->_Prev;
 
 		delete(node);
+		_Size--;
 		return newIter;
 	}
 
