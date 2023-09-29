@@ -3,60 +3,103 @@
 
 #define DIR_LEN MAX_PATH+1
 
-int main()
+enum class COMMAND{
+    DIV = 1,
+    MUL,
+    ADD,
+    MIN,
+    ELSE,
+    EXIT
+};
+
+COMMAND ShowMenu();
+void Divide(double, double);
+void Multiple(double, double);
+void Add(double, double);
+void Min(double, double);
+
+int wmain(int argc, TCHAR* argv[])
 {
-    /*
-    WCHAR sysDir[DIR_LEN];
-    WCHAR winDir[DIR_LEN];
-
-    // 시스템 디렉터리 정보 추출
-    GetSystemDirectory(sysDir, DIR_LEN);
-
-    // Windows 디렉터리 정보 추출
-    GetWindowsDirectory(winDir, DIR_LEN);
-
-    wprintf(L"System Dir: %s \n", sysDir);
-    wprintf(L"Windows Dir: %s \n", winDir);
-
-    return 0;*/
-
     STARTUPINFO si = { 0, };
     PROCESS_INFORMATION pi;
-
     si.cb = sizeof(si);
-    si.dwFlags = STARTF_USEPOSITION | STARTF_USESIZE;
-    si.dwX = 100;
-    si.dwY = 200;
-    si.dwXSize = 300;
-    si.dwYSize = 200;
-    si.lpTitle = const_cast<LPWSTR>(L"I am a boy!");
-    
-    WCHAR  command[] = L"WinConsole001.exe 10 20";
-    WCHAR cDir[DIR_LEN];
-    BOOL state;
 
-    GetCurrentDirectory(DIR_LEN, cDir); // 현재 디렉터리 확인
-    fputws(cDir, stdout);
-    fputws(L"\n", stdout);
+    TCHAR command[] = L"calc.exe";
+    SetCurrentDirectory(L"C:\\WINMDOWS\\system32");
 
-	SetCurrentDirectory(L"..\\WinConsole001\\x64\\Debug");
+    COMMAND sel;
+    double num1, num2;
+    while (true)
+    {
+        sel = ShowMenu();
+        if (sel == COMMAND::EXIT)
+        {
+            return 0;
+        }
 
-    GetCurrentDirectory(DIR_LEN, cDir); // 현재 디렉터리 확인
-    fputws(cDir, stdout);
-    fputws(L"\n", stdout);
+        if (sel != COMMAND::ELSE)
+        {
+            fputws(L"Input Num1 Num2: ", stdout);
+            wscanf_s(L"%lf %lf", &num1, &num2);
+        }
 
-    state = CreateProcessW(  // 프로세스 생성
-        NULL,               // 실행파일의 이름
-        command,            // main 함수에 전달될 문자열
-        NULL, NULL, TRUE,
-        CREATE_NEW_CONSOLE,
-        NULL, NULL, &si, &pi
-    );
-
-    if (state != 0)
-        fputws(L"Creation OK! \n", stdout);
-    else
-        fputws(L"Creation Error! \n", stdout);
+        switch (sel)
+        {
+        case COMMAND::DIV:
+            Divide(num1, num2);
+            break;
+        case COMMAND::MUL:
+            Multiple(num1, num2);
+            break;
+        case COMMAND::ADD:
+            Add(num1, num2);
+            break;
+        case COMMAND::MIN:
+            Min(num1, num2);
+            break;
+        case COMMAND::ELSE:
+            ZeroMemory(&pi, sizeof(pi));
+            CreateProcess(NULL, command, NULL, NULL,
+                TRUE, 0, NULL, NULL, &si, &pi);
+            break;
+        }
+    }
 
     return 0;
+}
+
+COMMAND ShowMenu()
+{
+    COMMAND sel;
+    int selInt;
+
+    fputws(L"-----Menu----- \n", stdout);
+    fputws(L"num1: Divide \n", stdout);
+    fputws(L"num2: Multiple \n", stdout);
+    fputws(L"num3: Add \n", stdout);
+    fputws(L"num4: Minus \n", stdout);
+    fputws(L"num5: Any other operations. \n", stdout);
+    fputws(L"num6: Exit \n", stdout);
+    fputws(L"SELECTION >>", stdout);
+    scanf_s("%d", &selInt);
+
+    sel = static_cast<COMMAND>(selInt);
+
+    return sel;
+}
+void Divide(double a, double b)
+{
+    wprintf(L"%f/%f=%f \n\n", a, b, a / b);
+}
+void Multiple(double a, double b)
+{
+    wprintf(L"%fx%f=%f \n\n", a, b, a * b);
+}
+void Add(double a, double b)
+{
+	wprintf(L"%f+%f=%f \n\n", a, b, a + b);
+}
+void Min(double a, double b)
+{
+	wprintf(L"%f-%f=%f \n\n", a, b, a - b);
 }

@@ -11,5 +11,5 @@ int wmain(int argc, WCHAR* argv[])
 	wprintf(L"%d + %d = %d \n", val1, val2, val1+val2);
 
 	_gettchar();
-	return 0;
+	return 0; 
 }
