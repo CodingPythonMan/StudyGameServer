@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{a0216d8e-6fce-4ddc-b582-d40221f93d5e}</ProjectGuid>
-    <RootNamespace>WinSysDir</RootNamespace>
+    <ProjectGuid>{767cc6f6-cc12-43c8-afae-cbd3ee79f67d}</ProjectGuid>
+    <RootNamespace>WinConsole003</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -127,7 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="WinSysDir.cpp" />
+    <ClCompile Include="WinConsole003.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
