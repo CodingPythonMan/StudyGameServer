@@ -4,12 +4,21 @@
 
 int wmain(int argc, WCHAR* argv[])
 {
-	DWORD val1, val2;
-	val1 = _wtoi(argv[1]);
-	val2 = _wtoi(argv[2]);
+	STARTUPINFO si = { 0, };
 
-	wprintf(L"%d + %d = %d \n", val1, val2, val1+val2);
+	PROCESS_INFORMATION pi;
+	si.cb = sizeof(si);
+	WCHAR command[] = L"WinConsole002.exe";
 
-	_gettchar();
-	return 0; 
+	CreateProcessW(NULL, command, NULL, NULL,
+		TRUE, 0, NULL, NULL, &si, &pi);
+
+	while (1)
+	{
+		for (DWORD i = 0; i < 10000; i++)
+			for (DWORD i = 0; i < 10000; i++);
+
+		fputws(L"WinConsole001.exe \n", stdout);
+	}
+	return 0;
 }
