@@ -93,8 +93,8 @@ int CmdProcessing(int tokenNum)
             // start 를 제외한 나머지 문자열을 재구성한다
             for (int i = 1; i < tokenNum; i++)
             {
-                wprintf(optString, L"%s %s", optString, cmdTokenList[i]);
-                wprintf(cmdStringWithOptions, L"%s %s", L"WinConsole003.exe", optString);
+                wsprintf(optString, L"%s %s", optString, cmdTokenList[i]);
+                wsprintf(cmdStringWithOptions, L"%s %s", L"WinConsole003.exe", optString);
             }
         }
         else // start 입력하는 경우 처리
@@ -108,7 +108,32 @@ int CmdProcessing(int tokenNum)
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
     }
-    
+    else if (!wcscmp(cmdTokenList[0], L"echo"))
+    {
+        // 입력된 문자열을 그대로 출력하는 echo 명령어
+        for (int i = 0; i < tokenNum; i++)
+            wsprintf(optString, L"%s %s", optString, cmdTokenList[i]);
+
+        wprintf(L"echo message: %s \n", optString);
+    }
+    else
+    {
+        wcscpy_s(cmdStringWithOptions, cmdTokenList[0]);
+
+        // Check Point 1 : 문자열 처리를 위한 for문
+        for (int i = 1; i < tokenNum; i++)
+            wsprintf(cmdStringWithOptions, L"%s %s", cmdStringWithOptions, cmdTokenList[i]);
+
+		isRun = CreateProcessW(NULL, cmdStringWithOptions, NULL, NULL,
+			TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
+
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+
+        if (isRun == FALSE)
+            wprintf(ERROR_CMD, cmdTokenList[0]);
+    }
+
     return 0;
 }
 
