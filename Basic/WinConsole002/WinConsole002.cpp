@@ -4,14 +4,13 @@
 
 int wmain(int argc, WCHAR* argv[])
 {
-	SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
-
-	while (1)
+	DWORD n = 0;
+	while (n < 100)
 	{
 		for (DWORD i = 0; i < 10000; i++)
-			for (DWORD i = 0; i < 10000; i++)
-
-		fputws(L"WinConosle002.exe \n", stdout);
+			for (DWORD i = 0; i < 10000; i++) // Busy Waiting!!
+				fputws(L"WinConsole002.exe \n", stdout);
+		n++;
 	}
 
 	return 0;
