@@ -6,7 +6,7 @@
 
 #define SLOT_NAME L"\\\\.\\mailslot\\mailbox"
 
-int MailSlotReceive(int argc, WCHAR* argv[])
+int MailSlotReceive()
 {
 	HANDLE hMailSlot;
 	WCHAR messageBox[50];

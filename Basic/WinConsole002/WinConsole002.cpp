@@ -2,63 +2,64 @@
 #include <tchar.h>
 #include <windows.h>
 
-// NonStopAdderManager.cpp
+#define SLOT_NAME L"\\\\.\\mailslot\\mailbox"
 
 int wmain(int argc, WCHAR* argv[])
 {
-	STARTUPINFO si1 = { 0, };
-	STARTUPINFO si2 = { 0, };
+	HANDLE hMailSlot;
+	WCHAR message[50];
+	DWORD bytesWritten; // number of bytes write
 
-	PROCESS_INFORMATION pi1;
-	PROCESS_INFORMATION pi2;
+	SECURITY_ATTRIBUTES sa;
+	sa.nLength = sizeof(sa);
+	sa.lpSecurityDescriptor = nullptr;
+	sa.bInheritHandle = TRUE;
 
-	HANDLE handles[2];
+	hMailSlot = CreateFileW(SLOT_NAME, GENERIC_WRITE, FILE_SHARE_READ,
+		&sa, OPEN_EXISTING, // 생성방식
+		FILE_ATTRIBUTE_NORMAL, nullptr);
 
-	DWORD return_val1;
-	DWORD return_val2;
+	if (hMailSlot == INVALID_HANDLE_VALUE)
+	{
+		fputws(L"Unable to create mailslot!\n", stdout);
+		return 1;
+	}
 
-	WCHAR command1[] = L"WinConsole001.exe 1 5";
-	WCHAR command2[] = L"WinConsole001.exe 6 10";
+	wprintf(L"Inheritable Handle : %d \n", hMailSlot);
+	FILE* file = nullptr;
+	fopen_s(&file, "InheritableHandle.txt", "wt");
+	fwprintf(file, L"%d", hMailSlot);
+	fclose(file);
 
-	DWORD sum = 0;
+	STARTUPINFO si = { 0, };
+	PROCESS_INFORMATION pi;
+	si.cb = sizeof(si);
 
-	si1.cb = sizeof(si1);
-	si2.cb = sizeof(si2);
+	WCHAR command[] = L"WinConsole003.exe";
 
-	CreateProcessW(nullptr, command1,
-		nullptr, nullptr, TRUE, 0, nullptr, nullptr,
-		&si1, &pi1);
+	CreateProcess(nullptr, command, nullptr, nullptr,
+		TRUE,// 핸들 테이블 상속 결정
+		CREATE_NEW_CONSOLE, nullptr, nullptr, &si, &pi);
 
-	CreateProcessW(nullptr, command2,
-		nullptr, nullptr, TRUE, 0, nullptr, nullptr,
-		&si2, &pi2);
+	while (1)
+	{
+		fputws(L"MY CMD>", stdout);
+		fgetws(message, sizeof(message) / sizeof(WCHAR), stdin);
 
-	CloseHandle(pi1.hThread);
-	CloseHandle(pi2.hThread);
+		if (!WriteFile(hMailSlot, message, wcslen(message) * sizeof(WCHAR), &bytesWritten, nullptr))
+		{
+			fputws(L"Unable to write!", stdout);
+			CloseHandle(hMailSlot);
+			return 1;
+		}
 
-	// Wait 을 해서 자식 프로세스가 완전히 종료될 때까지 기다려야한다.
-	// Non-Signaled 상태에서 Signaled 상태가 될 떄까지 기다리는 함수이다.
-	//WaitForSingleObject(pi1.hProcess, INFINITE);
-	//WaitForSingleObject(pi2.hProcess, INFINITE);
+		if (!wcscmp(message, L"exit"))
+		{
+			fputws(L"Good Bye!", stdout);
+			break;
+		}
+	}
 
-	handles[0] = pi1.hProcess;
-	handles[1] = pi2.hProcess;
-
-	WaitForMultipleObjects(2, handles, TRUE, INFINITE);
-
-	GetExitCodeProcess(pi1.hProcess, &return_val1);
-	GetExitCodeProcess(pi2.hProcess, &return_val2);
-
-	if (return_val1 == -1 || return_val2 == -1)
-		return -1; // 비정상적 종료
-
-	sum += return_val1;
-	sum += return_val2;
-
-	wprintf(L"total : %d \n", sum);
-
-	CloseHandle(pi1.hProcess);
-	CloseHandle(pi2.hProcess);
-
+	CloseHandle(hMailSlot);
 	return 0;
 }

@@ -128,6 +128,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="MailSlotReceiver.cpp" />
+    <ClCompile Include="PartAdder.cpp" />
     <ClCompile Include="WinConsole001.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -2,22 +2,44 @@
 #include <tchar.h>
 #include <windows.h>
 
-// PartAdder.cpp
+#define SLOT_NAME L"\\\\.\\mailslot\\mailbox"
 
 int wmain(int argc, WCHAR* argv[])
 {
-	if (argc != 3)
+	HANDLE hMailSlot;
+	WCHAR messageBox[50];
+	DWORD bytesRead; // number of bytes read
+
+	// mailslot 생성
+	hMailSlot = CreateMailslot(SLOT_NAME, 0, MAILSLOT_WAIT_FOREVER, NULL);
+
+	if (hMailSlot == INVALID_HANDLE_VALUE)
 	{
-		return -1;
+		fputws(L"Unable to create mailslot!\n", stdout);
+		return 1;
 	}
 
-	DWORD start = _wtoi(argv[1]);
-	DWORD end = _wtoi(argv[2]);
+	// Message 수신
+	fputws(L"***** Message *****\n", stdout);
+	while (1)
+	{
+		if (!ReadFile(hMailSlot, messageBox, sizeof(WCHAR) * 50, &bytesRead, nullptr))
+		{
+			fputws(L"Unable to read!", stdout);
+			CloseHandle(hMailSlot);
+			return 1;
+		}
 
-	DWORD total = 0;
+		if (!wcsncmp(messageBox, L"exit", 4))
+		{
+			fputws(L"Good Bye!", stdout);
+			break;
+		}
 
-	for (DWORD i = start; i <= end; i++)
-		total += i;
+		messageBox[bytesRead / sizeof(WCHAR)] = 0; // nullptr 삽입
+		fputws(messageBox, stdout);
+	}
 
-	return total;
+	CloseHandle(hMailSlot);
+	return 0;
 }
