@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="MailSender2_2.cpp" />
     <ClCompile Include="StartEchoCommand.cpp" />
     <ClCompile Include="WinConsole003.cpp" />
   </ItemGroup>

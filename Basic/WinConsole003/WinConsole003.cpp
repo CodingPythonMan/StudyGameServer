@@ -6,39 +6,32 @@
 
 int wmain(int argc, WCHAR* argv[])
 {
-    HANDLE hMailSlot;
-    WCHAR message[50];
-    DWORD bytesWritten; // number of bytes write
+    HANDLE hReadPipe, hWritePipe;
 
-    // 핸들을 얻는 코드
-    FILE* file = nullptr;
-    int iHandle;
-    fopen_s(&file, "InheritableHandle.txt", "rt");
-    fwscanf_s(file, L"%d", &iHandle);
-    hMailSlot = (HANDLE)iHandle;
-    fclose(file);
-    wprintf(L"Inheritable Handle : %d \n", hMailSlot);
+    WCHAR sendString[] = L"anonymous pipe";
+    WCHAR recvString[100];
 
-    while (1)
-    {
-        fputws(L"MY CMD>", stdout);
-        fgetws(message, sizeof(message) / sizeof(WCHAR), stdin);
+    DWORD bytesWritten;
+    DWORD bytesRead;
 
-        if (!WriteFile(hMailSlot, message, wcslen(message) * sizeof(WCHAR), &bytesWritten, nullptr))
-        {
-            fputws(L"Unable to write!", stdout);
-            getwchar();
-            CloseHandle(hMailSlot);
-            return 1;
-        }
+    // pipe 생성
+    CreatePipe(&hReadPipe, &hWritePipe, nullptr, 0);
 
-        if (!wcscmp(message, L"exit"))
-        {
-            fputws(L"Good Bye!", stdout);
-            break;
-        }
-    }
+    // pipe 의 한쪽 끝을 이용한 데이터 송신
+    WriteFile(
+        hWritePipe, sendString,
+        lstrlen(sendString) * sizeof(WCHAR), &bytesWritten, nullptr);
+    wprintf(L"string send: %s \n", sendString);
 
-	CloseHandle(hMailSlot);
-	return 0;
+    // pipe 의 다른 한쪽 끝을 이용한 데이터 수신
+    ReadFile(
+        hReadPipe, recvString,
+        bytesWritten, &bytesRead, nullptr);
+    recvString[bytesRead / sizeof(WCHAR)] = 0;
+    wprintf(L"strinmg recv: %s \n", recvString);
+
+    CloseHandle(hReadPipe);
+    CloseHandle(hWritePipe);
+    
+    return 0;
 }
