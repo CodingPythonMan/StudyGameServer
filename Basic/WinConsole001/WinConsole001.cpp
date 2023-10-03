@@ -2,44 +2,37 @@
 #include <tchar.h>
 #include <windows.h>
 
-#define SLOT_NAME L"\\\\.\\mailslot\\mailbox"
+// DuplicateHandle.cpp
 
 int wmain(int argc, WCHAR* argv[])
 {
-	HANDLE hMailSlot;
-	WCHAR messageBox[50];
-	DWORD bytesRead; // number of bytes read
+	HANDLE hProcess;
+	WCHAR cmdString[1024];
 
-	// mailslot 생성
-	hMailSlot = CreateMailslot(SLOT_NAME, 0, MAILSLOT_WAIT_FOREVER, NULL);
+	DuplicateHandle(GetCurrentProcess(), GetCurrentProcess(),
+		GetCurrentProcess(), &hProcess, 0,
+		TRUE, DUPLICATE_SAME_ACCESS);
 
-	if (hMailSlot == INVALID_HANDLE_VALUE)
+	swprintf_s(cmdString, L"%s %u", L"WinConsole002.exe", (unsigned)hProcess);
+
+	STARTUPINFO si = { 0, };
+	PROCESS_INFORMATION pi = { 0, };
+	si.cb = sizeof(si);
+
+	BOOL isSuccess = CreateProcess(nullptr, cmdString, nullptr, nullptr,TRUE,
+		CREATE_NEW_CONSOLE, nullptr, nullptr, &si, &pi);
+
+	if (isSuccess == FALSE)
 	{
-		fputws(L"Unable to create mailslot!\n", stdout);
-		return 1;
+		wprintf(L"CreateProcess failed \n");
+		return -1;
 	}
 
-	// Message 수신
-	fputws(L"***** Message *****\n", stdout);
-	while (1)
-	{
-		if (!ReadFile(hMailSlot, messageBox, sizeof(WCHAR) * 50, &bytesRead, nullptr))
-		{
-			fputws(L"Unable to read!", stdout);
-			CloseHandle(hMailSlot);
-			return 1;
-		}
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
 
-		if (!wcsncmp(messageBox, L"exit", 4))
-		{
-			fputws(L"Good Bye!", stdout);
-			break;
-		}
+	wprintf(L"[Parent Process]\n");
+	wprintf(L"Ooooooooooooooooooooooopps! \n");
 
-		messageBox[bytesRead / sizeof(WCHAR)] = 0; // nullptr 삽입
-		fputws(messageBox, stdout);
-	}
-
-	CloseHandle(hMailSlot);
 	return 0;
 }
