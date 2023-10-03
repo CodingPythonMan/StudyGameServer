@@ -37,7 +37,7 @@ int wmain(int argc, WCHAR* argv[])
 
 	WCHAR command[] = L"WinConsole003.exe";
 
-	CreateProcess(nullptr, command, nullptr, nullptr,
+	CreateProcessW(nullptr, command, nullptr, nullptr,
 		TRUE,// 핸들 테이블 상속 결정
 		CREATE_NEW_CONSOLE, nullptr, nullptr, &si, &pi);
 

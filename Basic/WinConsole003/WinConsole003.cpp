@@ -12,13 +12,33 @@ int wmain(int argc, WCHAR* argv[])
 
     // 핸들을 얻는 코드
     FILE* file = nullptr;
-    fopen_s(&file, "InheritableHandle,txt", "rt");
-    fwscanf(file, L"%d", &hMailSlot);
+    int iHandle;
+    fopen_s(&file, "InheritableHandle.txt", "rt");
+    fwscanf_s(file, L"%d", &iHandle);
+    hMailSlot = (HANDLE)iHandle;
     fclose(file);
     wprintf(L"Inheritable Handle : %d \n", hMailSlot);
 
     while (1)
     {
+        fputws(L"MY CMD>", stdout);
+        fgetws(message, sizeof(message) / sizeof(WCHAR), stdin);
 
+        if (!WriteFile(hMailSlot, message, wcslen(message) * sizeof(WCHAR), &bytesWritten, nullptr))
+        {
+            fputws(L"Unable to write!", stdout);
+            getwchar();
+            CloseHandle(hMailSlot);
+            return 1;
+        }
+
+        if (!wcscmp(message, L"exit"))
+        {
+            fputws(L"Good Bye!", stdout);
+            break;
+        }
     }
+
+	CloseHandle(hMailSlot);
+	return 0;
 }
