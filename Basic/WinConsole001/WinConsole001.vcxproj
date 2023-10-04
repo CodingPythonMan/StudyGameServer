@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DuplicateHandle.cpp" />
     <ClCompile Include="MailSlotReceiver.cpp" />
     <ClCompile Include="PartAdder.cpp" />
     <ClCompile Include="WinConsole001.cpp" />

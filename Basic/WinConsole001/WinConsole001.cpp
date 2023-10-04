@@ -2,37 +2,54 @@
 #include <tchar.h>
 #include <windows.h>
 
-// DuplicateHandle.cpp
+// CountThread.cpp
+#define MAX_THREADS (1024*10)
+
+DWORD WINAPI ThreadProc(LPVOID lpParam)
+{
+	DWORD threadNum = (DWORD)lpParam;
+
+	while (1)
+	{
+		wprintf(L"thread num : %d \n", threadNum);
+		Sleep(5000);
+	}
+
+	return 0;
+}
+
+DWORD countOfThread = 0;
 
 int wmain(int argc, WCHAR* argv[])
 {
-	HANDLE hProcess;
-	WCHAR cmdString[1024];
+	DWORD threadID[MAX_THREADS];
+	HANDLE hThread[MAX_THREADS];
 
-	DuplicateHandle(GetCurrentProcess(), GetCurrentProcess(),
-		GetCurrentProcess(), &hProcess, 0,
-		TRUE, DUPLICATE_SAME_ACCESS);
-
-	swprintf_s(cmdString, L"%s %u", L"WinConsole002.exe", (unsigned)hProcess);
-
-	STARTUPINFO si = { 0, };
-	PROCESS_INFORMATION pi = { 0, };
-	si.cb = sizeof(si);
-
-	BOOL isSuccess = CreateProcess(nullptr, cmdString, nullptr, nullptr,TRUE,
-		CREATE_NEW_CONSOLE, nullptr, nullptr, &si, &pi);
-
-	if (isSuccess == FALSE)
+	// 생성 가능한 최대 개수의 쓰레드 생성
+	while (1)
 	{
-		wprintf(L"CreateProcess failed \n");
-		return -1;
+		hThread[countOfThread] =
+			CreateThread(
+				nullptr, // 디폴트 보안 속성 지정
+				10, // 디폴트 스택 사이즈
+				ThreadProc, // 쓰레드 함수
+				(LPVOID) countOfThread, // 쓰레드 함수 전달인자
+				0,
+				&threadID[countOfThread] // 쓰레드 ID 반환
+			);
+		// 쓰레드 생성 확인
+		if (hThread[countOfThread] == nullptr)
+		{
+			wprintf(L"MAXIMUM THREAD NUMBER: %d \n", countOfThread);
+			break;
+		}
+		countOfThread++;
 	}
 
-	CloseHandle(pi.hProcess);
-	CloseHandle(pi.hThread);
-
-	wprintf(L"[Parent Process]\n");
-	wprintf(L"Ooooooooooooooooooooooopps! \n");
+	for (DWORD i = 0; i < countOfThread; i++)
+	{
+		CloseHandle(hThread[i]);
+	}
 
 	return 0;
 }
