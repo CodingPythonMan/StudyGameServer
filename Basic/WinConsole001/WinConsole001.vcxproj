@@ -127,9 +127,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CountThread.cpp" />
     <ClCompile Include="DuplicateHandle.cpp" />
     <ClCompile Include="MailSlotReceiver.cpp" />
     <ClCompile Include="PartAdder.cpp" />
+    <ClCompile Include="ThreadAdderOne.cpp" />
     <ClCompile Include="WinConsole001.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

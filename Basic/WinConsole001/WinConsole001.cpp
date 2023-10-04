@@ -2,54 +2,57 @@
 #include <tchar.h>
 #include <windows.h>
 
-// CountThread.cpp
-#define MAX_THREADS (1024*10)
+// ThreadAdderTwo
+
+static int total = 0;
 
 DWORD WINAPI ThreadProc(LPVOID lpParam)
 {
-	DWORD threadNum = (DWORD)lpParam;
+	DWORD* nPtr = (DWORD*)lpParam;
 
-	while (1)
+	DWORD numOne = *nPtr;
+	DWORD numTwo = *(nPtr + 1);
+
+	for (DWORD i = numOne; i <= numTwo; i++)
 	{
-		wprintf(L"thread num : %d \n", threadNum);
-		Sleep(5000);
+		total += i;
 	}
 
 	return 0;
 }
 
-DWORD countOfThread = 0;
-
 int wmain(int argc, WCHAR* argv[])
 {
-	DWORD threadID[MAX_THREADS];
-	HANDLE hThread[MAX_THREADS];
+	DWORD threadID[3];
+	HANDLE hThread[3];
 
-	// 생성 가능한 최대 개수의 쓰레드 생성
-	while (1)
+	DWORD paramThread[] = { 1,3,4,7,8,10 };
+
+	hThread[0] = CreateThread(
+		nullptr, 0, ThreadProc, (LPVOID)(&paramThread[0]), 0, &threadID[0]
+	);
+
+	hThread[1] = CreateThread(
+		nullptr, 0, ThreadProc, (LPVOID)(&paramThread[2]), 0, &threadID[1]
+	);
+
+	hThread[2] = CreateThread(
+		nullptr, 0, ThreadProc, (LPVOID)(&paramThread[4]), 0, &threadID[2]
+	);
+
+	if (hThread[0] == nullptr || hThread[1] == nullptr || hThread[2] == nullptr)
 	{
-		hThread[countOfThread] =
-			CreateThread(
-				nullptr, // 디폴트 보안 속성 지정
-				10, // 디폴트 스택 사이즈
-				ThreadProc, // 쓰레드 함수
-				(LPVOID) countOfThread, // 쓰레드 함수 전달인자
-				0,
-				&threadID[countOfThread] // 쓰레드 ID 반환
-			);
-		// 쓰레드 생성 확인
-		if (hThread[countOfThread] == nullptr)
-		{
-			wprintf(L"MAXIMUM THREAD NUMBER: %d \n", countOfThread);
-			break;
-		}
-		countOfThread++;
+		wprintf(L"Thread creation fault! \n");
+		return -1;
 	}
 
-	for (DWORD i = 0; i < countOfThread; i++)
-	{
-		CloseHandle(hThread[i]);
-	}
+	WaitForMultipleObjects(3, hThread, TRUE, INFINITE);
+
+	wprintf(L"total (1~10): %d \n", total);
+
+	CloseHandle(hThread[0]);
+	CloseHandle(hThread[1]);
+	CloseHandle(hThread[2]);
 
 	return 0;
 }
