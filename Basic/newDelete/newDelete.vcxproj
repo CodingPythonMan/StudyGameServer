@@ -129,7 +129,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="MyNew.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyNew.h" />
