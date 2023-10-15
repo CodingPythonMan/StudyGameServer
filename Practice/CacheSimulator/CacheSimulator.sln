@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33815.320
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CacheSimulator", "CacheSimulator.vcxproj", "{2B0EE597-4128-4EE6-A051-45BE0195324D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2B0EE597-4128-4EE6-A051-45BE0195324D}.Debug|x64.ActiveCfg = Debug|x64
+		{2B0EE597-4128-4EE6-A051-45BE0195324D}.Debug|x64.Build.0 = Debug|x64
+		{2B0EE597-4128-4EE6-A051-45BE0195324D}.Debug|x86.ActiveCfg = Debug|Win32
+		{2B0EE597-4128-4EE6-A051-45BE0195324D}.Debug|x86.Build.0 = Debug|Win32
+		{2B0EE597-4128-4EE6-A051-45BE0195324D}.Release|x64.ActiveCfg = Release|x64
+		{2B0EE597-4128-4EE6-A051-45BE0195324D}.Release|x64.Build.0 = Release|x64
+		{2B0EE597-4128-4EE6-A051-45BE0195324D}.Release|x86.ActiveCfg = Release|Win32
+		{2B0EE597-4128-4EE6-A051-45BE0195324D}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AE9BB3B7-16B1-4F30-AA8E-88AABB30A0A3}
+	EndGlobalSection
+EndGlobal
