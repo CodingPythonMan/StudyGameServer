@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{302822d1-9eb3-4caf-b629-0f78065ec827}</ProjectGuid>
-    <RootNamespace>Socket</RootNamespace>
+    <ProjectGuid>{6d098e77-818f-4a1d-bfbc-1401f49c85ed}</ProjectGuid>
+    <RootNamespace>SocketServer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -127,7 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Socket.cpp" />
+    <ClCompile Include="SocketServer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
