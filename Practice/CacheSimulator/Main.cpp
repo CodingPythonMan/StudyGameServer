@@ -2,19 +2,15 @@
 
 int main()
 {
-	int* pointer;
-
 	int a = 0;
-	pointer = &a;
-	CashSimulate(pointer);
+	CashSimulate(&a);
 	int b = 0;
 
 	a++;
-	pointer = &a;
-	CashSimulate(pointer);
+	CashSimulate(&a);
+	CashSimulate(&b);
 	b++;
 
 	a = b + 1;
-	pointer = &a;
-	CashSimulate(pointer);
+	CashSimulate(&a);
 }
