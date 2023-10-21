@@ -1,20 +1,37 @@
-// SocketServer.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
-#include <iostream>
+#include "DomainToIP.h"
 
 int main()
 {
-    std::cout << "Hello World!\n";
+	// 윈속 초기화
+	WSADATA wsa;
+	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+		return 1;
+
+    //PrintIP();
+
+    SOCKET listen_sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (listen_sock == INVALID_SOCKET)
+        return 0;
+    
+    // Bind
+    SOCKADDR_IN serverAddr;
+    memset(&serverAddr, 0, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
+    InetPton(AF_INET, L"127.0.0.1", &serverAddr.sin_addr);
+    serverAddr.sin_port = htons(14444);
+    int retval = bind(listen_sock, (SOCKADDR*)&serverAddr, sizeof(serverAddr));
+    if (retval == SOCKET_ERROR)
+        return 0;
+
+    // Listen
+    retval = listen(listen_sock, SOMAXCONN_HINT(50000));
+    if (retval == SOCKET_ERROR)
+        return 0;
+
+    while (true)
+    {
+
+    }
+    
+    WSACleanup();
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file

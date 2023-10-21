@@ -25,7 +25,7 @@ void CashSimulate(void* pointer)
 	cacheIndex <<= 2;
 	cacheIndex >>= 2;
 	// 52bit
-	tag = (unsigned __int64)(address >> 14);
+	tag = (unsigned __int64)(address >> 12);
 
 	//PrintCacheInfo(cacheIndex, tag, address);
 
@@ -46,7 +46,14 @@ void CashSimulate(void* pointer)
 		printf("Cache Miss!\n");
 		int roundRobin = tagArrays[cacheIndex].roundRobin;
 		tagArrays[cacheIndex].tags[roundRobin] = tag;
-		tagArrays[cacheIndex].roundRobin++;
+		if (roundRobin >= WAY)
+		{
+			tagArrays[cacheIndex].roundRobin = 0;
+		}
+		else
+		{
+			tagArrays[cacheIndex].roundRobin++;
+		}
 	}
 }
 

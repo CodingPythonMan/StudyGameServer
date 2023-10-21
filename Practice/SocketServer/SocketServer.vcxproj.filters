@@ -18,5 +18,13 @@
     <ClCompile Include="SocketServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DomainToIP.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DomainToIP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
