@@ -41,6 +41,7 @@ void CashSimulate(void* pointer)
 		}
 	}
 
+	// 원래 라운드 로빈으로 태그 교체하던 걸 LRU로 변경이 필요하긴 하다.
 	if (cacheHit == false)
 	{
 		printf("Cache Miss!\n");
