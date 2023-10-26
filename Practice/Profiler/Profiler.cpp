@@ -14,8 +14,12 @@ int main()
 {
     ProfileInit();
 
+    for (int i = 0; i < 10000; i++)
+    {
+		ProfileBegin(L"TotalSum");
+		TotalSum(1000);
+		ProfileEnd(L"TotalSum");
+    }
 
-    ProfileBegin(L"TotalSum");
-    printf("total : %d\n", TotalSum(1000));
-    ProfileEnd(L"TotalSum");
+    ProfileDataOutText(L"WhatIsThis.txt");
 }

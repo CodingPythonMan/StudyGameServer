@@ -1,6 +1,8 @@
 #pragma once
 #include <Windows.h>
 #include <profileapi.h>
+#include <cstdio>
+#include <locale.h>
 
 /*
 #ifdef PROFILE
@@ -10,18 +12,19 @@
 	#define PRO_BEGIN()
 	#define PRO_END()*/
 
+#define MIN_COUNT 2
+#define MAX_COUNT 2
+
 struct ProfileInfo
 {
-	long			_flag;				// 프로파일의 사용 여부. (배열시에만)
+	__int64			_call;				// 누적 호출 횟수.
 	WCHAR			_name[64];			// 프로파일 샘플 이름.
 
 	LARGE_INTEGER	_startTime;			// 프로파일 샘플 실행 시간.
 
 	__int64			_totalTime;			// 전체 사용시간 카운터 Time.	(출력시 호출회수로 나누어 평균 구함)
-	__int64			_min[2];			// 최소 사용시간 카운터 Time.	(초단위로 계산하여 저장 / [0] 가장최소 [1] 다음 최소 [2])
-	__int64			_max[2];			// 최대 사용시간 카운터 Time.	(초단위로 계산하여 저장 / [0] 가장최대 [1] 다음 최대 [2])
-
-	__int64			_call;				// 누적 호출 횟수.
+	__int64			_min[MIN_COUNT];			// 최소 사용시간 카운터 Time.	(초단위로 계산하여 저장 / [0] 가장최소 [1] 다음 최소 [2])
+	__int64			_max[MAX_COUNT];			// 최대 사용시간 카운터 Time.	(초단위로 계산하여 저장 / [0] 가장최대 [1] 다음 최대 [2])
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -48,3 +51,8 @@ void ProfileDataOutText(const WCHAR* szFileName);
 // 프로파일링 된 데이터를 모두 초기화 한다.
 /////////////////////////////////////////////////////////////////////////////
 void ProfileReset(void);
+
+/////////////////////////////////////////////////////////////////////////////
+// 내부 함수
+/////////////////////////////////////////////////////////////////////////////
+void ProfileCallFunc(int index, const WCHAR* szName);
