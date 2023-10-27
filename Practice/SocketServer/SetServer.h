@@ -9,3 +9,6 @@ using namespace std;
 BOOL DomainToIP(const WCHAR* domain, IN_ADDR* addr);
 
 void PrintIP();
+
+// EchoServer 용으로 만든 기본 함수
+int SetDefaultEchoServer();

@@ -10,3 +10,6 @@ using namespace std;
 void SetClients();
 
 void SetCloseClient();
+
+// EchoServer 용으로 만든 기본 함수
+int SetDefaultEchoClient();
