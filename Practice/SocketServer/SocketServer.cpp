@@ -67,42 +67,39 @@ int main()
 		wprintf(L"\n[TCP 서버] 클라이언트 접속: IP 주소=%s, 포트번호=%d\n", clientIP, ntohs(clientAddr.sin_port));
 
 		// 클라이언트와 데이터 통신
-		while (1)
-		{
-			if (buf == 0 || fileData == 0)
-				break;
+		if (buf == 0 || fileData == 0)
+			break;
 
-			// 데이터 받기
-			retval = recv(clientSock, buf, BUFSIZE, 0);
-			
-			st_PACKET_HEADER packHeader;
-			int pos = 0;
-			memcpy_s(&packHeader.dwPacketCode, sizeof(packHeader.dwPacketCode), buf, sizeof(packHeader.dwPacketCode));
-			pos += sizeof(packHeader.dwPacketCode);
-			memcpy_s(packHeader.szName, 64, buf+pos, 64);
-			pos += 64;
-			memcpy_s(packHeader.szFileName, 128 * 2, buf+pos, 128 * 2);
-			pos += (128 * 2);
-			memcpy_s(&packHeader.iFileSize, 4, buf+pos, 4);
-			pos += 4;
+		// 데이터 받기
+		retval = recv(clientSock, buf, BUFSIZE, 0);
 
-			memcpy_s(fileData, packHeader.iFileSize, buf+pos, packHeader.iFileSize);
+		st_PACKET_HEADER packHeader;
+		int pos = 0;
+		memcpy_s(&packHeader.dwPacketCode, sizeof(packHeader.dwPacketCode), buf, sizeof(packHeader.dwPacketCode));
+		pos += sizeof(packHeader.dwPacketCode);
+		memcpy_s(packHeader.szName, 64, buf + pos, 64);
+		pos += 64;
+		memcpy_s(packHeader.szFileName, 128 * 2, buf + pos, 128 * 2);
+		pos += (128 * 2);
+		memcpy_s(&packHeader.iFileSize, 4, buf + pos, 4);
+		pos += 4;
 
-			FILE* file;
-			_wfopen_s(&file, packHeader.szFileName, L"wb");
+		memcpy_s(fileData, packHeader.iFileSize, buf + pos, packHeader.iFileSize);
 
-			if (file == nullptr)
-				break;
+		FILE* file;
+		_wfopen_s(&file, packHeader.szFileName, L"wb");
 
-			fwrite(fileData, 1, packHeader.iFileSize, file);
+		if (file == nullptr)
+			break;
 
-			fclose(file);
+		fwrite(fileData, 1, packHeader.iFileSize, file);
 
-			if (retval == SOCKET_ERROR)
-				break;
-			else if (retval == 0)
-				break;
-		}
+		fclose(file);
+
+		if (retval == SOCKET_ERROR)
+			break;
+		else if (retval == 0)
+			break;
 
 		// close
 		closesocket(clientSock);

@@ -25,7 +25,7 @@ int main()
 
 	// 파일 데이터 준비
 	FILE* file;
-	fopen_s(&file, "nanachi.jpg", "r");
+	fopen_s(&file, "nanachi.jpg", "rb");
 
 	if (file == nullptr)
 		return -1;
@@ -58,8 +58,8 @@ int main()
 	SOCKADDR_IN serverAddr;
 	memset(&serverAddr, 0, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
-	InetPton(AF_INET, L"127.0.0.1", &serverAddr.sin_addr);
-	serverAddr.sin_port = htons(1902);
+	InetPton(AF_INET, L"106.245.38.108", &serverAddr.sin_addr);
+	serverAddr.sin_port = htons(10010);
 	retval = connect(sock, (SOCKADDR*)&serverAddr, sizeof(serverAddr));
 	if (retval == SOCKET_ERROR)
 		return 0;
