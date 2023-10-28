@@ -58,8 +58,8 @@ int main()
 	SOCKADDR_IN serverAddr;
 	memset(&serverAddr, 0, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
-	InetPton(AF_INET, L"-.-.-.-", &serverAddr.sin_addr);
-	serverAddr.sin_port = htons(10010);
+	InetPton(AF_INET, L"127.0.0.1", &serverAddr.sin_addr);
+	serverAddr.sin_port = htons(1902);
 	retval = connect(sock, (SOCKADDR*)&serverAddr, sizeof(serverAddr));
 	if (retval == SOCKET_ERROR)
 		return 0;

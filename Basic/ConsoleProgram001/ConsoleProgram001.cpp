@@ -1,30 +1,60 @@
 ﻿#include <iostream>
+#include <Windows.h>
 using namespace std;
+
+#define WAIT 20
+
+#pragma comment(lib, "winmm.lib")
+
+bool SkipDraw()
+{
+
+}
+
+bool PrintFrame(int tick, int frame)
+{
+	if (timeGetTime() - tick >= 1000)
+	{
+		cout << "[FrameCount] : " << frame << "\n";
+		return true;
+	}
+
+	return false;
+}
+
+void BusyJob()
+{
+	int total = 0;
+	for (int i = 0; i < 10000; i++)
+	{
+		for (int j = 0; j < 10000; j++)
+		{
+			total += i;
+		}
+	}
+}
 
 int main()
 {
-	int n;
-	cin >> n;
+	timeBeginPeriod(1);
 
-	int* loop = new int[1000];
-	string* str = new string[1000];
-
-	for (int i = 0; i < n; i++)
+	int frame = 0;
+	unsigned int tick = 0;
+	unsigned int curTime = timeGetTime();
+	
+	while (1)
 	{
-		cin >> loop[i];
-		cin >> str[i];
-	}
-
-	for (int i = 0; i < n; i++)
-	{
-		for (size_t k = 0; k < str[i].length(); k++)
+		if (PrintFrame(curTime, frame))
 		{
-			for (int j = 0; j < loop[i]; j++)
-			{
-				cout << str[i][k];
-			}
+			frame = 0;
+			tick = 0;
 		}
-		cout << "\n";
+
+		//BusyJob();
+		frame++;
+		tick = timeGetTime() - curTime;
+
+		Sleep(WAIT);
 	}
 
 	return 0;

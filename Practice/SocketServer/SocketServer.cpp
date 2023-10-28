@@ -6,7 +6,16 @@ using namespace std;
 
 #pragma comment(lib, "ws2_32.lib")
 
-#define BUFSIZE 512
+#define BUFSIZE 100000
+
+struct st_PACKET_HEADER
+{
+	DWORD	dwPacketCode;		// 0x11223344	우리의 패킷확인 고정값
+
+	WCHAR	szName[32];		// 본인이름, 유니코드 NULL 문자 끝
+	WCHAR	szFileName[128];	// 파일이름, 유니코드 NULL 문자 끝
+	int	iFileSize;
+};
 
 int main()
 {
@@ -40,15 +49,10 @@ int main()
 	SOCKET clientSock;
 	SOCKADDR_IN clientAddr;
 	int addrLen;
-	char buf[BUFSIZE + 1];
-	char responseBuf[4];
+	char* buf = (char*)malloc(BUFSIZE);
+	char* packData = (char*)malloc(sizeof(st_PACKET_HEADER));
+	char* fileData = (char*)malloc(BUFSIZE);
 	WCHAR clientIP[16] = { 0 };
-
-	// 응답 버퍼 0xdd dd dd dd 로 채우기
-	for (int i = 0; i < 4; i++)
-	{
-		responseBuf[i] = '0xdd';
-	}
 
 	while (true)
 	{
@@ -65,21 +69,38 @@ int main()
 		// 클라이언트와 데이터 통신
 		while (1)
 		{
+			if (buf == 0 || fileData == 0)
+				break;
+
 			// 데이터 받기
 			retval = recv(clientSock, buf, BUFSIZE, 0);
+			
+			st_PACKET_HEADER packHeader;
+			int pos = 0;
+			memcpy_s(&packHeader.dwPacketCode, sizeof(packHeader.dwPacketCode), buf, sizeof(packHeader.dwPacketCode));
+			pos += sizeof(packHeader.dwPacketCode);
+			memcpy_s(packHeader.szName, 64, buf+pos, 64);
+			pos += 64;
+			memcpy_s(packHeader.szFileName, 128 * 2, buf+pos, 128 * 2);
+			pos += (128 * 2);
+			memcpy_s(&packHeader.iFileSize, 4, buf+pos, 4);
+			pos += 4;
+
+			memcpy_s(fileData, packHeader.iFileSize, buf+pos, packHeader.iFileSize);
+
+			FILE* file;
+			_wfopen_s(&file, packHeader.szFileName, L"wb");
+
+			if (file == nullptr)
+				break;
+
+			fwrite(fileData, 1, packHeader.iFileSize, file);
+
+			fclose(file);
+
 			if (retval == SOCKET_ERROR)
 				break;
 			else if (retval == 0)
-				break;
-
-			// 받은 데이터 출력
-			buf[retval] = '\0';
-			wprintf(L"[TCP/%s:%d] ", clientIP, ntohs(clientAddr.sin_port));
-			printf(" %s\n", buf);
-
-			// 데이터 보내기
-			retval = send(clientSock, buf, retval, 0);
-			if (retval == SOCKET_ERROR)
 				break;
 		}
 
@@ -87,6 +108,10 @@ int main()
 		closesocket(clientSock);
 		wprintf(L"\n[TCP 서버] 클라이언트 종료: IP 주소=%s, 포트번호=%d\n", clientIP, ntohs(clientAddr.sin_port));
 	}
+
+	free(buf);
+	free(packData);
+	free(fileData);
 
 	closesocket(listenSock);
 
