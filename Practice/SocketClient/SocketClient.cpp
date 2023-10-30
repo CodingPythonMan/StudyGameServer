@@ -1,4 +1,5 @@
-#include <cstdio>
+#include "SetClients.h"
+/*#include <cstdio>
 #include <WS2tcpip.h>
 #include <windows.h>
 
@@ -11,10 +12,12 @@ struct st_PACKET_HEADER
 	WCHAR	szName[32];		// 본인이름, 유니코드 NULL 문자 끝
 	WCHAR	szFileName[128];	// 파일이름, 유니코드 NULL 문자 끝
 	int	iFileSize;
-};
+};*/
 
 int main()
 {
+	SetClients();
+	/*
 	// 패킷 헤더 준비
 	st_PACKET_HEADER packetHeader;
 	packetHeader.dwPacketCode = 0x11223344;
@@ -90,5 +93,5 @@ int main()
 
 	WSACleanup();
 
-	return 0;
+	return 0;*/
 }

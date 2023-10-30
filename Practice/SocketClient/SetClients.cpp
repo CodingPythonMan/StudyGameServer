@@ -74,27 +74,48 @@ int SetDefaultEchoClient()
 
 void SetClients()
 {
+	WSADATA wsa;
+	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+		return;
+
 	int index = 0;
 	SOCKET* clients = new SOCKET[50000];
-	while (true)
+	while (1)
 	{
-		clients[index] = socket(AF_INET, SOCK_STREAM, 0);
-		if (clients[index] == INVALID_SOCKET)
-			return;
+		bool init = false;
 
-		sockaddr_in addr;
-		addr.sin_family = AF_INET;
-		InetPton(AF_INET, L"127.0.0.1", &addr.sin_addr);
-		addr.sin_port = htons(14444);
-		int retval = connect(clients[index], (sockaddr*)&addr, sizeof(addr));
-		if (retval == SOCKET_ERROR)
-			break;
+		if (init == false)
+		{
+			for (int i = 0; i < 10000; i++)
+			{
+				clients[index] = socket(AF_INET, SOCK_STREAM, 0);
+				if (clients[index] == INVALID_SOCKET)
+					return;
 
-		index++;
+				sockaddr_in addr;
+				addr.sin_family = AF_INET;
+				InetPton(AF_INET, L"192.168.0.39", &addr.sin_addr);
+				addr.sin_port = htons(53001);
+				int retval = connect(clients[index], (sockaddr*)&addr, sizeof(addr));
+				if (retval == SOCKET_ERROR)
+				{
+					printf("¼ÒÄÏ ¿¡·¯¾ä!\n");
+					break;
+				}
 
+				index++;
+			}
+
+			init = true;
+		}
+
+		Sleep(2000);
 	}
+	
 	printf("%d client connect", index);
 	delete[] clients;
+
+	WSACleanup();
 
 	printf("WSAGetLastError : %d", WSAGetLastError());
 }
