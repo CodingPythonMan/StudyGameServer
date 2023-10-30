@@ -34,27 +34,48 @@ void BusyJob()
 	}
 }
 
+void CalTimeGetTimeCallCount()
+{
+	unsigned int curTime = timeGetTime();
+	int count = 0;
+
+	while (1)
+	{
+		count++;
+		if (timeGetTime() - curTime >= 1000)
+		{
+			break;
+		}
+	}
+
+	cout << "count : " << count << "\n";
+}
+
 int main()
 {
 	timeBeginPeriod(1);
 
 	int frame = 0;
 	unsigned int tick = 0;
-	unsigned int curTime = timeGetTime();
-	
+	unsigned int curTime = 0;
+	unsigned int ourTime = timeGetTime();
+	unsigned int frameTime = timeGetTime();
+
 	while (1)
 	{
-		if (PrintFrame(curTime, frame))
+		if (PrintFrame(frameTime, frame))
 		{
 			frame = 0;
-			tick = 0;
+			frameTime = timeGetTime();
 		}
 
 		//BusyJob();
 		frame++;
-		tick = timeGetTime() - curTime;
+		curTime = timeGetTime();
+		tick = curTime - ourTime;
+		ourTime += WAIT;
 
-		Sleep(WAIT);
+		Sleep(WAIT - tick);
 	}
 
 	return 0;
