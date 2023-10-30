@@ -11,23 +11,12 @@ bool SkipDraw()
 
 }
 
-bool PrintFrame(int tick, int frame)
-{
-	if (timeGetTime() - tick >= 1000)
-	{
-		cout << "[FrameCount] : " << frame << "\n";
-		return true;
-	}
-
-	return false;
-}
-
 void BusyJob()
 {
 	int total = 0;
 	for (int i = 0; i < 10000; i++)
 	{
-		for (int j = 0; j < 10000; j++)
+		for (int j = 0; j < 1000; j++)
 		{
 			total += i;
 		}
@@ -59,23 +48,28 @@ int main()
 	unsigned int tick = 0;
 	unsigned int curTime = 0;
 	unsigned int ourTime = timeGetTime();
-	unsigned int frameTime = timeGetTime();
+	unsigned int frameTime = curTime;
 
 	while (1)
 	{
-		if (PrintFrame(frameTime, frame))
+		unsigned int time = timeGetTime();
+		if (time - frameTime >= 1000)
 		{
+			cout << "[FrameCount] : " << frame << "\n";
 			frame = 0;
-			frameTime = timeGetTime();
+			frameTime = time;
 		}
 
-		//BusyJob();
+		BusyJob();
 		frame++;
 		curTime = timeGetTime();
 		tick = curTime - ourTime;
 		ourTime += WAIT;
 
-		Sleep(WAIT - tick);
+		if (tick <= WAIT)
+			Sleep(WAIT - tick);
+		else
+			Sleep(1);
 	}
 
 	return 0;
