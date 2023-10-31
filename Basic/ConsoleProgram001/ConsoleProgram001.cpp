@@ -6,70 +6,54 @@ using namespace std;
 
 #pragma comment(lib, "winmm.lib")
 
-bool SkipDraw()
-{
-
-}
-
-void BusyJob()
-{
-	int total = 0;
-	for (int i = 0; i < 10000; i++)
-	{
-		for (int j = 0; j < 1000; j++)
-		{
-			total += i;
-		}
-	}
-}
-
-void CalTimeGetTimeCallCount()
-{
-	unsigned int curTime = timeGetTime();
-	int count = 0;
-
-	while (1)
-	{
-		count++;
-		if (timeGetTime() - curTime >= 1000)
-		{
-			break;
-		}
-	}
-
-	cout << "count : " << count << "\n";
-}
-
 int main()
 {
 	timeBeginPeriod(1);
 
 	int frame = 0;
 	unsigned int tick = 0;
-	unsigned int curTime = 0;
-	unsigned int ourTime = timeGetTime();
+	unsigned int curTime = timeGetTime();
+	unsigned int ourTime = curTime;
 	unsigned int frameTime = curTime;
+
+	bool skipDraw = false;
 
 	while (1)
 	{
-		unsigned int time = timeGetTime();
-		if (time - frameTime >= 1000)
+		// Logic
+		int total = 0;
+		for (int i = 0; i < 100; i++)
+			total += i;
+
+		// Frame Count
+		if (timeGetTime() - frameTime >= 1000)
 		{
 			cout << "[FrameCount] : " << frame << "\n";
 			frame = 0;
-			frameTime = time;
+			frameTime = ourTime;
+		}
+		frame++;
+
+		// Render
+		if (skipDraw == false)
+		{
+			printf("tick : %d, curTime : %d, ourTime : %d, frame : %d\n", tick, curTime, ourTime, frame);
 		}
 
-		BusyJob();
-		frame++;
+		// Cal
 		curTime = timeGetTime();
 		tick = curTime - ourTime;
 		ourTime += WAIT;
 
+		// Skip
 		if (tick <= WAIT)
+		{
 			Sleep(WAIT - tick);
+			skipDraw = false;
+
+		}
 		else
-			Sleep(1);
+			skipDraw = true;
 	}
 
 	return 0;
