@@ -45,5 +45,6 @@ int main()
         return 1;
 
     // 데이터 통신에 사용할 변수
+    FD_SET rset, wset;
 
 }
