@@ -2,48 +2,53 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void* operator new(size_t size, const char* File = __FILE__, int Line = __LINE__)
-{
-	//void* ptr = malloc(size);
+class MyNew {
 
-	void* ptr = nullptr;
+	struct AllocInfo
+	{
+		void* Ptr;
+		int Size;
+		char FileName[64];
+		int Line;
+		bool Array;
+	};
 
-	printf("ahaha\n");
-	printf("File: %s Line: %d\n", File, Line);
+	MyNew();
+	virtual ~MyNew();
 
-	return ptr;
-}
+	void* operator new(size_t size, const char* File = __FILE__, int Line = __LINE__)
+	{
+		//void* ptr = malloc(size);
 
-void* operator new[](size_t size, char* File, int Line)
-{
-	void* ptr = malloc(size);
+		void* ptr = nullptr;
 
-	return ptr;
-}
+		printf("ahaha\n");
+		printf("File: %s Line: %d\n", File, Line);
 
-/*
-void operator delete(void* p, char* File, int Line)
-{
+		return ptr;
+	}
 
-}
+	void* operator new[](size_t size, char* File, int Line)
+	{
+		void* ptr = malloc(size);
 
-void operator delete[](void* p, char* File, int Line)
-{
-
-}*/
-
-//실제로 사용할 delete
-void operator delete(void* p)
-{
-
-}
-
-void operator delete[](void* p)
-{
-
-}
-
-// 위 방식의 new 호출 방법
+		return ptr;
+	}
 
 
-#define new new(__FILE__, __LINE__)
+	//실제로 사용할 delete
+	void operator delete(void* p)
+	{
+
+	}
+
+	void operator delete[](void* p)
+	{
+
+	}
+
+		// 위 방식의 new 호출 방법
+};
+
+
+#define new MyNew::new(__FILE__, __LINE__)
