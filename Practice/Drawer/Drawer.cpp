@@ -18,7 +18,12 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
 HBRUSH gTileBrush;
 HPEN gGridPen;
-bool gTile[GRID_HEIGHT][GRID_WIDTH];            // 0 장애물 없음 / 1 장애물 있음
+char gTile[GRID_HEIGHT][GRID_WIDTH];            // 0 장애물 없음 / 1 장애물 있음
+
+HBITMAP gMemDCBitmap;
+HBITMAP gMemDCBitmapOld;
+HDC gMemDC;
+RECT gMemDCRect;
 
 // 타일의 속성 입력 / 제거 모드 플래그
 // 더블 클릭 시 해당 타일의 속성을 단순 반전만 시켜준다면 드래그를 통해서 장애물 입력을 수월하게 하기가 어렵다.
@@ -177,139 +182,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 
-BOOL g_Click; // 마우스 클릭여부 판단
-HPEN g_Pen; // 현재 생성된 펜, 휠버튼 클릭 시 새롭게 생성
-int g_OldX; // 마우스 드래그 표현을 위한 마우스 이동시 이전 좌표
-int g_OldY; // 마우스 드래그 표현을 위한 마우스 이동시 이전 좌표
-// Liner
-LRESULT CALLBACK WndProc_Liner(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    switch (message)
-    {
-    case WM_CREATE:
-        g_Pen = CreatePen(PS_SOLID, rand() % 20, RGB(rand() % 255, rand() % 255, rand() % 255));
-        break;
-    case WM_MBUTTONDOWN:
-        if (g_Pen != NULL)
-            DeleteObject(g_Pen);
-        g_Pen = CreatePen(PS_SOLID, rand() % 20, RGB(rand() % 255, rand() % 255, rand() % 255));
-        break;
-    case WM_LBUTTONDOWN:
-        g_Click = true;
-        break;
-    case WM_LBUTTONUP:
-        g_Click = false;
-        break;
-    case WM_MOUSEMOVE:
-    {
-		int xPos = GET_X_LPARAM(lParam);
-		int yPos = GET_Y_LPARAM(lParam);
-		if (g_Click)
-		{
-			HDC hdc = GetDC(hWnd);
-			HPEN hPenOld = (HPEN)SelectObject(hdc, g_Pen);
-			MoveToEx(hdc, g_OldX, g_OldY, NULL);
-			LineTo(hdc, xPos, yPos);
-			SelectObject(hdc, hPenOld);
-			ReleaseDC(hWnd, hdc);
-		}
-		break;
-    }
-    case WM_COMMAND:
-        {
-            int wmId = LOWORD(wParam);
-            // Parse the menu selections:
-            switch (wmId)
-            {
-            case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-                break;
-            case IDM_EXIT:
-                DestroyWindow(hWnd);
-                break;
-            default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
-            }
-        }
-        break;
-    case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: Add any drawing code that uses hdc here...
-            EndPaint(hWnd, &ps);
-        }
-        break;
-    case WM_DESTROY:
-        DeleteObject(g_Pen);
-        PostQuitMessage(0);
-        break;
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
-    }
-    return 0;
-}
-
-LRESULT CALLBACK WndProc_Dotter(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	switch (message)
-	{
-    case WM_CREATE:
-        SetTimer(hWnd, 1, 1, NULL);
-        SetTimer(hWnd, 2, 2, NULL);
-        break;
-    case WM_TIMER:
-    {
-		HDC hdc;
-		hdc = GetDC(hWnd);
-        switch (wParam)
-        {
-        case 1:
-            SetPixel(hdc, rand() % 500, rand() % 500, RGB(255,0,0));
-            break;
-        case 2:
-            SetPixel(hdc, rand() % 500, rand() % 500, RGB(0, 0, 255));
-            break;
-        }
-        ReleaseDC(hWnd, hdc);
-        break;
-    }
-	case WM_COMMAND:
-	{
-		int wmId = LOWORD(wParam);
-		// Parse the menu selections:
-		switch (wmId)
-		{
-		case IDM_ABOUT:
-			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-			break;
-		case IDM_EXIT:
-			DestroyWindow(hWnd);
-			break;
-		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
-		}
-	}
-	break;
-	case WM_PAINT:
-	{
-		PAINTSTRUCT ps;
-		HDC hdc = BeginPaint(hWnd, &ps);
-		// TODO: Add any drawing code that uses hdc here...
-		EndPaint(hWnd, &ps);
-	}
-	break;
-	case WM_DESTROY:
-        KillTimer(hWnd, 1);
-        KillTimer(hWnd, 2);
-		PostQuitMessage(0);
-		break;
-	default:
-		return DefWindowProc(hWnd, message, wParam, lParam);
-	}
-	return 0;
-}
-
 //  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
 //  PURPOSE: Processes messages for the main window.
@@ -331,7 +203,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             int TileX = xPos / GRID_SIZE;
             int TileY = yPos / GRID_SIZE;
             // 첫 선택 타일이 장애물이면 지우기 모드 아니면 장애물 넣기 모드
-            if (gTile[TileY][TileX])
+			if (TileX >= GRID_WIDTH || TileY >= GRID_HEIGHT)
+				break;
+
+            if (gTile[TileY][TileX] == 1)
                 gErase = true;
             else
                 gErase = false;
@@ -340,6 +215,72 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_LBUTTONUP:
         gDrag = false;
         break;
+    case WM_MOUSEMOVE:
+    {
+        int xPos = GET_X_LPARAM(lParam);
+        int yPos = GET_Y_LPARAM(lParam);
+
+        if (gDrag)
+        {
+			int xPos = GET_X_LPARAM(lParam);
+			int yPos = GET_Y_LPARAM(lParam);
+			int TileX = xPos / GRID_SIZE;
+			int TileY = yPos / GRID_SIZE;
+
+            if (TileX >= GRID_WIDTH || TileY >= GRID_HEIGHT)
+                break;
+
+            gTile[TileY][TileX] = !gErase;
+            //InvalidateRect(hWnd, NULL, true);
+            InvalidateRect(hWnd, NULL, false);
+        }
+
+        // 마우스 드래그로 데이터가 변경되어 갱신을 요청할 시 마지막 Erase 플래그를 false 로 하여
+        // 화면 깜빡임을 없앤다. WM_PAINT 에서는 윈도우 전체를 덮어쓰기 때문에 지우지 않아도 된다.
+    }
+    case WM_CREATE:
+    {
+		gGridPen = CreatePen(PS_SOLID, 1, RGB(200, 200, 200));
+		gTileBrush = CreateSolidBrush(RGB(100, 100, 100));
+
+        // 윈도우 생성 시 현 윈도우 크기와 동일한 메모리 DC 생성
+        HDC hdc = GetDC(hWnd);
+        GetClientRect(hWnd, &gMemDCRect);
+        gMemDCBitmap = CreateCompatibleBitmap(hdc, gMemDCRect.right, gMemDCRect.bottom);
+        gMemDC = CreateCompatibleDC(hdc);
+        ReleaseDC(hWnd, hdc);
+        gMemDCBitmapOld = (HBITMAP)SelectObject(gMemDC, gMemDCBitmap);
+    }
+    break;
+    case WM_PAINT:
+        // 메모리와 DC를 클리어
+        PatBlt(gMemDC, 0, 0, gMemDCRect.right, gMemDCRect.bottom, WHITENESS);
+
+        // RenderObstacle, RenderGrid 를 메모리 DC에 출력
+        RenderObstacle(gMemDC);
+        RenderGrid(gMemDC);
+
+        // 메모리 DC 에 랜더링이 끝나면, 메모리 DC->윈도우 DC 출력
+        hdc = BeginPaint(hWnd, &ps);
+        BitBlt(hdc, 0,0, gMemDCRect.right, gMemDCRect.bottom, gMemDC, 0, 0, SRCCOPY);
+        EndPaint(hWnd, &ps);
+        break;
+    case WM_SIZE:
+    {
+		SelectObject(gMemDC, gMemDCBitmapOld);
+		DeleteObject(gMemDC);
+		DeleteObject(gMemDCBitmap);
+
+		HDC hdc = GetDC(hWnd);
+
+		GetClientRect(hWnd, &gMemDCRect);
+		gMemDCBitmap = CreateCompatibleBitmap(hdc, gMemDCRect.right, gMemDCRect.bottom);
+		gMemDC = CreateCompatibleDC(hdc);
+		ReleaseDC(hWnd, hdc);
+
+		gMemDCBitmapOld = (HBITMAP)SelectObject(gMemDC, gMemDCBitmap);
+    }
+    break;
 	case WM_COMMAND:
 	{
 		int wmId = LOWORD(wParam);
@@ -357,16 +298,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 	}
 	break;
-	case WM_PAINT:
-	{
-		PAINTSTRUCT ps;
-		HDC hdc = BeginPaint(hWnd, &ps);
-		// TODO: Add any drawing code that uses hdc here...
-		EndPaint(hWnd, &ps);
-	}
-	break;
 	case WM_DESTROY:
-		PostQuitMessage(0);
+        SelectObject(gMemDC, gMemDCBitmapOld);
+		DeleteObject(gMemDC);
+		DeleteObject(gMemDCBitmap);
+        PostQuitMessage(0);
 		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
