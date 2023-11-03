@@ -10,13 +10,13 @@ using namespace std;
 
 int main()
 {
-	int retval;
-	char protocol[11] = { (char)0xff, (char)0xee, (char)0xdd, 
-		(char)0xaa, (char)0x00, (char)0x99, 
-		(char)0x77, (char)0x55, (char)0x33, 
-		(char)0x11, '\0' };
-
 	_wsetlocale(LC_ALL, L"korean");
+
+	int retval;
+	WCHAR messages[10][50] = { L"여기는 형제방",  L"여기는 방",  L"방방",
+	 L"링겜" ,  L"스타" ,  L"초보만" ,
+	 L"형제방" ,  L"허허" ,  L"왓" ,
+	 L"응?" };
 
 	// 윈속 초기화
 	WSADATA wsa;
@@ -29,23 +29,22 @@ int main()
 		return -1;
 
 	// 소켓 구조 구조체 동기화
-	SOCKADDR_IN remoteAddrs[PORT_SEARCH_MAX+1];
-	for (int i = 0; i < PORT_SEARCH_MAX; i++)
+	SOCKADDR_IN remoteAddrs[10];
+	for (int i = 1; i < 10; i++)
 	{
 		memset(&remoteAddrs[i], 0, sizeof(remoteAddrs[i]));
 		remoteAddrs[i].sin_family = AF_INET;
-		remoteAddrs[i].sin_port = htons(SEARCH_PORT + i);
-		InetPton(AF_INET, L"255.255.255.255", &(remoteAddrs[i].sin_addr));
+		remoteAddrs[i].sin_port = htons(SEARCH_PORT + (rand() % 100));
+		InetPton(AF_INET, L"127.0.0.1", &(remoteAddrs[i].sin_addr));
 	}
-	
-	BOOL bEnable = TRUE;
-	retval = setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (char*)&bEnable, sizeof(bEnable));
-	if (retval == SOCKET_ERROR)
-		return -1;
+	remoteAddrs[0].sin_family = AF_INET;
+	remoteAddrs[0].sin_port = htons(1902);
+	InetPton(AF_INET, L"127.0.0.1", &(remoteAddrs[0].sin_addr));
 
-	for (int i = 0; i < PORT_SEARCH_MAX; i++)
+	retval = sendto(sock, (char*)messages[0], 50, 0, (SOCKADDR*)&remoteAddrs[0], (int)sizeof(remoteAddrs[0]));
+	for (int i = 1; i < 10; i++)
 	{
-		retval = sendto(sock, protocol, 10, 0, (SOCKADDR*)(&remoteAddrs[i]), sizeof(remoteAddrs[i]));
+		retval = sendto(sock, (char*)messages[i], 50, 0, (SOCKADDR*)&remoteAddrs[i], (int)sizeof(remoteAddrs[i]));
 	}
 
 	if (retval == SOCKET_ERROR)

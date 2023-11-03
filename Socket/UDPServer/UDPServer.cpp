@@ -11,9 +11,9 @@ using namespace std;
 
 int main()
 {
-	int retval;
-
 	_wsetlocale(LC_ALL, L"korean");
+
+	int retval;
 
 	// 윈속 초기화
 	WSADATA wsa;
@@ -45,54 +45,36 @@ int main()
 	// set up select parameters
 	SOCKADDR_IN peerAddr;
 	int addrLen;
-	char buf[BUFSIZE + 1];
+	WCHAR buf[BUFSIZE + 1];
 
-	FD_SET rset1;
-	FD_SET rset2;
+	int setCount = PORT_SEARCH_MAX / FD_SETSIZE + 1;
+	FD_SET* rsets = new FD_SET[setCount];
 
 	WCHAR clientIP[16];
+
 	while (1)
 	{
-		FD_ZERO(&rset1);
-		FD_ZERO(&rset2);
-		for (int i = 0; i < 64; i++)
+		for (int i = 0; i < setCount; i++)
+			FD_ZERO(rsets+i);
+		
+		for (int i = 0; i < PORT_SEARCH_MAX; i++)
 		{
-			FD_SET(socks[i], &rset1);
-		}
-		for (int i = 64; i < PORT_SEARCH_MAX; i++)
-		{
-			FD_SET(socks[i], &rset2);
+			int set = i / FD_SETSIZE;
+			FD_SET(socks[i], rsets+set);
 		}
 
 		const timeval TimeVal{ 0, 200000 };
-		select(0, &rset1, nullptr, nullptr, &TimeVal);
-		select(0, &rset2, nullptr, nullptr, &TimeVal);
-		for (int i = 0; i < 64; i++)
+		for(int i=0; i<setCount; i++)
+			select(0, rsets+i, nullptr, nullptr, &TimeVal);
+
+		for (int i = 0; i < PORT_SEARCH_MAX; i++)
 		{
-			if (FD_ISSET(socks[i], &rset1)) {
+			int set = i / FD_SETSIZE;
+			if (FD_ISSET(socks[i], rsets+set)) {
 				addrLen = sizeof(peerAddr);
-				// handle socket 1
-				retval = recvfrom(socks[i], buf, BUFSIZE, 0, (SOCKADDR*)&peerAddr, &addrLen);
-				printf("%s", buf);
+				retval = recvfrom(socks[i], (char*)buf, BUFSIZE, 0, (SOCKADDR*)&peerAddr, &addrLen);
 				InetNtop(AF_INET, &peerAddr.sin_addr, clientIP, 16);
-				wprintf(L"[TCP/%s:%d]", clientIP, ntohs(peerAddr.sin_port));
-
-				memset(buf, 0, BUFSIZE);
-
-				if (retval == SOCKET_ERROR)
-					return 1;
-			}
-		}
-
-		for (int i = 64; i < PORT_SEARCH_MAX; i++)
-		{
-			if (FD_ISSET(socks[i], &rset2)) {
-				addrLen = sizeof(peerAddr);
-				// handle socket 1
-				retval = recvfrom(socks[i], buf, BUFSIZE, 0, (SOCKADDR*)&peerAddr, &addrLen);
-				printf("%s", buf);
-				InetNtop(AF_INET, &peerAddr.sin_addr, clientIP, 16);
-				wprintf(L"[TCP/%s:%d]", clientIP, ntohs(peerAddr.sin_port));
+				wprintf(L"[TCP/%s:%d] : %s\n", clientIP, ntohs(peerAddr.sin_port), buf);
 
 				memset(buf, 0, BUFSIZE);
 
@@ -101,6 +83,8 @@ int main()
 			}
 		}
 	}
+
+	delete[] rsets;
 
 	for (int i = 0; i < PORT_SEARCH_MAX; i++)
 	{

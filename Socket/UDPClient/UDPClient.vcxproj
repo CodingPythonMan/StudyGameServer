@@ -127,7 +127,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="SetClients.cpp" />
     <ClCompile Include="UDPClient.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SetClients.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
