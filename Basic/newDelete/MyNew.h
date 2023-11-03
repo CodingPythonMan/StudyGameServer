@@ -3,7 +3,6 @@
 #include <stdio.h>
 
 class MyNew {
-
 	struct AllocInfo
 	{
 		void* Ptr;
@@ -13,6 +12,7 @@ class MyNew {
 		bool Array;
 	};
 
+public:
 	MyNew();
 	virtual ~MyNew();
 
@@ -35,7 +35,6 @@ class MyNew {
 		return ptr;
 	}
 
-
 	//실제로 사용할 delete
 	void operator delete(void* p)
 	{
@@ -47,8 +46,5 @@ class MyNew {
 
 	}
 
-		// 위 방식의 new 호출 방법
+	// 위 방식의 new 호출 방법
 };
-
-
-#define new MyNew::new(__FILE__, __LINE__)
