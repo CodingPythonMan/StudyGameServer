@@ -1,23 +1,38 @@
 #pragma once
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstdio>
+#include <string>
 
-struct AllocInfo
-{
-	void* Ptr;
-	int Size;
-	char FileName[64];
-	int Line;
-	bool Array;
+#define MAX_ALLOC_INFO 100
+
+enum class MyNewError {
+	NOALLOC,
+	ARRAY,
+	LEAK
 };
 
 class MyNew {
-private:
-
-
+	struct AllocInfo
+	{
+		void* Ptr;
+		int Size;
+		char FileName[64];
+		int Line;
+		bool Array;
+	};
+	
 public:
 	MyNew();
-	virtual ~MyNew();
+	~MyNew();
+
+	void AddInfo(void* Ptr, int Size, char FileName[64], int Line, bool Array);
+	void AddLog(MyNewError error, void* ptr, const char* file = "", int line = 0);
+
+	int totalAlloc;
+	AllocInfo allocInfos[MAX_ALLOC_INFO];
+
+	int totalLog;
+	char logs[100][100];
 };
 
 // 위 방식의 new 호출 방법
