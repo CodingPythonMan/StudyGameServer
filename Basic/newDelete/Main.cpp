@@ -19,5 +19,6 @@ struct Player {
 int main()
 {
 	Player* p = new Player;
-
+	
+	delete p;
 }
