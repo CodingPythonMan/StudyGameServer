@@ -26,7 +26,7 @@ public:
 	~MyNew();
 
 	void AddInfo(void* Ptr, int Size, char FileName[64], int Line, bool Array);
-	void AddLog(MyNewError error, void* ptr, const char* file = "", int line = 0);
+	void AddLog(MyNewError error, void* ptr, int index = 0);
 
 	int totalAlloc;
 	AllocInfo allocInfos[MAX_ALLOC_INFO];

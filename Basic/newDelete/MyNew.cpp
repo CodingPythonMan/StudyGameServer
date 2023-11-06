@@ -33,25 +33,42 @@ void MyNew::AddInfo(void* Ptr, int Size, char FileName[64], int Line, bool Array
 	totalAlloc++;
 }
 
-void MyNew::AddLog(MyNewError error, void* ptr, const char* file, int line)
+void MyNew::AddLog(MyNewError error, void* ptr, int index)
 {
 	switch (error)
 	{
 	case MyNewError::NOALLOC:
-		strcpy_s(logs[totalLog], "[NOALLOC [0x\0");
-		int len = strlen(logs[totalLog]);
-		
-
-		
+	{
+		strcpy_s(logs[totalLog], "NOALLOC [0x\0");
+		int len = (int)strlen(logs[totalLog]);
+		snprintf(logs[totalLog] + len, sizeof(void*) * 2, "%p", ptr);
+		len = (int)strlen(logs[totalLog]);
+		memcpy(logs[totalLog] + len, "]\0", 2);
+		printf("%s", logs[totalLog]);
 		break;
+	}
 	case MyNewError::ARRAY:
-
-
+	{
+		strcpy_s(logs[totalLog], "ARRAY [0x\0");
+		int len = (int)strlen(logs[totalLog]);
+		snprintf(logs[totalLog] + len, sizeof(void*) * 2, "%p", ptr);
+		len = (int)strlen(logs[totalLog]);
+		memcpy(logs[totalLog] + len, "] [\t\t", 5);
+		len = (int)strlen(logs[totalLog]);
+		snprintf(logs[totalLog] + len, , "%d", allocInfos[index].Size);
+		len = (int)strlen(logs[totalLog]);
+		
+		printf("%s", logs[totalLog]);
 		break;
+	}
 	case MyNewError::LEAK:
+	{
 
 		break;
 	}
+	}
+
+	totalLog++;
 }
 
 // 위 방식의 new 호출 방법
@@ -60,7 +77,7 @@ void* operator new(size_t size, const char* File, int Line)
 	// 1. 메모리 할당
 	void* ptr = malloc(size);
 
-	myNew.AddInfo(ptr, size, (char*)File, Line, false);
+	myNew.AddInfo(ptr, (int)size, (char*)File, Line, false);
 
 	return ptr;
 }
@@ -69,7 +86,7 @@ void* operator new[](size_t size, const char* File, int Line)
 {
 	void* ptr = malloc(size);
 
-	myNew.AddInfo(ptr, size, (char*)File, Line, true);
+	myNew.AddInfo(ptr, (int)size, (char*)File, Line, true);
 
 	return ptr;
 }
@@ -95,11 +112,14 @@ void operator delete(void* p)
 		}
 		else if (myNew.allocInfos[i].Ptr == p && myNew.allocInfos[i].Array == true)
 		{
-			myNew.AddLog(MyNewError::ARRAY, p);
+			myNew.AddLog(MyNewError::ARRAY, p, i);
+			free(p);
+			return;
 		}
 	}
 
-
+	// 할당되지 않은 포인터 삭제
+	myNew.AddLog(MyNewError::NOALLOC, p);
 }
 
 void operator delete[](void* p)

@@ -20,4 +20,5 @@ int main()
 	Player* p = new Player;
 	
 	delete p;
+	delete p;
 }
