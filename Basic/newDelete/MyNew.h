@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <string>
+#include <ctime>
 
 #define MAX_ALLOC_INFO 100
 
@@ -27,6 +28,7 @@ public:
 
 	void AddInfo(void* Ptr, int Size, char FileName[64], int Line, bool Array);
 	void AddLog(MyNewError error, void* ptr, int index = 0);
+	void ResetInfoIndex(int index);
 
 	int totalAlloc;
 	AllocInfo allocInfos[MAX_ALLOC_INFO];
@@ -38,7 +40,7 @@ public:
 // 위 방식의 new 호출 방법
 void* operator new(size_t size, const char* File = __FILE__, int Line = __LINE__);
 
-void* operator new[](size_t size, char* File, int Line);
+void* operator new[](size_t size, const char* File = __FILE__, int Line = __LINE__);
 
 void operator delete (void* p, const char* File, int Line);
 
