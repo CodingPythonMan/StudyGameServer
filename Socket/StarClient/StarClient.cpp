@@ -4,9 +4,9 @@ SOCKET sock;
 
 struct Star {
 	int id;
+	bool use;
 	int x;
 	int y;
-	bool move;
 };
 
 Star stars[MAX_STARS];
@@ -97,10 +97,11 @@ bool SelectLoop()
 				AssignID* assignID = (AssignID*)buf;
 				for (int i = 0; i < MAX_STARS; i++)
 				{
-					if (stars[i].id == 0)
+					if (stars[i].use == false)
 					{
 						myStar = &stars[i];
 						myStar->id = assignID->ID;
+						myStar->use = true;
 						myStar->x = MAX_X / 2;
 						myStar->y = MAX_Y / 2;
 						break;
@@ -111,11 +112,17 @@ bool SelectLoop()
 			case MessageType::CreateStar:
 			{
 				CreateStar* createStar = (CreateStar*)buf;
+				if (myStar->id == createStar->ID)
+					break;
+					
 				for (int i = 0; i < MAX_STARS; i++)
 				{
-					if (stars[i].id == 0)
+					if (stars[i].use == false)
 					{
 						stars[i].id = createStar->ID;
+						stars[i].x = createStar->X;
+						stars[i].y = createStar->Y;
+						stars[i].use = true;
 						break;
 					}
 				}
@@ -128,7 +135,7 @@ bool SelectLoop()
 				{
 					if (stars[i].id == deleteStar->ID)
 					{
-						stars[i].id = 0;
+						stars[i].use = false;
 						break;
 					}
 				}
@@ -162,37 +169,33 @@ bool SelectLoop()
 			// 왼쪽 방향키.
 			if (GetAsyncKeyState(VK_LEFT))
 			{
-				if (myStar->x <= 0)
-					continue;
+				if (myStar->x > 0)
+					myStar->x--;
 
-				myStar->x--;
 				edit = true;
 			}
 			// 오른쪽 방향키.
 			if (GetAsyncKeyState(VK_RIGHT))
 			{
-				if (myStar->x >= MAX_X-1)
-					continue;
+				if (myStar->x < MAX_X-2)
+					myStar->x++;
 
-				myStar->x++;
 				edit = true;
 			}
 			// 위쪽 방향키.
 			if (GetAsyncKeyState(VK_UP) & 0x8001)
 			{
-				if (myStar->y <= 0)
-					continue;
+				if (myStar->y > 0)
+					myStar->y--;
 
-				myStar->y--;
 				edit = true;
 			}
 			// 아래쪽 방향키.
 			if (GetAsyncKeyState(VK_DOWN) & 0x8001)
 			{
-				if (myStar->y >= MAX_Y-1)
-					continue;
+				if (myStar->y+1 < MAX_Y-1)
+					myStar->y++;
 
-				myStar->y++;
 				edit = true;
 			}
 
@@ -203,7 +206,7 @@ bool SelectLoop()
 				moveStar.ID = myStar->id;
 				moveStar.X = myStar->x;
 				moveStar.Y = myStar->y;
-				retval = send(sock, (char*)&moveStar, 16, 0);
+				retval = send(sock, (char*)&moveStar, sizeof(MoveStar), 0);
 			}
 		}
 		
@@ -211,7 +214,7 @@ bool SelectLoop()
 		Clear();
 		for (int i = 0; i < MAX_STARS; i++)
 		{
-			if (stars[i].id != 0)
+			if (stars[i].use == true)
 			{
 				SpriteDraw(stars[i].x, stars[i].y, '*');
 			}
