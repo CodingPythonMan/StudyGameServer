@@ -1,9 +1,14 @@
 #pragma once
+enum class MessageType : int {
+	AssignID,
+	CreateStar,
+	DeleteStar,
+	MoveStar,
+};
+
 struct AssignID {
 	int Type;
 	int ID;
-	int X;
-	int Y;
 };
 
 struct CreateStar {
@@ -16,8 +21,6 @@ struct CreateStar {
 struct DeleteStar {
 	int Type;
 	int ID;
-	int X;
-	int Y;
 };
 
 struct MoveStar {
