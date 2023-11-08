@@ -112,7 +112,7 @@ bool SelectLoop()
 			case MessageType::CreateStar:
 			{
 				CreateStar* createStar = (CreateStar*)buf;
-				if (myStar->id == createStar->ID)
+				if (myStar != nullptr && myStar->id == createStar->ID)
 					break;
 					
 				for (int i = 0; i < MAX_STARS; i++)
