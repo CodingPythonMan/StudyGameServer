@@ -32,7 +32,7 @@ bool SelectLoop();
 // Fin Socket
 bool EndSocket();
 
-void AcceptProc(SOCKET* clientSock, SOCKADDR_IN* clientAddr);
+void AcceptProc();
 
 void ReadProc(Session* session);
 
@@ -46,6 +46,8 @@ void Disconnect(Session* session);
 void DeleteExecute();
 
 // Rendering
+void Rendering();
+
 void Flip();
 
 void Clear();

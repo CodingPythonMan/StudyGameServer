@@ -53,16 +53,13 @@ bool SelectLoop()
 {
 	// 데이터 통신에 사용할 변수
 	FD_SET rset;
-	SOCKADDR_IN clientAddr;
-	SOCKET clientSock;
-	int addrLen;
-
 	int retval;
 
 	while (1)
 	{
 		FD_ZERO(&rset);
 		FD_SET(listenSock, &rset);
+
 		MyList<Session*>::iterator iter;
 		for (iter = ClientList.begin(); iter != ClientList.end(); ++iter)
 		{
@@ -77,12 +74,7 @@ bool SelectLoop()
 		// 리슨소켓 검사
 		if (FD_ISSET(listenSock, &rset))
 		{
-			addrLen = sizeof(clientAddr);
-			clientSock = accept(listenSock, (SOCKADDR*)&clientAddr, &addrLen);
-			if (clientSock == INVALID_SOCKET)
-				return true;
-
-			AcceptProc(&clientSock, &clientAddr);
+			AcceptProc();
 		}
 
 		// 데이터 통신
@@ -99,12 +91,7 @@ bool SelectLoop()
 		DeleteExecute();
 
 		// 랜더링
-		Clear();
-		for (iter = ClientList.begin(); iter != ClientList.end(); ++iter)
-		{
-			SpriteDraw((*iter)->X, (*iter)->Y, '*');
-		}
-		Flip();
+		Rendering();
 	}
 
 	return false;
@@ -119,19 +106,25 @@ bool EndSocket()
 	return false;
 }
 
-void AcceptProc(SOCKET* clientSock, SOCKADDR_IN* clientAddr)
+void AcceptProc()
 {
+	SOCKADDR_IN clientAddr;
+	int addrLen = sizeof(clientAddr);
+	SOCKET clientSock = accept(listenSock, (SOCKADDR*)&clientAddr, &addrLen);
+	if (clientSock == INVALID_SOCKET)
+		return;
+
 	Session* session = new Session;
-	session->Sock = *clientSock;
+	session->Sock = clientSock;
 	session->ID = UniqueID;
-	
 	session->X = MAX_X / 2;
 	session->Y = MAX_Y / 2;
-	InetNtop(AF_INET, &(clientAddr->sin_addr), session->IP, 16);
-	session->Port = ntohs(clientAddr->sin_port);
-	ClientList.push_back(session);
 
-	// Send AssignID(당사자), StarCreate(전체)
+	InetNtop(AF_INET, &(clientAddr.sin_addr), session->IP, 16);
+	session->Port = ntohs(clientAddr.sin_port);
+	ClientList.push_back(session);
+	
+	// 1. Send AssignID(당사자), StarCreate(전체)
 	AssignID assignID;
 	assignID.ID = UniqueID;
 	assignID.Type = (int)MessageType::AssignID;
@@ -144,6 +137,20 @@ void AcceptProc(SOCKET* clientSock, SOCKADDR_IN* clientAddr)
 	createStar.Y = MAX_Y / 2;
 	SendBroadcast(nullptr, (char*)&createStar);
 
+	// 2. 다른 사람의 StarCreate 도 받아야 한다.
+	MyList<Session*>::iterator iter;
+	for (iter = ClientList.begin(); iter != ClientList.end(); ++iter)
+	{
+		if (session == *iter)
+			continue;
+
+		Session* otherSession = *iter;
+		createStar.ID = otherSession->ID;
+		createStar.X = otherSession->X;
+		createStar.Y = otherSession->Y;
+		SendUnicast(session, (char*)&createStar);
+	}
+
 	UniqueID++;
 }
 
@@ -152,20 +159,20 @@ void ReadProc(Session* session)
 	// 데이터 받은 후 처리 필요
 	char buf[16];
 	int retval;
-	do
+	while(1)
 	{
 		retval = recv(session->Sock, buf, 16, 0);
 		
-		if (retval == SOCKET_ERROR) {
-			Disconnect(session);
-			return;
+		if (retval == SOCKET_ERROR) 
+		{
+			break;
 		}
 		else if (retval == 0)
 		{
 			Disconnect(session);
 			continue;
 		}
-
+			
 		int type = *((int*)buf);
 		switch ((MessageType)type)
 		{
@@ -186,6 +193,9 @@ void ReadProc(Session* session)
 
 			// 2. 다른 이에게 BroadCast
 			SendBroadcast(session, (char*)&moveStar);
+
+			// 랜더링
+			Rendering();
 		}
 		break;
 		default:
@@ -193,7 +203,6 @@ void ReadProc(Session* session)
 			break;
 		}
 	}
-	while (retval != WSAEWOULDBLOCK);
 }
 
 void SendUnicast(Session* session, char* buf)
@@ -244,6 +253,17 @@ void DeleteExecute()
 	}
 
 	DeleteList.clear();
+}
+
+void Rendering()
+{
+	MyList<Session*>::iterator iter;
+	Clear();
+	for (iter = ClientList.begin(); iter != ClientList.end(); ++iter)
+	{
+		SpriteDraw((*iter)->X, (*iter)->Y, '*');
+	}
+	Flip();
 }
 
 void Flip()
