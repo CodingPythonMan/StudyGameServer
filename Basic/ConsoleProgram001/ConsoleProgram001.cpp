@@ -14,7 +14,7 @@ int main()
 	unsigned int tick = 0;
 	unsigned int curTime = timeGetTime();
 	unsigned int ourTime = curTime;
-	unsigned int frameTime = curTime;
+	float frameTime = 0.0f;
 
 	bool skipDraw = false;
 
@@ -26,18 +26,20 @@ int main()
 			total += i;
 
 		// Frame Count
-		if (timeGetTime() - frameTime >= 1000)
+		frame++;
+		float timeDelta = (timeGetTime() - curTime) * 0.001f;
+		frameTime += timeDelta;
+		if (frameTime >= 1.0f)
 		{
 			cout << "[FrameCount] : " << frame << "\n";
 			frame = 0;
-			frameTime = ourTime;
+			frameTime = 0.0f;
 		}
-		frame++;
 
 		// Render
 		if (skipDraw == false)
 		{
-			printf("tick : %d, curTime : %d, ourTime : %d, frame : %d\n", tick, curTime, ourTime, frame);
+			//printf("tick : %d, curTime : %d, ourTime : %d, frame : %d\n", tick, curTime, ourTime, frame);
 		}
 
 		// Cal
@@ -50,7 +52,6 @@ int main()
 		{
 			Sleep(WAIT - tick);
 			skipDraw = false;
-
 		}
 		else
 			skipDraw = true;

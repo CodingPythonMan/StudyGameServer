@@ -231,7 +231,7 @@ bool EndSocket()
 
 	WSACleanup();
 
-	return true;
+	return false;
 }
 
 void Flip()
