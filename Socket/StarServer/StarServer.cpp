@@ -1,16 +1,8 @@
 #include "StarServer.h"
 
-struct Session {
-	SOCKET Sock;
-	int ID;
-	int X;
-	int Y;
-	WCHAR IP[16];
-	int Port;
-};
-
 SOCKET listenSock;
 MyList<Session*> ClientList;
+MyList<Session*> DeleteList;
 int UniqueID = 0;
 
 bool SetServerSocket()
@@ -61,7 +53,6 @@ bool SelectLoop()
 {
 	// 데이터 통신에 사용할 변수
 	FD_SET rset;
-	char buf[16];
 	SOCKADDR_IN clientAddr;
 	SOCKET clientSock;
 	int addrLen;
@@ -95,7 +86,25 @@ bool SelectLoop()
 		}
 
 		// 데이터 통신
+		for (iter = ClientList.begin(); iter != ClientList.end(); ++iter)
+		{
+			if (FD_ISSET((*iter)->Sock, &rset))
+			{
+				// 데이터 받기
+				ReadProc(*iter);
+			}
+		}
 
+		// 삭제할 Client 삭제
+		DeleteExecute();
+
+		// 랜더링
+		Clear();
+		for (iter = ClientList.begin(); iter != ClientList.end(); ++iter)
+		{
+			SpriteDraw((*iter)->X, (*iter)->Y, '*');
+		}
+		Flip();
 	}
 
 	return false;
@@ -123,32 +132,80 @@ void AcceptProc(SOCKET* clientSock, SOCKADDR_IN* clientAddr)
 	ClientList.push_back(session);
 
 	// Send AssignID(당사자), StarCreate(전체)
-	
 	AssignID assignID;
 	assignID.ID = UniqueID;
 	assignID.Type = (int)MessageType::AssignID;
-	
+	SendUnicast(session, (char*)&assignID);
 	
 	CreateStar createStar;
 	createStar.ID = UniqueID;
-	createStar.Type = (int)MessageType::AssignID;
+	createStar.Type = (int)MessageType::CreateStar;
 	createStar.X = MAX_X / 2;
 	createStar.Y = MAX_Y / 2;
-	SendBroadCast(session, (char*)&createStar);
+	SendBroadcast(nullptr, (char*)&createStar);
 
 	UniqueID++;
 }
 
+void ReadProc(Session* session)
+{
+	// 데이터 받은 후 처리 필요
+	char buf[16];
+	int retval;
+	do
+	{
+		retval = recv(session->Sock, buf, 16, 0);
+		
+		if (retval == SOCKET_ERROR) {
+			Disconnect(session);
+			return;
+		}
+		else if (retval == 0)
+		{
+			Disconnect(session);
+			continue;
+		}
+
+		int type = *((int*)buf);
+		switch ((MessageType)type)
+		{
+		case MessageType::MoveStar:
+		{
+			MoveStar moveStar;
+			// 1. 받고 랜더링 위한 좌표 설정
+			moveStar.Type = ((MoveStar*)buf)->Type;
+			moveStar.ID = ((MoveStar*)buf)->ID;
+			moveStar.X = ((MoveStar*)buf)->X;
+			moveStar.Y = ((MoveStar*)buf)->Y;
+
+			if (moveStar.X < 0 || moveStar.Y < 0 || moveStar.X >= MAX_X || moveStar.Y >= MAX_Y)
+				break;
+			
+			session->X = moveStar.X;
+			session->Y = moveStar.Y;
+
+			// 2. 다른 이에게 BroadCast
+			SendBroadcast(session, (char*)&moveStar);
+		}
+		break;
+		default:
+			Disconnect(session);
+			break;
+		}
+	}
+	while (retval != WSAEWOULDBLOCK);
+}
+
 void SendUnicast(Session* session, char* buf)
 {
-	int retval = send(session->Sock, buf, retval, 0);
+	int retval = send(session->Sock, buf, 16, 0);
 	if (retval == SOCKET_ERROR)
 	{
-		Disconnect();
+		Disconnect(session);
 	}
 }
 
-void SendBroadCast(Session* session, char* buf)
+void SendBroadcast(Session* session, char* buf)
 {
 	int retval;
 
@@ -158,17 +215,35 @@ void SendBroadCast(Session* session, char* buf)
 		if (*iter == session)
 			continue;
 
-		retval = send(session->Sock, buf, retval, 0);
+		retval = send((*iter)->Sock, buf, 16, 0);
 		if (retval == SOCKET_ERROR)
 		{
-
+			Disconnect(*iter);
 		}
 	}
 }
 
-void Disconnect()
+void Disconnect(Session* session)
 {
+	// 1. 별삭제 패킷 전송
+	DeleteStar deleteStar;
+	deleteStar.ID = session->ID;
+	deleteStar.Type = (int)MessageType::DeleteStar;
+	SendBroadcast(session, (char*)&deleteStar);
 
+	// 2. ClientList 에서 삭제 => 우선 임시로 삭제 리스트에 추가
+	DeleteList.push_back(session);
+}
+
+void DeleteExecute()
+{
+	MyList<Session*>::iterator iter;
+	for (iter = DeleteList.begin(); iter != DeleteList.end(); ++iter)
+	{
+		ClientList.remove(*iter);
+	}
+
+	DeleteList.clear();
 }
 
 void Flip()

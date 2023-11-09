@@ -10,6 +10,7 @@ enum class MessageType : int {
 struct AssignID {
 	int Type;
 	int ID;
+	long long padding;
 };
 
 struct CreateStar {
@@ -22,6 +23,7 @@ struct CreateStar {
 struct DeleteStar {
 	int Type;
 	int ID;
+	long long padding;
 };
 
 struct MoveStar {

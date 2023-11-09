@@ -11,6 +11,15 @@
 
 #define MAX_STARS 30
 
+struct Session {
+	SOCKET Sock;
+	int ID;
+	int X;
+	int Y;
+	WCHAR IP[16];
+	int Port;
+};
+
 // Init Socket
 bool SetServerSocket();
 
@@ -25,6 +34,18 @@ bool EndSocket();
 
 void AcceptProc(SOCKET* clientSock, SOCKADDR_IN* clientAddr);
 
+void ReadProc(Session* session);
+
+// Send, Disconnect
+void SendUnicast(Session* session, char* buf);
+
+void SendBroadcast(Session* session, char* buf);
+
+void Disconnect(Session* session);
+
+void DeleteExecute();
+
+// Rendering
 void Flip();
 
 void Clear();
