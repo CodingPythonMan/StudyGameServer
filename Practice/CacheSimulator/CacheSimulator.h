@@ -11,6 +11,6 @@ struct TagArray {
 
 extern TagArray tagArrays[64];
 
-void CashSimulate(void* pointer);
+void CacheSimulate(void* pointer);
 
 void PrintCacheInfo(unsigned char cacheIndex, unsigned __int64 tag, unsigned __int64 address);

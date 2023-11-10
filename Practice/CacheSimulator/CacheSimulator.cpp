@@ -13,7 +13,7 @@
 
 TagArray tagArrays[64];
 
-void CashSimulate(void* pointer)
+void CacheSimulate(void* pointer)
 {
 	unsigned char cacheIndex;
 	unsigned __int64 tag;

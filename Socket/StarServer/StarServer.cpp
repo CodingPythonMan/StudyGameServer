@@ -165,12 +165,21 @@ void ReadProc(Session* session)
 		
 		if (retval == SOCKET_ERROR) 
 		{
-			break;
+			retval = GetLastError();
+
+			if(retval == WSAEWOULDBLOCK)
+				break;
+			
+			if (retval == WSAECONNRESET)
+			{
+				Disconnect(session);
+				break;
+			}
 		}
 		else if (retval == 0)
 		{
 			Disconnect(session);
-			continue;
+			break;
 		}
 			
 		int type = *((int*)buf);
@@ -227,7 +236,10 @@ void SendBroadcast(Session* session, char* buf)
 		retval = send((*iter)->Sock, buf, 16, 0);
 		if (retval == SOCKET_ERROR)
 		{
-			Disconnect(*iter);
+			retval = GetLastError();
+
+			if(retval == WSAECONNRESET)
+				Disconnect(*iter);
 		}
 	}
 }
@@ -249,7 +261,9 @@ void DeleteExecute()
 	MyList<Session*>::iterator iter;
 	for (iter = DeleteList.begin(); iter != DeleteList.end(); ++iter)
 	{
+		closesocket((*iter)->Sock);
 		ClientList.remove(*iter);
+		delete(*iter);
 	}
 
 	DeleteList.clear();
