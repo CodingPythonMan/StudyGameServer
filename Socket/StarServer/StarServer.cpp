@@ -55,6 +55,8 @@ bool SelectLoop()
 	FD_SET rset;
 	int retval;
 
+	Rendering();
+
 	while (1)
 	{
 		FD_ZERO(&rset);
@@ -273,10 +275,15 @@ void Rendering()
 {
 	MyList<Session*>::iterator iter;
 	Clear();
+	char message[25] = "Client Connect : \0";
+	int count = 0;
 	for (iter = ClientList.begin(); iter != ClientList.end(); ++iter)
 	{
 		SpriteDraw((*iter)->X, (*iter)->Y, '*');
+		count++;
 	}
+	snprintf(&message[(int)strlen(message)], strlen(message), "%d", count);
+	memcpy(&_ScreenBuffer[0][0], message, strlen(message));
 	Flip();
 }
 
