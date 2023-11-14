@@ -11,21 +11,22 @@ int main()
 	RingBuffer* ringBuffer = new RingBuffer(500);
 
 	int start = 0;
+	int messageSize = (int)strlen(message);
 
 	while (1)
 	{
-		int size = rand() % 82;
+		int size = rand() % (messageSize + 1);
 		char* dequeueString = new char[size + 1];
 		char* peekString = new char[size + 1];
 		dequeueString[size] = '\0';
 		peekString[size] = '\0';
 
-		if (start + size > 81)
+		if (start + size > messageSize)
 		{
-			ringBuffer->Enqueue(message + start, 81 - start);
-			ringBuffer->Enqueue(message, size - 81 + start);
+			ringBuffer->Enqueue(message + start, messageSize - start);
+			ringBuffer->Enqueue(message, size - messageSize + start);
 
-			start = start + size - 81;
+			start = start + size - messageSize;
 		}
 		else
 		{

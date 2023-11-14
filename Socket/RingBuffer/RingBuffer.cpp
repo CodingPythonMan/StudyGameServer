@@ -101,3 +101,72 @@ void RingBuffer::ClearBuffer()
 {
 	Front = Rear;
 }
+
+int RingBuffer::DirectEnqueueSize()
+{
+	int size = Rear - Front;
+
+	if (size < 0)
+	{
+		size = Front - Rear - 1;
+	}
+	else
+	{
+		// size 가 0이면 비어있는 상태
+		size = BufferSize - Rear - 1;
+	}
+
+	return size;
+}
+
+int RingBuffer::DirectDequeueSize()
+{
+	int size = Rear - Front;
+
+	if (size < 0)
+	{
+		size = BufferSize - Front + Rear + 1;
+	}
+
+	return size;
+}
+
+int RingBuffer::MoveRear(int size)
+{
+	if (Rear + size > BufferSize)
+	{
+		int rest = BufferSize + 1 - Rear;
+		Rear = size - rest - 1;
+	}
+	else
+	{
+		Rear += size - 1;
+	}
+
+	return size;
+}
+
+int RingBuffer::MoveFront(int size)
+{
+	if (Front + size > BufferSize)
+	{
+		int rest = BufferSize + 1 - Front;
+		Front = size - rest - 1;
+	}
+	else
+	{
+		Front += size - 1;
+	}
+
+	return size;
+}
+
+char* RingBuffer::GetFrontBufferPtr()
+{
+	return Buffer + Front;
+}
+
+char* RingBuffer::GetRearBufferPtr()
+{
+	return Buffer + Rear;
+}
