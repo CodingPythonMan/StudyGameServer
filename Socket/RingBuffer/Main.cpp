@@ -8,7 +8,7 @@ char message[82] = "1234567890 abcdefghijklmnopqrstuvwxyz 1234567890 abcdefghijk
 int main()
 {
 	srand(SEED);
-	RingBuffer* ringBuffer = new RingBuffer;
+	RingBuffer* ringBuffer = new RingBuffer(500);
 
 	int start = 0;
 

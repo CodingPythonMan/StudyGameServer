@@ -2,16 +2,16 @@
 
 RingBuffer::RingBuffer() : BufferSize{DEFAULT_SIZE}
 {
-	Buffer = new char[BufferSize];
-	Front = Rear = 0;
-	FreeSize = BufferSize;
+	Buffer = new char[BufferSize+1];
+	Front = 0;
+	Rear = 0;
 }
 
 RingBuffer::RingBuffer(int bufferSize) : BufferSize{bufferSize}
 {
-	Buffer = new char[BufferSize];
-	Front = Rear = 0;
-	FreeSize = BufferSize;
+	Buffer = new char[BufferSize+1];
+	Front = 0;
+	Rear = 0;
 }
 
 RingBuffer::~RingBuffer()
@@ -26,66 +26,72 @@ int RingBuffer::GetBufferSize()
 
 int RingBuffer::GetUseSize()
 {
-	return BufferSize - FreeSize;
+	return BufferSize - GetFreeSize();
 }
 
 int RingBuffer::GetFreeSize()
 {
-	return FreeSize;
+	int size = Rear - Front;
+
+	if (size < 0)
+	{
+		size = BufferSize + size;
+	}
+
+	return size;
 }
 
 int RingBuffer::Enqueue(char* src, int size)
 {
-	if (Rear + size > BufferSize - 1)
-	{
-		int rest = BufferSize - Rear;
-		memcpy(&Buffer[Rear], src, rest);
+	Rear++;
 
-		Rear = Rear + size - BufferSize;
-		memcpy(&Buffer[0], src+rest, Rear);
+	if (Rear + size > BufferSize)
+	{
+		int rest = BufferSize + 1 - Rear;
+		memcpy(&Buffer[Rear], src, rest);
+		memcpy(&Buffer[0], src + rest, size - rest);
+		Rear = size - rest - 1;
 	}	
 	else
 	{
 		memcpy(&Buffer[Rear], src, size);
-		Rear += size;
+		Rear += size - 1;
 	}
 
-	FreeSize -= size;
 	return size;
 }
 
 int RingBuffer::Dequeue(char* dest, int size)
 {
-	if (Front + size > BufferSize - 1)
-	{
-		int rest = BufferSize - Front;
-		memcpy(dest, &Buffer[Front], rest);
+	Front++;
 
-		Front = Front + size - BufferSize;
-		memcpy(dest+rest, &Buffer[0], Front);
+	if (Front + size > BufferSize)
+	{
+		int rest = BufferSize + 1 - Front;
+		memcpy(dest, &Buffer[Front], rest);
+		memcpy(dest+rest, &Buffer[0], size - rest);
+		Front = size - rest - 1;
 	}
 	else
 	{
 		memcpy(dest, &Buffer[Front], size);
-		Front += size;
+		Front += size - 1;
 	}
-
-	FreeSize += size;
 
 	return size;
 }
 
 int RingBuffer::Peek(char* dest, int size)
 {
-	if (Front + size > BufferSize - 1)
+	if (Front + 1 + size > BufferSize)
 	{
 		int rest = BufferSize - Front;
-		memcpy(dest, &Buffer[Front], rest);
-		memcpy(dest + rest, &Buffer[0], size - rest);
+		memcpy(dest, &Buffer[Front + 1], rest);
+		memcpy(dest+rest, &Buffer[0], size - rest);
 	}
 	else
 	{
-		memcpy(dest, &Buffer[Front], size);
+		memcpy(dest, &Buffer[Front + 1], size);
 	}
 
 	return size;

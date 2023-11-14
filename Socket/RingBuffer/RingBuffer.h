@@ -34,7 +34,6 @@ private:
 	int Front;
 	int Rear;
 	int BufferSize;
-	int FreeSize;
 
 	char* Buffer;
 };
