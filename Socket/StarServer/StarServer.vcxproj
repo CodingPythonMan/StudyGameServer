@@ -129,12 +129,14 @@
   <ItemGroup>
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="RingBuffer.cpp" />
     <ClCompile Include="StarServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Console.h" />
     <ClInclude Include="MyList.h" />
     <ClInclude Include="Protocol.h" />
+    <ClInclude Include="RingBuffer.h" />
     <ClInclude Include="StarServer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

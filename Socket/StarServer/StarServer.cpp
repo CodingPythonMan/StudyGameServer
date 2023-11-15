@@ -1,4 +1,5 @@
 #include "StarServer.h"
+#include "RingBuffer.h"
 
 SOCKET listenSock;
 MyList<Session*> ClientList;
