@@ -1,5 +1,4 @@
 #include "StarServer.h"
-#include "RingBuffer.h"
 
 SOCKET listenSock;
 MyList<Session*> ClientList;
@@ -53,7 +52,7 @@ bool ListenSocket()
 bool SelectLoop()
 {
 	// 데이터 통신에 사용할 변수
-	FD_SET rset;
+	FD_SET rset, wset;
 	int retval;
 
 	Rendering();
@@ -61,16 +60,23 @@ bool SelectLoop()
 	while (1)
 	{
 		FD_ZERO(&rset);
+		FD_ZERO(&wset);
 		FD_SET(listenSock, &rset);
 
 		MyList<Session*>::iterator iter;
 		for (iter = ClientList.begin(); iter != ClientList.end(); ++iter)
 		{
 			FD_SET((*iter)->Sock, &rset);
+
+			// 세션 SendQ 사용 여부에 따라 wset 설정
+			if ((*iter)->sendBuffer.GetUseSize() > 0)
+			{
+				FD_SET((*iter)->Sock, &wset);
+			}
 		}
 
 		// 무한 대기
-		retval = select(0, &rset, nullptr, nullptr, nullptr);
+		retval = select(0, &rset, &wset, nullptr, nullptr);
 		if (retval == SOCKET_ERROR)
 			return true;
 
@@ -87,6 +93,12 @@ bool SelectLoop()
 			{
 				// 데이터 받기
 				ReadProc(*iter);
+			}
+
+			if (FD_ISSET((*iter)->Sock, &wset))
+			{
+				// 데이터 쓰기
+				WriteProc(*iter);
 			}
 		}
 
@@ -160,31 +172,46 @@ void AcceptProc()
 void ReadProc(Session* session)
 {
 	// 데이터 받은 후 처리 필요
-	char buf[16];
+	char buf[RINGBUFFER_MAX];
 	int retval;
-	while(1)
-	{
-		retval = recv(session->Sock, buf, 16, 0);
-		
-		if (retval == SOCKET_ERROR) 
-		{
-			retval = GetLastError();
 
-			if(retval == WSAEWOULDBLOCK)
-				break;
-			
-			if (retval == WSAECONNRESET)
-			{
-				Disconnect(session);
-				break;
-			}
-		}
-		else if (retval == 0)
+	retval = recv(session->Sock, buf, RINGBUFFER_MAX, 0);
+	if (retval == SOCKET_ERROR)
+	{
+		retval = GetLastError();
+
+		if (retval == WSAEWOULDBLOCK)
+			return;
+
+		if (retval == WSAECONNRESET)
 		{
 			Disconnect(session);
+			return;
+		}
+	}
+	else if (retval == 0)
+	{
+		Disconnect(session);
+		return;
+	}
+
+	if(session->recvBuffer.GetFreeSize() > retval)
+		session->recvBuffer.Enqueue(buf, retval);
+
+	while(1)
+	{
+		if (session->recvBuffer.GetUseSize() < 16)
+		{
 			break;
 		}
-			
+
+		char message[16];
+		retval = session->recvBuffer.Dequeue(message, 16);
+		if (retval != 16)
+		{
+			return;
+		}
+
 		int type = *((int*)buf);
 		switch ((MessageType)type)
 		{
@@ -217,33 +244,40 @@ void ReadProc(Session* session)
 	}
 }
 
-void SendUnicast(Session* session, char* buf)
+void WriteProc(Session* session)
 {
-	int retval = send(session->Sock, buf, 16, 0);
+	char buffer[RINGBUFFER_MAX];
+	int sendDataCount = session->sendBuffer.GetUseSize();
+
+	session->sendBuffer.Dequeue(buffer, sendDataCount);
+	int retval = send(session->Sock, buffer, sendDataCount, 0);
 	if (retval == SOCKET_ERROR)
 	{
-		Disconnect(session);
+		retval = GetLastError();
+
+		if (retval == WSAECONNRESET)
+			Disconnect(session);
 	}
+}
+
+void SendUnicast(Session* session, char* buf)
+{
+	int size = (int)strlen(buf);
+
+	if(session->sendBuffer.GetFreeSize() > size)
+		session->sendBuffer.Enqueue(buf, size);
 }
 
 void SendBroadcast(Session* session, char* buf)
 {
-	int retval;
-
 	MyList<Session*>::iterator iter;
 	for (iter = ClientList.begin(); iter != ClientList.end(); ++iter)
 	{
 		if (*iter == session)
 			continue;
 
-		retval = send((*iter)->Sock, buf, 16, 0);
-		if (retval == SOCKET_ERROR)
-		{
-			retval = GetLastError();
-
-			if(retval == WSAECONNRESET)
-				Disconnect(*iter);
-		}
+		if ((*iter)->sendBuffer.GetFreeSize() > 16)
+			(*iter)->sendBuffer.Enqueue(buf, (int)strlen(buf));
 	}
 }
 
