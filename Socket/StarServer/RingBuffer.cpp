@@ -26,11 +26,6 @@ int RingBuffer::GetBufferSize()
 
 int RingBuffer::GetUseSize()
 {
-	return BufferSize - GetFreeSize();
-}
-
-int RingBuffer::GetFreeSize()
-{
 	int size = Rear - Front;
 
 	if (size < 0)
@@ -39,6 +34,11 @@ int RingBuffer::GetFreeSize()
 	}
 
 	return size;
+}
+
+int RingBuffer::GetFreeSize()
+{
+	return BufferSize - GetUseSize();
 }
 
 int RingBuffer::Enqueue(char* src, int size)
@@ -136,11 +136,11 @@ int RingBuffer::MoveRear(int size)
 	if (Rear + size > BufferSize)
 	{
 		int rest = BufferSize + 1 - Rear;
-		Rear = size - rest - 1;
+		Rear = size - rest;
 	}
 	else
 	{
-		Rear += size - 1;
+		Rear += size;
 	}
 
 	return size;
@@ -151,11 +151,11 @@ int RingBuffer::MoveFront(int size)
 	if (Front + size > BufferSize)
 	{
 		int rest = BufferSize + 1 - Front;
-		Front = size - rest - 1;
+		Front = size - rest;
 	}
 	else
 	{
-		Front += size - 1;
+		Front += size;
 	}
 
 	return size;

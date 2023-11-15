@@ -1,15 +1,15 @@
 ﻿#include "RingBuffer.h"
 
-RingBuffer::RingBuffer() : BufferSize{DEFAULT_SIZE}
+RingBuffer::RingBuffer() : BufferSize{ DEFAULT_SIZE }
 {
-	Buffer = new char[BufferSize+1];
+	Buffer = new char[BufferSize + 1];
 	Front = 0;
 	Rear = 0;
 }
 
-RingBuffer::RingBuffer(int bufferSize) : BufferSize{bufferSize}
+RingBuffer::RingBuffer(int bufferSize) : BufferSize{ bufferSize }
 {
-	Buffer = new char[BufferSize+1];
+	Buffer = new char[BufferSize + 1];
 	Front = 0;
 	Rear = 0;
 }
@@ -26,11 +26,6 @@ int RingBuffer::GetBufferSize()
 
 int RingBuffer::GetUseSize()
 {
-	return BufferSize - GetFreeSize();
-}
-
-int RingBuffer::GetFreeSize()
-{
 	int size = Rear - Front;
 
 	if (size < 0)
@@ -39,6 +34,11 @@ int RingBuffer::GetFreeSize()
 	}
 
 	return size;
+}
+
+int RingBuffer::GetFreeSize()
+{
+	return BufferSize - GetUseSize();
 }
 
 int RingBuffer::Enqueue(char* src, int size)
@@ -51,7 +51,7 @@ int RingBuffer::Enqueue(char* src, int size)
 		memcpy(&Buffer[Rear], src, rest);
 		memcpy(&Buffer[0], src + rest, size - rest);
 		Rear = size - rest - 1;
-	}	
+	}
 	else
 	{
 		memcpy(&Buffer[Rear], src, size);
@@ -69,7 +69,7 @@ int RingBuffer::Dequeue(char* dest, int size)
 	{
 		int rest = BufferSize + 1 - Front;
 		memcpy(dest, &Buffer[Front], rest);
-		memcpy(dest+rest, &Buffer[0], size - rest);
+		memcpy(dest + rest, &Buffer[0], size - rest);
 		Front = size - rest - 1;
 	}
 	else
@@ -87,7 +87,7 @@ int RingBuffer::Peek(char* dest, int size)
 	{
 		int rest = BufferSize - Front;
 		memcpy(dest, &Buffer[Front + 1], rest);
-		memcpy(dest+rest, &Buffer[0], size - rest);
+		memcpy(dest + rest, &Buffer[0], size - rest);
 	}
 	else
 	{
@@ -136,11 +136,11 @@ int RingBuffer::MoveRear(int size)
 	if (Rear + size > BufferSize)
 	{
 		int rest = BufferSize + 1 - Rear;
-		Rear = size - rest - 1;
+		Rear = size - rest;
 	}
 	else
 	{
-		Rear += size - 1;
+		Rear += size;
 	}
 
 	return size;
@@ -151,11 +151,11 @@ int RingBuffer::MoveFront(int size)
 	if (Front + size > BufferSize)
 	{
 		int rest = BufferSize + 1 - Front;
-		Front = size - rest - 1;
+		Front = size - rest;
 	}
 	else
 	{
-		Front += size - 1;
+		Front += size;
 	}
 
 	return size;

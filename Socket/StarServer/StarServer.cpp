@@ -152,7 +152,7 @@ void AcceptProc()
 	createStar.Y = MAX_Y / 2;
 	SendBroadcast(nullptr, (char*)&createStar);
 
-	// 2. 다른 사람의 StarCreate 도 받아야 한다.
+	// 2. 다른 사람의 CreateStar 도 받아야 한다.
 	MyList<Session*>::iterator iter;
 	for (iter = ClientList.begin(); iter != ClientList.end(); ++iter)
 	{
@@ -182,8 +182,7 @@ void ReadProc(Session* session)
 
 		if (retval == WSAEWOULDBLOCK)
 			return;
-
-		if (retval == WSAECONNRESET)
+		else if (retval == WSAECONNRESET)
 		{
 			Disconnect(session);
 			return;
@@ -247,25 +246,38 @@ void ReadProc(Session* session)
 void WriteProc(Session* session)
 {
 	char buffer[RINGBUFFER_MAX];
-	int sendDataCount = session->sendBuffer.GetUseSize();
 
-	session->sendBuffer.Dequeue(buffer, sendDataCount);
-	int retval = send(session->Sock, buffer, sendDataCount, 0);
-	if (retval == SOCKET_ERROR)
+	while (1)
 	{
-		retval = GetLastError();
+		if (session->sendBuffer.GetUseSize() < 16)
+			break;
 
-		if (retval == WSAECONNRESET)
-			Disconnect(session);
+		session->sendBuffer.Peek(buffer, 16);
+		int retval = send(session->Sock, buffer, 16, 0);
+		if (retval == SOCKET_ERROR)
+		{
+			retval = GetLastError();
+
+			if (retval == WSAEWOULDBLOCK)
+				return;
+			else if (retval == WSAECONNRESET)
+			{
+				Disconnect(session);
+				return;
+			}
+		}
+		
+		// 자랑스러운 로그. 해당 로그 기록으로 RingBuffer 버그를 잡았다.
+		//sprintf_s(buf, 40, "[ID:%d] Type:%d, Size:%d\n", session->ID, (int)(*buffer), retval);
+
+		session->sendBuffer.MoveFront(retval);
 	}
 }
 
 void SendUnicast(Session* session, char* buf)
 {
-	int size = (int)strlen(buf);
-
-	if(session->sendBuffer.GetFreeSize() > size)
-		session->sendBuffer.Enqueue(buf, size);
+	if(session->sendBuffer.GetFreeSize() > 16)
+		session->sendBuffer.Enqueue(buf, 16);
 }
 
 void SendBroadcast(Session* session, char* buf)
@@ -277,7 +289,7 @@ void SendBroadcast(Session* session, char* buf)
 			continue;
 
 		if ((*iter)->sendBuffer.GetFreeSize() > 16)
-			(*iter)->sendBuffer.Enqueue(buf, (int)strlen(buf));
+			(*iter)->sendBuffer.Enqueue(buf, 16);
 	}
 }
 
@@ -346,4 +358,24 @@ void SpriteDraw(int X, int Y, char Sprite)
 		return;
 
 	_ScreenBuffer[Y][X] = Sprite;
+}
+
+void WriteLog(char* buf)
+{
+	char fileName[70] = "Logs.txt";
+	tm t;
+	time_t timer;
+
+	timer = time(NULL);    // 현재 시각을 초 단위로 얻기
+	localtime_s(&t, &timer); // 초 단위의 시간을 분리하여 구조체에 넣기
+
+	FILE* file;
+
+	fopen_s(&file, fileName, "a+");
+	if (file == nullptr)
+		return;
+
+	fwrite(buf, 1, (int)strlen(buf), file);
+
+	fclose(file);
 }

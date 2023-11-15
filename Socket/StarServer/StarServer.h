@@ -1,6 +1,7 @@
 #pragma once
 #include <WS2tcpip.h>
 #include <windows.h>
+#include <ctime>
 #include "Protocol.h"
 #include "Console.h"
 #include "MyList.h"
@@ -69,3 +70,6 @@ void Flip();
 void Clear();
 
 void SpriteDraw(int X, int Y, char Sprite);
+
+// Log
+void WriteLog(char* buf);
