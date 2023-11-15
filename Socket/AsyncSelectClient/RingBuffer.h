@@ -10,10 +10,10 @@ public:
 	~RingBuffer();
 
 	int GetBufferSize();
-	
+
 	// 사용중인 용량 얻기
 	int GetUseSize();
-	
+
 	// 남은 용량 얻기
 	int GetFreeSize();
 

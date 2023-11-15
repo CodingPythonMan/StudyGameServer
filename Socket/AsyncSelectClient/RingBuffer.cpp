@@ -1,4 +1,4 @@
-ï»¿#include "RingBuffer.h"
+#include "RingBuffer.h"
 #include <cstring>
 
 RingBuffer::RingBuffer() : BufferSize{ DEFAULT_SIZE }
@@ -113,7 +113,7 @@ int RingBuffer::DirectEnqueueSize()
 	}
 	else
 	{
-		// size ê°€ 0ì´ë©´ ë¹„ì–´ìˆëŠ” ìƒíƒœ
+		// size °¡ 0ÀÌ¸é ºñ¾îÀÖ´Â »óÅÂ
 		size = BufferSize - Rear - 1;
 	}
 
