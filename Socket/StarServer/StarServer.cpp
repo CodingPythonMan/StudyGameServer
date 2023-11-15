@@ -172,10 +172,24 @@ void AcceptProc()
 void ReadProc(Session* session)
 {
 	// 데이터 받은 후 처리 필요
-	char buf[RINGBUFFER_MAX];
 	int retval;
 
-	retval = recv(session->Sock, buf, RINGBUFFER_MAX, 0);
+	int recvAvailableSize = session->recvBuffer.DirectEnqueueSize();
+	if (recvAvailableSize < 16)
+	{
+		char buffer[16];
+		retval = recv(session->Sock, buffer, 16, 0);
+		
+		if (session->recvBuffer.GetFreeSize() > 16)
+			session->recvBuffer.Enqueue(buffer, retval);
+	}
+	else
+	{
+		char* ptr = session->recvBuffer.GetRearBufferPtr();
+		retval = recv(session->Sock, ptr, recvAvailableSize, 0);
+		session->recvBuffer.MoveRear(retval);
+	}
+
 	if (retval == SOCKET_ERROR)
 	{
 		retval = GetLastError();
@@ -194,9 +208,6 @@ void ReadProc(Session* session)
 		return;
 	}
 
-	if(session->recvBuffer.GetFreeSize() > retval)
-		session->recvBuffer.Enqueue(buf, retval);
-
 	while(1)
 	{
 		if (session->recvBuffer.GetUseSize() < 16)
@@ -211,17 +222,17 @@ void ReadProc(Session* session)
 			return;
 		}
 
-		int type = *((int*)buf);
+		int type = *((int*)message);
 		switch ((MessageType)type)
 		{
 		case MessageType::MoveStar:
 		{
 			MoveStar moveStar;
 			// 1. 받고 랜더링 위한 좌표 설정
-			moveStar.Type = ((MoveStar*)buf)->Type;
-			moveStar.ID = ((MoveStar*)buf)->ID;
-			moveStar.X = ((MoveStar*)buf)->X;
-			moveStar.Y = ((MoveStar*)buf)->Y;
+			moveStar.Type = ((MoveStar*)message)->Type;
+			moveStar.ID = ((MoveStar*)message)->ID;
+			moveStar.X = ((MoveStar*)message)->X;
+			moveStar.Y = ((MoveStar*)message)->Y;
 
 			if (moveStar.X < 0 || moveStar.Y < 0 || moveStar.X >= MAX_X || moveStar.Y >= MAX_Y)
 				break;
@@ -245,15 +256,26 @@ void ReadProc(Session* session)
 
 void WriteProc(Session* session)
 {
-	char buffer[RINGBUFFER_MAX];
+	int retval;
 
 	while (1)
 	{
 		if (session->sendBuffer.GetUseSize() < 16)
 			break;
 
-		session->sendBuffer.Peek(buffer, 16);
-		int retval = send(session->Sock, buffer, 16, 0);
+		// DirectDequeue 는 링버퍼에서 Tcp 송신버퍼로 직접 넣어주는 개념
+		if (session->sendBuffer.DirectDequeueSize() < 16)
+		{
+			char buffer[16];
+			session->sendBuffer.Peek(buffer, 16);
+			retval = send(session->Sock, buffer, 16, 0);
+		}
+		else
+		{
+			char* ptr = session->sendBuffer.GetFrontBufferPtr();
+			retval = send(session->Sock, ptr, 16, 0);
+		}
+		
 		if (retval == SOCKET_ERROR)
 		{
 			retval = GetLastError();
@@ -268,7 +290,9 @@ void WriteProc(Session* session)
 		}
 		
 		// 자랑스러운 로그. 해당 로그 기록으로 RingBuffer 버그를 잡았다.
-		//sprintf_s(buf, 40, "[ID:%d] Type:%d, Size:%d\n", session->ID, (int)(*buffer), retval);
+		//char buf[40];
+		//sprintf_s(buf, 40, "[ID:%d] Size:%d\n", session->ID, retval);
+		//WriteLog(buf);
 
 		session->sendBuffer.MoveFront(retval);
 	}

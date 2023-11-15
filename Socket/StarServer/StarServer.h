@@ -12,7 +12,6 @@
 #define SERVER_PORT 3000
 
 #define MAX_STARS 30
-#define RINGBUFFER_MAX 1000
 
 struct Session {
 	SOCKET Sock;

@@ -163,10 +163,20 @@ int RingBuffer::MoveFront(int size)
 
 char* RingBuffer::GetFrontBufferPtr()
 {
-	return Buffer + Front;
+	int IncreaseFront = 0;
+
+	if (Front < BufferSize)
+		IncreaseFront = Front + 1;
+
+	return &Buffer[IncreaseFront];
 }
 
 char* RingBuffer::GetRearBufferPtr()
 {
-	return Buffer + Rear;
+	int IncreaseRear = 0;
+
+	if (Rear < BufferSize)
+		IncreaseRear = Rear + 1;
+
+	return &Buffer[IncreaseRear];
 }
