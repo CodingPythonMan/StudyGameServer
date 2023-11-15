@@ -27,9 +27,15 @@
     <ClInclude Include="AsyncSelectClient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RingBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AsyncSelectClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RingBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -130,10 +130,12 @@
     <ClInclude Include="AsyncSelectClient.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="RingBuffer.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AsyncSelectClient.cpp" />
+    <ClCompile Include="RingBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AsyncSelectClient.rc" />

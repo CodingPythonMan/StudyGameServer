@@ -55,7 +55,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
         return 1;
 
-    
+    // WSAAsyncSelect()
+    retval
 
     // Main message loop:
     while (GetMessage(&msg, nullptr, 0, 0))
