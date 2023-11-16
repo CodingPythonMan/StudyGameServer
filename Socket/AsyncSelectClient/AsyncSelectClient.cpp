@@ -158,7 +158,36 @@ HWND InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 bool WriteProc()
 {
-	
+    int retval;
+    int useSize = SendBuffer.GetUseSize();
+
+	if (SendBuffer.DirectDequeueSize() < useSize)
+	{
+		char* buffer = new char[useSize];
+		SendBuffer.Peek(buffer, useSize);
+		retval = send(Sock, buffer, useSize, 0);
+        delete[] buffer;
+	}
+	else
+	{
+		char* ptr = SendBuffer.GetFrontBufferPtr();
+		retval = send(Sock, ptr, useSize, 0);
+	}
+
+    if (retval == SOCKET_ERROR)
+    {
+        retval = GetLastError();
+
+        if (retval == WSAEWOULDBLOCK)
+            return false;
+		else if (retval == WSAECONNRESET)
+		{
+            closesocket(Sock);
+			return true;
+		}
+    }
+
+    SendBuffer.MoveFront(retval);
 
     return false;
 }
@@ -260,41 +289,13 @@ bool NetworkMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 bool SendServer(char* message)
 {
-    int retval;
-
     stHEADER header;
     header.Len = sizeof(st_DRAW_PACKET);
 
     SendBuffer.Enqueue((char*)&header, 2);
     SendBuffer.Enqueue(message, header.Len);
 
-	if (SendBuffer.DirectDequeueSize() < 2 + header.Len)
-	{
-		char buffer[20];
-		SendBuffer.Peek(buffer, 2 + header.Len);
-		retval = send(Sock, buffer, 2 + header.Len, 0);
-	}
-	else
-	{
-		char* ptr = SendBuffer.GetFrontBufferPtr();
-		retval = send(Sock, ptr, 2 + header.Len, 0);
-	}
-
-    if (retval == SOCKET_ERROR)
-    {
-        retval = GetLastError();
-
-        if (retval == WSAEWOULDBLOCK)
-            return false;
-
-        else if (retval == WSAECONNRESET)
-        {
-            closesocket(Sock);
-            return true;
-        }
-    }
-
-    SendBuffer.MoveFront(retval);
+    WriteProc();
 
     return false;
 }
@@ -348,7 +349,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         Drag = false;
         break;
     case WM_MOUSEMOVE:
-        if (Drag)
+        if (ConnectSock && Drag)
         {
 			int xPos = GET_X_LPARAM(lParam);
 			int yPos = GET_Y_LPARAM(lParam);
