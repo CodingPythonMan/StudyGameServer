@@ -4,15 +4,32 @@
 #include "framework.h"
 #include "AsyncSelectClient.h"
 
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+
 #include <WS2tcpip.h>
+#include <Windowsx.h>
 #include "RingBuffer.h"
+
+#pragma comment(lib, "ws2_32.lib")
 
 #define MAX_LOADSTRING 100
 
-#define PORT 25000
+#define SERVER_PORT 25000
+#define SERVER_IP L"127.0.0.1"
+
 #define WM_NETWORK (WM_USER+1)
 
-SOCKET sock;
+bool ConnectSock = false;
+bool Drag = false;
+SOCKET Sock;
+
+RingBuffer RecvBuffer(20000);
+RingBuffer SendBuffer(20000);
+
+// Render
+HPEN Pen;
+int OldX;
+int OldY;
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
@@ -21,7 +38,7 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
-BOOL                InitInstance(HINSTANCE, int);
+HWND                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
@@ -41,7 +58,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     MyRegisterClass(hInstance);
 
     // Perform application initialization:
-    if (!InitInstance (hInstance, nCmdShow))
+    HWND hwnd;
+    hwnd = InitInstance(hInstance, nCmdShow);
+    if (!hwnd)
     {
         return FALSE;
     }
@@ -49,14 +68,29 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_ASYNCSELECTCLIENT));
 
     MSG msg;
+    int retval;
 
-    // 윈속 초기화
-    WSADATA wsa;
-    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-        return 1;
+	// 윈속 초기화
+	WSADATA wsa;
+	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+		return 1;
 
-    // WSAAsyncSelect()
-    retval
+	Sock = socket(AF_INET, SOCK_STREAM, 0);
+	if (Sock == INVALID_SOCKET)
+		return 1;
+
+	// WSAAsyncSelect()
+	retval = WSAAsyncSelect(Sock, hwnd, WM_NETWORK, FD_CONNECT | FD_WRITE | FD_READ | FD_CLOSE);
+
+	// Connect 하기 전에 WSAAsyncSelect 실행
+	SOCKADDR_IN serverAddr;
+	memset(&serverAddr, 0, sizeof(serverAddr));
+	serverAddr.sin_family = AF_INET;
+    InetPton(AF_INET, SERVER_IP, &serverAddr.sin_addr);
+    serverAddr.sin_port = htons(SERVER_PORT);
+
+	// Connect 통지는 WM Message 확인
+    connect(Sock, (SOCKADDR*)&serverAddr, sizeof(serverAddr));
 
     // Main message loop:
     while (GetMessage(&msg, nullptr, 0, 0))
@@ -109,22 +143,149 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //        In this function, we save the instance handle in a global variable and
 //        create and display the main program window.
 //
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
+HWND InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // Store instance handle in our global variable
 
    HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
 
-   if (!hWnd)
-   {
-      return FALSE;
-   }
-
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
-   return TRUE;
+   return hWnd;
+}
+
+bool WriteProc()
+{
+	
+
+    return false;
+}
+
+bool ReadProc(HWND hWnd)
+{
+	// 데이터 받은 후 처리 필요
+	int retval;
+
+	int recvAvailableSize = RecvBuffer.DirectEnqueueSize();
+	char* ptr = RecvBuffer.GetRearBufferPtr();
+	retval = recv(Sock, ptr, recvAvailableSize, 0);
+	RecvBuffer.MoveRear(retval);
+
+    // 받은 데이터를 기반으로 그려줘야한다.
+    while (1)
+    {
+        if (RecvBuffer.GetUseSize() <= 2)
+            break;
+
+        stHEADER header;
+        RecvBuffer.Peek((char*)&header, 2);
+
+        if (RecvBuffer.GetUseSize() - 2 < header.Len)
+            break;
+
+        st_DRAW_PACKET payload;
+        RecvBuffer.Dequeue((char*)&payload, header.Len);
+
+		int xPos = payload.iEndX;
+		int yPos = payload.iEndY;
+        int xOld = payload.iStartX;
+        int yOld = payload.iStartY;
+		if (Drag)
+		{
+			// Send 만 진행한다.
+			HDC hdc = GetDC(hWnd);
+			HPEN PenOld = (HPEN)SelectObject(hdc, Pen);
+			MoveToEx(hdc, xOld, yOld, nullptr);
+			LineTo(hdc, xPos, yPos);
+			SelectObject(hdc, PenOld);
+			ReleaseDC(hWnd, hdc);
+		}
+    }
+
+	return false;
+}
+
+bool NetworkMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	// 오류 발생 여부 확인
+	if (WSAGETSELECTERROR(lParam))
+	{
+		closesocket(Sock);
+		return true;
+	}
+
+    //FD_CONNECT | FD_WRITE | FD_READ | FD_CLOSE
+    // 메세지 처리
+    switch (WSAGETSELECTEVENT(lParam))
+    {
+    case FD_CONNECT:
+        ConnectSock = true;
+        break;
+    case FD_WRITE:
+		if (ConnectSock && WriteProc())
+		{
+			return true;
+		}
+        break;
+    case FD_READ:
+        // 링버퍼에서 읽고 나서 한다.
+        if (ConnectSock && ReadProc(hWnd))
+        {
+            return true;
+        }
+        break;
+    case FD_CLOSE:
+        closesocket(Sock);
+        return true;
+    default:
+        closesocket(Sock);
+        return true;
+    }
+
+    return false;
+}
+
+bool SendServer(char* message)
+{
+    int retval;
+
+    stHEADER header;
+    header.Len = sizeof(st_DRAW_PACKET);
+
+    SendBuffer.Enqueue((char*)&header, 2);
+    SendBuffer.Enqueue(message, header.Len);
+
+	if (SendBuffer.DirectDequeueSize() < 2 + header.Len)
+	{
+		char buffer[20];
+		SendBuffer.Peek(buffer, 2 + header.Len);
+		retval = send(Sock, buffer, 2 + header.Len, 0);
+	}
+	else
+	{
+		char* ptr = SendBuffer.GetFrontBufferPtr();
+		retval = send(Sock, ptr, 2 + header.Len, 0);
+	}
+
+    if (retval == SOCKET_ERROR)
+    {
+        retval = GetLastError();
+
+        if (retval == WSAEWOULDBLOCK)
+            return false;
+
+        else if (retval == WSAECONNRESET)
+        {
+            closesocket(Sock);
+            return true;
+        }
+    }
+
+    SendBuffer.MoveFront(retval);
+
+    return false;
 }
 
 //
@@ -139,12 +300,11 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-
-
-    WSAAsyncSelect(s, hWnd, WM_NETWORK, FD_READ | FD_WRITE);
-
     switch (message)
     {
+    case WM_CREATE:
+        Pen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
+        break;
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
@@ -162,14 +322,40 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
         }
         break;
-    case WM_PAINT:
+    case WM_NETWORK:
+        if (NetworkMessage(hWnd, message, wParam, lParam))
         {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: Add any drawing code that uses hdc here...
-            EndPaint(hWnd, &ps);
+            PostQuitMessage(0);
         }
         break;
+    case WM_LBUTTONDOWN:
+        Drag = true;
+        break;
+    case WM_LBUTTONUP:
+        Drag = false;
+        break;
+    case WM_MOUSEMOVE:
+    {
+		int xPos = GET_X_LPARAM(lParam);
+		int yPos = GET_Y_LPARAM(lParam);
+        
+        // 링버퍼에 넣고 Send를 최선을 다해 진행
+        st_DRAW_PACKET payLoad;
+        payLoad.iStartX = OldX;
+        payLoad.iStartY = OldY;
+        payLoad.iEndX = xPos;
+        payLoad.iEndY = yPos;
+
+        if (SendServer((char*)&payLoad))
+        {
+            PostQuitMessage(0);
+            break;
+        }
+
+		OldX = xPos;
+		OldY = yPos;
+    }
+    break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
