@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{767cc6f6-cc12-43c8-afae-cbd3ee79f67d}</ProjectGuid>
-    <RootNamespace>WinConsole003</RootNamespace>
+    <ProjectGuid>{73bbc572-e8cc-476e-8cb0-e2f580792b37}</ProjectGuid>
+    <RootNamespace>TextParser</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -127,9 +127,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="MailSender2_2.cpp" />
-    <ClCompile Include="StartEchoCommand.cpp" />
-    <ClCompile Include="WinConsole003.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Parser.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Parser.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
