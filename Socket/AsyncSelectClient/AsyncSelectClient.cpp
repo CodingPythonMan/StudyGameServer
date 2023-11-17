@@ -23,8 +23,8 @@ bool ConnectSock = false;
 bool Drag = false;
 SOCKET Sock;
 
-RingBuffer RecvBuffer(20000);
-RingBuffer SendBuffer(20000);
+RingBuffer RecvBuffer(50);
+RingBuffer SendBuffer(50);
 
 // Render
 HPEN Pen;
@@ -158,7 +158,36 @@ HWND InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 bool WriteProc()
 {
-	
+    int retval;
+    int useSize = SendBuffer.GetUseSize();
+
+	if (SendBuffer.DirectDequeueSize() < useSize)
+	{
+		char* buffer = new char[useSize];
+		SendBuffer.Peek(buffer, useSize);
+		retval = send(Sock, buffer, useSize, 0);
+        delete[] buffer;
+	}
+	else
+	{
+		char* ptr = SendBuffer.GetFrontBufferPtr();
+		retval = send(Sock, ptr, useSize, 0);
+	}
+
+    if (retval == SOCKET_ERROR)
+    {
+        retval = GetLastError();
+
+        if (retval == WSAEWOULDBLOCK)
+            return false;
+		else if (retval == WSAECONNRESET)
+		{
+            closesocket(Sock);
+			return true;
+		}
+    }
+
+    SendBuffer.MoveFront(retval);
 
     return false;
 }
@@ -169,9 +198,20 @@ bool ReadProc(HWND hWnd)
 	int retval;
 
 	int recvAvailableSize = RecvBuffer.DirectEnqueueSize();
-	char* ptr = RecvBuffer.GetRearBufferPtr();
-	retval = recv(Sock, ptr, recvAvailableSize, 0);
-	RecvBuffer.MoveRear(retval);
+    if (recvAvailableSize < 18)
+    {
+        char buffer[18];
+        retval = recv(Sock, buffer, 18, 0);
+
+        if (RecvBuffer.GetFreeSize() > 18)
+            RecvBuffer.Enqueue(buffer, retval);
+    }
+    else
+    {
+		char* ptr = RecvBuffer.GetRearBufferPtr();
+		retval = recv(Sock, ptr, recvAvailableSize, 0);
+		RecvBuffer.MoveRear(retval);
+    }
 
     // 받은 데이터를 기반으로 그려줘야한다.
     while (1)
@@ -185,6 +225,8 @@ bool ReadProc(HWND hWnd)
         if (RecvBuffer.GetUseSize() - 2 < header.Len)
             break;
 
+        RecvBuffer.MoveFront(2);
+
         st_DRAW_PACKET payload;
         RecvBuffer.Dequeue((char*)&payload, header.Len);
 
@@ -192,16 +234,14 @@ bool ReadProc(HWND hWnd)
 		int yPos = payload.iEndY;
         int xOld = payload.iStartX;
         int yOld = payload.iStartY;
-		if (Drag)
-		{
-			// Send 만 진행한다.
-			HDC hdc = GetDC(hWnd);
-			HPEN PenOld = (HPEN)SelectObject(hdc, Pen);
-			MoveToEx(hdc, xOld, yOld, nullptr);
-			LineTo(hdc, xPos, yPos);
-			SelectObject(hdc, PenOld);
-			ReleaseDC(hWnd, hdc);
-		}
+
+		// Send 만 진행한다.
+		HDC hdc = GetDC(hWnd);
+		HPEN PenOld = (HPEN)SelectObject(hdc, Pen);
+		MoveToEx(hdc, xOld, yOld, nullptr);
+		LineTo(hdc, xPos, yPos);
+		SelectObject(hdc, PenOld);
+		ReleaseDC(hWnd, hdc);
     }
 
 	return false;
@@ -249,41 +289,13 @@ bool NetworkMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 bool SendServer(char* message)
 {
-    int retval;
-
     stHEADER header;
     header.Len = sizeof(st_DRAW_PACKET);
 
     SendBuffer.Enqueue((char*)&header, 2);
     SendBuffer.Enqueue(message, header.Len);
 
-	if (SendBuffer.DirectDequeueSize() < 2 + header.Len)
-	{
-		char buffer[20];
-		SendBuffer.Peek(buffer, 2 + header.Len);
-		retval = send(Sock, buffer, 2 + header.Len, 0);
-	}
-	else
-	{
-		char* ptr = SendBuffer.GetFrontBufferPtr();
-		retval = send(Sock, ptr, 2 + header.Len, 0);
-	}
-
-    if (retval == SOCKET_ERROR)
-    {
-        retval = GetLastError();
-
-        if (retval == WSAEWOULDBLOCK)
-            return false;
-
-        else if (retval == WSAECONNRESET)
-        {
-            closesocket(Sock);
-            return true;
-        }
-    }
-
-    SendBuffer.MoveFront(retval);
+    WriteProc();
 
     return false;
 }
@@ -329,36 +341,39 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
     case WM_LBUTTONDOWN:
+		OldX = GET_X_LPARAM(lParam);
+		OldY = GET_Y_LPARAM(lParam);
         Drag = true;
         break;
     case WM_LBUTTONUP:
         Drag = false;
         break;
     case WM_MOUSEMOVE:
-    {
-		int xPos = GET_X_LPARAM(lParam);
-		int yPos = GET_Y_LPARAM(lParam);
-        
-        // 링버퍼에 넣고 Send를 최선을 다해 진행
-        st_DRAW_PACKET payLoad;
-        payLoad.iStartX = OldX;
-        payLoad.iStartY = OldY;
-        payLoad.iEndX = xPos;
-        payLoad.iEndY = yPos;
-
-        if (SendServer((char*)&payLoad))
+        if (ConnectSock && Drag)
         {
-            PostQuitMessage(0);
-            break;
-        }
+			int xPos = GET_X_LPARAM(lParam);
+			int yPos = GET_Y_LPARAM(lParam);
 
-		OldX = xPos;
-		OldY = yPos;
-    }
-    break;
-    case WM_DESTROY:
-        PostQuitMessage(0);
+			// 링버퍼에 넣고 Send를 최선을 다해 진행
+			st_DRAW_PACKET payLoad;
+			payLoad.iStartX = OldX;
+			payLoad.iStartY = OldY;
+			payLoad.iEndX = xPos;
+			payLoad.iEndY = yPos;
+
+			if (SendServer((char*)&payLoad))
+			{
+				PostQuitMessage(0);
+				break;
+			}
+
+			OldX = xPos;
+			OldY = yPos;
+        }
         break;
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }

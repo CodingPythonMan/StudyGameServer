@@ -113,8 +113,7 @@ int RingBuffer::DirectEnqueueSize()
 	}
 	else
 	{
-		// size 가 0이면 비어있는 상태
-		size = BufferSize - Rear - 1;
+		size = BufferSize - Rear;
 	}
 
 	return size;
@@ -126,7 +125,7 @@ int RingBuffer::DirectDequeueSize()
 
 	if (size < 0)
 	{
-		size = BufferSize - Front + Rear + 1;
+		size = BufferSize - Front;
 	}
 
 	return size;
