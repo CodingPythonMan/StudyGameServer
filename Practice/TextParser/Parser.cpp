@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-Parser::Parser() : Version{ 0 }, ServerID{ 0 }, buffer{ nullptr}
+Parser::Parser() : Version{ 0 }, ServerID{ 0 }, buffer{ nullptr }
 {
 }
 
@@ -82,19 +82,12 @@ bool Parser::GetNextWord(char** chrBufferPtr, int* lengthPtr)
 
 	while (1)
 	{
-		if (SkipNoneCommand(chrBufferPtr))
+		if (SkipNoneCommand(chrBuffer))
 		{
-
+			return false;
 		}
-
-		// 0x20 스페이스
-		// 0x08 백스페이스
-		// 0x09 탭
-		// 0x0a 라인 피드
-		// 0x0d 캐리지 리턴
-		if (*chrBuffer == ',' || *chrBuffer == '.' || *chrBuffer == '"' || *chrBuffer == 0x20
-			|| *chrBuffer == 0x08 || *chrBuffer == 0x09 || *chrBuffer == 0x0a || *chrBuffer == 0x0d
-			|| *chrBuffer == '}')
+		
+		if (*chrBuffer == ',' || *chrBuffer == '.' || *chrBuffer == '"' || *chrBuffer == 0x08 || *chrBuffer == '}')
 		{
 			break;
 		}
@@ -108,14 +101,31 @@ bool Parser::GetNextWord(char** chrBufferPtr, int* lengthPtr)
 	return true;
 }
 
-bool Parser::SkipNoneCommand(char** chrBufferPtr)
+bool Parser::SkipNoneCommand(char* chrBuffer)
 {
-	char* chrBuffer = *chrBufferPtr;
-
-	while (*chrBuffer == 0x20 || *chrBuffer == 0x09 || *chrBuffer == 0x0a || *chrBuffer == 0x0d || *chrBuffer == '}')
+	while (1)
 	{
-		chrBuffer++;
+		// 주석처리 스킵
+
+
+		// 스페이스, 탭, 엔터코드
+		// 0x20 스페이스
+		// 0x08 백스페이스
+		// 0x09 탭
+		// 0x0a 라인 피드
+		// 0x0d 캐리지 리턴
+		if (*chrBuffer == 0x20 || *chrBuffer == 0x09 || *chrBuffer == 0x0a || *chrBuffer == 0x0d)
+		{
+			chrBuffer++;
+		}
+		else
+		{
+			break;
+		}
 	}
 	
-	return true;
+	if(*chrBuffer == '\0' || *chrBuffer == '}')
+		return true;
+
+	return false;
 }
