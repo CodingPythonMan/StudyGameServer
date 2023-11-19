@@ -1,7 +1,7 @@
 // 패킷 데이터 정의
 #include "Direction.h"
 
-enum class PacketType : int {
+enum class PacketType : unsigned char {
 	FIGHTER_CMD_CREATE_MY_CHARACTER = 0,
 	FIGHTER_CMD_CREATE_OTHER_CHARACTER,
 	FIGHTER_CMD_DELETE_CHARACTER,
@@ -24,21 +24,10 @@ enum class PacketType : int {
 
 };
 
-enum class MoveType : char{
-	MOVE_DIR_LL = 0,
-	MOVE_DIR_LU,
-	MOVE_DIR_UU,
-	MOVE_DIR_RU,
-	MOVE_DIR_RR,
-	MOVE_DIR_RD,
-	MOVE_DIR_DD,
-	MOVE_DIR_LD
-};
-
 struct PACKET_HEADER {
-	char ByCode;	// 패킷코드 0x89 고정.
-	char BySize;	// 패킷 사이즈.
-	char ByType;	// 패킷타입.
+	unsigned char ByCode;	// 패킷코드 0x89 고정.
+	unsigned char BySize;	// 패킷 사이즈.
+	unsigned char ByType;	// 패킷타입.
 };
 
 //---------------------------------------------------------------
@@ -56,12 +45,12 @@ struct PACKET_HEADER {
 //	1	-	HP
 //
 //---------------------------------------------------------------
-struct FIGHTER_CMD_CREATE_MY_CHARACTER {
+struct FIGHTER_CMD_CREATE_MY_CHARACTER : PACKET_HEADER {
 	int ID;
 	Direction Direct;
 	short X;
 	short Y;
-	char HP;
+	unsigned char HP;
 };
 
 //---------------------------------------------------------------
@@ -78,12 +67,12 @@ struct FIGHTER_CMD_CREATE_MY_CHARACTER {
 //	1	-	HP
 //
 //---------------------------------------------------------------
-struct FIGHTER_CMD_CREATE_OTHER_CHARACTER {
+struct FIGHTER_CMD_CREATE_OTHER_CHARACTER : PACKET_HEADER {
 	int ID;
 	Direction Direct;
 	short X;
 	short Y;
-	char HP;
+	unsigned char HP;
 };
 
 //---------------------------------------------------------------
@@ -94,7 +83,7 @@ struct FIGHTER_CMD_CREATE_OTHER_CHARACTER {
 //	4	-	ID
 //
 //---------------------------------------------------------------
-struct FIGHTER_CMD_DELETE_CHARACTER {
+struct FIGHTER_CMD_DELETE_CHARACTER : PACKET_HEADER {
 	int ID;
 };
 
@@ -112,8 +101,8 @@ struct FIGHTER_CMD_DELETE_CHARACTER {
 //	2	-	Y
 //
 //---------------------------------------------------------------
-struct FIGHTER_QRY_MOVE_START {
-	MoveType Direct;
+struct FIGHTER_QRY_MOVE_START : PACKET_HEADER {
+	MoveType Move;
 	short X;
 	short Y;
 };
@@ -133,9 +122,9 @@ struct FIGHTER_QRY_MOVE_START {
 //	2	-	Y
 //
 //---------------------------------------------------------------
-struct FIGHTER_REP_MOVE_START {
+struct FIGHTER_REP_MOVE_START : PACKET_HEADER {
 	int ID;
-	MoveType Direct;
+	MoveType Move;
 	short X;
 	short Y;
 };
@@ -151,7 +140,7 @@ struct FIGHTER_REP_MOVE_START {
 //	2	-	Y
 //
 //---------------------------------------------------------------
-struct FIGHTER_QRY_MOVE_STOP {
+struct FIGHTER_QRY_MOVE_STOP : PACKET_HEADER {
 	Direction Direct;
 	short X;
 	short Y;
@@ -169,7 +158,7 @@ struct FIGHTER_QRY_MOVE_STOP {
 //	2	-	Y
 //
 //---------------------------------------------------------------
-struct FIGHTER_REP_MOVE_STOP {
+struct FIGHTER_REP_MOVE_STOP : PACKET_HEADER {
 	int ID;
 	Direction Direct;
 	short X;
@@ -189,7 +178,7 @@ struct FIGHTER_REP_MOVE_STOP {
 //	2	-	Y	
 //
 //---------------------------------------------------------------
-struct FIGHTER_QRY_ATTACK_001 {
+struct FIGHTER_QRY_ATTACK_001 : PACKET_HEADER {
 	Direction Direct;
 	short X;
 	short Y;
@@ -207,7 +196,7 @@ struct FIGHTER_QRY_ATTACK_001 {
 //	2	-	Y
 //
 //---------------------------------------------------------------
-struct FIGHTER_REP_ATTACK_001 {
+struct FIGHTER_REP_ATTACK_001 : PACKET_HEADER {
 	int ID;
 	Direction Direct;
 	short X;
@@ -227,7 +216,7 @@ struct FIGHTER_REP_ATTACK_001 {
 //	2	-	Y
 //
 //---------------------------------------------------------------
-struct FIGHTER_QRY_ATTACK_002 {
+struct FIGHTER_QRY_ATTACK_002 : PACKET_HEADER {
 	Direction Direct;
 	short X;
 	short Y;
@@ -245,7 +234,7 @@ struct FIGHTER_QRY_ATTACK_002 {
 //	2	-	Y
 //
 //---------------------------------------------------------------
-struct FIGHTER_REP_ATTACK_002 {
+struct FIGHTER_REP_ATTACK_002 : PACKET_HEADER {
 	int ID;
 	Direction Direct;
 	short X;
@@ -265,7 +254,7 @@ struct FIGHTER_REP_ATTACK_002 {
 //	2	-	Y
 //
 //---------------------------------------------------------------
-struct FIGHTER_QRY_ATTACK_003 {
+struct FIGHTER_QRY_ATTACK_003 : PACKET_HEADER {
 	Direction Direct;
 	short X;
 	short Y;
@@ -283,7 +272,7 @@ struct FIGHTER_QRY_ATTACK_003 {
 //	2	-	Y
 //
 //---------------------------------------------------------------
-struct FIGHTER_REP_ATTACK_003 {
+struct FIGHTER_REP_ATTACK_003 : PACKET_HEADER {
 	int ID;
 	Direction Direct;
 	short X;
@@ -300,10 +289,10 @@ struct FIGHTER_REP_ATTACK_003 {
 //	1	-	DamageHP	( 피해자 HP )
 //
 //---------------------------------------------------------------
-struct FIGHTER_CMD_DAMAGE {
+struct FIGHTER_CMD_DAMAGE : PACKET_HEADER {
 	int AttackID;
 	int DamageID;
-	char DamageHP;
+	unsigned char DamageHP;
 };
 
 
@@ -316,7 +305,7 @@ struct FIGHTER_CMD_DAMAGE {
 //	2	-	Y
 //
 //---------------------------------------------------------------
-struct FIGHTER_QRY_SYNC {
+struct FIGHTER_QRY_SYNC : PACKET_HEADER {
 	short X;
 	short Y;
 };
@@ -332,7 +321,7 @@ struct FIGHTER_QRY_SYNC {
 //	2	-	Y
 //
 //---------------------------------------------------------------
-struct FIGHTER_REP_SYNC {
+struct FIGHTER_REP_SYNC : PACKET_HEADER {
 	int ID;
 	short X;
 	short Y;

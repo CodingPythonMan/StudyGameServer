@@ -129,9 +129,12 @@
   <ItemGroup>
     <ClCompile Include="FighterServer.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Player.h" />
     <ClCompile Include="RingBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Direction.h" />
     <ClInclude Include="FighterServer.h" />
     <ClInclude Include="MyList.h" />
     <ClInclude Include="Protocol.h" />

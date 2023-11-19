@@ -9,6 +9,9 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
+    <Filter Include="Game">
+      <UniqueIdentifier>{b9f2dfd0-faeb-4a8a-a59f-c4f9c9a9f83c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FighterServer.cpp">
@@ -20,19 +23,28 @@
     <ClCompile Include="RingBuffer.cpp">
       <Filter>Lib</Filter>
     </ClCompile>
+    <ClCompile Include="Player.h">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FighterServer.h">
       <Filter>Main</Filter>
-    </ClInclude>
-    <ClInclude Include="Protocol.h">
-      <Filter>Lib</Filter>
     </ClInclude>
     <ClInclude Include="MyList.h">
       <Filter>Lib</Filter>
     </ClInclude>
     <ClInclude Include="RingBuffer.h">
       <Filter>Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Direction.h">
+      <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

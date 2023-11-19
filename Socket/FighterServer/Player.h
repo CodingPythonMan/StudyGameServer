@@ -7,6 +7,18 @@
 #define RANGE_MOVE_RIGHT	630
 #define RANGE_MOVE_BOTTOM	470
 
+#define ERROR_RANGE		50
+
+//---------------------------------------------------------------
+// 공격범위.
+//---------------------------------------------------------------
+#define ATTACK1_RANGE_X		80
+#define ATTACK2_RANGE_X		90
+#define ATTACK3_RANGE_X		100
+#define ATTACK1_RANGE_Y		10
+#define ATTACK2_RANGE_Y		10
+#define ATTACK3_RANGE_Y		20
+
 class Player
 {
 public:
@@ -14,11 +26,16 @@ public:
 	~Player();
 
 	bool IsDead();
-	bool MovePlayer();
+	void MovePlayer();
+	bool MovePos(short X, short Y, bool Move);
+	void NotifyPlayer(short* X, short* Y, unsigned char* HP = nullptr);
+	void CheckOnAttackRange(Player* otherPlayer, short rangeX, short rangeY);
 
+	MoveType _MoveType;
+	Direction _Direct;
 private:
-	Direction Direct;
-	int X;
-	int Y;
-	int HP;
+	short _X;
+	short _Y;
+	unsigned char _HP;
+	bool _IsMove;
 };
