@@ -1,7 +1,10 @@
+#pragma once
+
 #include "Protocol.h"
 #include "MyList.h"
 #include <WS2tcpip.h>
 #include "RingBuffer.h"
+#include "Player.h"
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -11,10 +14,9 @@
 struct Session {
 	SOCKET Sock;
 	int ID;
-	int X;
-	int Y;
-	RingBuffer sendBuffer;
-	RingBuffer recvBuffer;
+	Player* _Player;
+	RingBuffer SendBuffer;
+	RingBuffer RecvBuffer;
 };
 
 class FighterServer {
@@ -27,8 +29,11 @@ public:
 	void Close();
 
 private:
+	void AcceptProc();
+
 	SOCKET listenSock;
 	MyList<Session*> clientSocks;
 
-	int totalClientSocks;
+	int TotalClientSocks;
+	int UniqueID;
 };

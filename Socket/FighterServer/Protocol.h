@@ -1,6 +1,8 @@
 // 패킷 데이터 정의
+#include "Direction.h"
+
 enum class PacketType : int {
-	FIGHTER_REP_CREATE_MY_CHARACTER = 0,
+	FIGHTER_CMD_CREATE_MY_CHARACTER = 0,
 	FIGHTER_CMD_CREATE_OTHER_CHARACTER,
 	FIGHTER_CMD_DELETE_CHARACTER,
 	
@@ -33,11 +35,6 @@ enum class MoveType : char{
 	MOVE_DIR_LD
 };
 
-enum class Direction : char {
-	LL = 0,
-	RR
-};
-
 struct PACKET_HEADER {
 	char ByCode;	// 패킷코드 0x89 고정.
 	char BySize;	// 패킷 사이즈.
@@ -59,7 +56,7 @@ struct PACKET_HEADER {
 //	1	-	HP
 //
 //---------------------------------------------------------------
-struct FIGHTER_REP_CREATE_MY_CHARACTER {
+struct FIGHTER_CMD_CREATE_MY_CHARACTER {
 	int ID;
 	Direction Direct;
 	short X;

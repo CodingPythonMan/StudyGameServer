@@ -3,7 +3,8 @@
 FighterServer::FighterServer()
 {
 	listenSock = NULL;
-	totalClientSocks = 0;
+	TotalClientSocks = 0;
+	UniqueID = 0;
 }
 
 FighterServer::~FighterServer()
@@ -58,17 +59,46 @@ bool FighterServer::SelectLoop()
 		MyList<Session*>::iterator iter;
 		for (iter = clientSocks.begin(); iter != clientSocks.end(); ++iter)
 		{
-		
+			FD_SET((*iter)->Sock, &rset);
+
+			// 세션 SendBuffer 에 따라 wset 설정
+			if ((*iter)->SendBuffer.GetUseSize() > 0)
+			{
+				FD_SET((*iter)->Sock, &wset);
+			}
 		}
 
 		// 이젠 Select 가 무한 대기가 되면 안 된다.
 		// 프레임 서버로 간다.
+		timeval time{ 0, 0 };
+		retval = select(0, &rset, &wset, nullptr, &time);
+		if (retval == SOCKET_ERROR)
+			return true;
 
+		// 리슨소켓 검사
+		if (FD_ISSET(listenSock, &rset))
+		{
+			AcceptProc();
+		}
 	}
 
-	
-
 	return false;
+}
+
+void FighterServer::AcceptProc()
+{
+	SOCKADDR_IN clientAddr;
+	int addLen = sizeof(clientAddr);
+	SOCKET clientSock = accept(listenSock, (SOCKADDR*)&clientAddr, &addLen);
+	if (clientSock == INVALID_SOCKET)
+		return;
+
+	Session* session = new Session;
+	session->Sock = clientSock;
+	session->ID = UniqueID;
+
+
+	FIGHTER_CMD_CREATE_MY_CHARACTER
 }
 
 void FighterServer::Close() 
