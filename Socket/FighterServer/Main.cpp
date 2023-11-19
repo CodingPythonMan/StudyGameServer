@@ -1,6 +1,17 @@
-#include <iostream>
+#include "FighterServer.h"
 
 int main()
 {
-	std::cout << "Hello World!\n";
+	FighterServer* fighterServer = new FighterServer;
+
+	do {
+		if (true == fighterServer->Init())
+			break;
+
+		if (true == fighterServer->SelectLoop())
+			break;
+
+	} while (false);
+
+	fighterServer->Close();
 }

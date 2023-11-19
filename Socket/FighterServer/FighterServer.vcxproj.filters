@@ -17,12 +17,21 @@
     <ClCompile Include="Main.cpp">
       <Filter>Main</Filter>
     </ClCompile>
+    <ClCompile Include="RingBuffer.cpp">
+      <Filter>Lib</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FighterServer.h">
       <Filter>Main</Filter>
     </ClInclude>
     <ClInclude Include="Protocol.h">
+      <Filter>Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="MyList.h">
+      <Filter>Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="RingBuffer.h">
       <Filter>Lib</Filter>
     </ClInclude>
   </ItemGroup>

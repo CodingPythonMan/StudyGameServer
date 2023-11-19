@@ -39,9 +39,9 @@ enum class Direction : char {
 };
 
 struct PACKET_HEADER {
-	char ByCode;
-	char BySize;
-	char ByType;
+	char ByCode;	// 패킷코드 0x89 고정.
+	char BySize;	// 패킷 사이즈.
+	char ByType;	// 패킷타입.
 };
 
 //---------------------------------------------------------------

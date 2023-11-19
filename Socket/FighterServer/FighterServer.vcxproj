@@ -129,10 +129,13 @@
   <ItemGroup>
     <ClCompile Include="FighterServer.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="RingBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FighterServer.h" />
+    <ClInclude Include="MyList.h" />
     <ClInclude Include="Protocol.h" />
+    <ClInclude Include="RingBuffer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
