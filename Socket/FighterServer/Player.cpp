@@ -1,6 +1,10 @@
 #include "Player.h"
 #include <cstdlib>
 
+#define ATTACK1_DAMAGE		10
+#define ATTACK2_DAMAGE		15
+#define ATTACK3_DAMAGE		25
+
 Player::Player()
 {
 	_Direct = Direction::RR;
@@ -92,18 +96,57 @@ bool Player::MovePos(short X, short Y, bool Move)
 
 void Player::NotifyPlayer(short* X, short* Y, unsigned char* HP)
 {
-	*X = _X;
-	*Y = _Y;
+	if (X != nullptr)
+		*X = _X;
+
+	if(Y != nullptr)
+		*Y = _Y;
+
 	if(HP != nullptr)
 		*HP = _HP;
 }
 
-void Player::CheckOnAttackRange(Player* otherPlayer, short rangeX, short rangeY)
+bool Player::OnAttackRange(Player* otherPlayer, ATTACK_TYPE attackType)
 {
+	short halfX;
+	short halfY;
 
+	switch (attackType)
+	{
+	case ATTACK_TYPE::ATTACK001:
+		halfX = ATTACK1_RANGE_X / 2;
+		halfY = ATTACK1_RANGE_Y / 2;
+		break;
+	case ATTACK_TYPE::ATTACK002:
+		halfX = ATTACK2_RANGE_X / 2;
+		halfY = ATTACK2_RANGE_Y / 2;
+		break;
+	case ATTACK_TYPE::ATTACK003:
+		halfX = ATTACK3_RANGE_X / 2;
+		halfY = ATTACK3_RANGE_Y / 2;
+		break;
+	default:
+		halfX = 0;
+		halfY = 0;
+		break;
+	}
 
-	short halfX = rangeX / 2;
-	short halfY = rangeY / 2;
+	if (otherPlayer->_X + halfX >= _X && otherPlayer->_X - halfX <= _X
+		&& otherPlayer->_Y + halfY >= _Y && otherPlayer->_Y - halfY <= _Y)
+		return true;
 
+	switch (attackType)
+	{
+	case ATTACK_TYPE::ATTACK001:
+		_HP -= ATTACK1_DAMAGE;
+		break;
+	case ATTACK_TYPE::ATTACK002:
+		_HP -= ATTACK2_DAMAGE;
+		break;
+	case ATTACK_TYPE::ATTACK003:
+		_HP -= ATTACK3_DAMAGE;
+		break;
+	}
 
+	return false;
 }

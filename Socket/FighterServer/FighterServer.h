@@ -18,6 +18,12 @@ struct Session {
 	Player* _Player;
 	RingBuffer SendBuffer;
 	RingBuffer RecvBuffer;
+
+	Session() {
+		Sock = 0;
+		ID = 0;
+		_Player = new Player;
+	}
 };
 
 class FighterServer {
@@ -33,6 +39,8 @@ private:
 	void AcceptProc();
 	void ReadProc(Session* session);
 	void WriteProc(Session* session);
+
+	void CheckDamage(Session* session, ATTACK_TYPE attackType);
 
 	void SendUnicast(Session* session, char* message, int size);
 	void SendBroadcast(Session* session, char* message, int size);

@@ -257,18 +257,17 @@ void FighterServer::ReadProc(Session* session)
 			FIGHTER_QRY_ATTACK_001 packet = *((FIGHTER_QRY_ATTACK_001*)message);
 			session->_Player->_Direct = packet.Direct;
 
-			// 충돌처리
-
-
 			FIGHTER_REP_ATTACK_001 response;
 			response.ByCode = 0x89;
 			response.BySize = sizeof(FIGHTER_REP_ATTACK_001);
 			response.ByType = (unsigned char)PacketType::FIGHTER_REP_ATTACK_001;
 			response.Direct = session->_Player->_Direct;
 			response.ID = session->ID;
-			session->_Player->NotifyPlayer(&response.X, &response.Y);
-
+			session->_Player->NotifyPlayer(&response.X, &response.Y, nullptr);
 			SendBroadcast(session, (char*)&response, sizeof(PACKET_HEADER) + response.BySize);
+
+			// 충돌처리
+			CheckDamage(session, ATTACK_TYPE::ATTACK001);
 		}
 		break;
 		case PacketType::FIGHTER_QRY_ATTACK_002:
@@ -282,7 +281,7 @@ void FighterServer::ReadProc(Session* session)
 			response.ByType = (unsigned char)PacketType::FIGHTER_REP_ATTACK_002;
 			response.Direct = session->_Player->_Direct;
 			response.ID = session->ID;
-			session->_Player->NotifyPlayer(&response.X, &response.Y);
+			session->_Player->NotifyPlayer(&response.X, &response.Y, nullptr);
 
 			SendBroadcast(session, (char*)&response, sizeof(PACKET_HEADER) + response.BySize);
 		}
@@ -298,7 +297,7 @@ void FighterServer::ReadProc(Session* session)
 			response.ByType = (unsigned char)PacketType::FIGHTER_REP_ATTACK_003;
 			response.Direct = session->_Player->_Direct;
 			response.ID = session->ID;
-			session->_Player->NotifyPlayer(&response.X, &response.Y);
+			session->_Player->NotifyPlayer(&response.X, &response.Y, nullptr);
 
 			SendBroadcast(session, (char*)&response, sizeof(PACKET_HEADER) + response.BySize);
 		}
@@ -314,6 +313,40 @@ void FighterServer::WriteProc(Session* session)
 {
 
 
+}
+
+void FighterServer::CheckDamage(Session* session, ATTACK_TYPE attackType)
+{
+	FIGHTER_CMD_DAMAGE damage;
+	damage.ByCode = 0x89;
+	damage.BySize = sizeof(FIGHTER_CMD_DAMAGE);
+	damage.ByType = (unsigned char)PacketType::FIGHTER_CMD_DAMAGE;
+	damage.AttackID = session->ID;
+
+	MyList<Session*>::iterator iter;
+	for (iter = clientSocks.begin(); iter != clientSocks.end(); ++iter)
+	{
+		if (*iter == session)
+			continue;
+
+		bool result = (*iter)->_Player->OnAttackRange(session->_Player, attackType);
+		if (result)
+		{
+			damage.DamageID = (*iter)->ID;
+			(*iter)->_Player->NotifyPlayer(nullptr, nullptr, &damage.DamageHP);
+			SendBroadcast(nullptr, (char*)&damage, sizeof(PACKET_HEADER) + damage.BySize);
+
+			if ((*iter)->_Player->IsDead())
+			{
+				FIGHTER_CMD_DELETE_CHARACTER del;
+				del.ByCode = 0x89;
+				del.BySize = sizeof(FIGHTER_CMD_DELETE_CHARACTER);
+				del.ByType = (unsigned char)PacketType::FIGHTER_CMD_DELETE_CHARACTER;
+				del.ID = (*iter)->ID;
+				SendBroadcast(nullptr, (char*)&del, sizeof(PACKET_HEADER) + del.BySize);
+			}
+		}
+	}
 }
 
 void FighterServer::SendUnicast(Session* session, char* message, int size)
