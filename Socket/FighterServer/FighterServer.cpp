@@ -128,6 +128,8 @@ void FighterServer::AcceptProc()
 	player->NotifyPlayer(&packet.X, &packet.Y, &packet.HP);
 	SendUnicast(session, (char*)&packet, sizeof(PACKET_HEADER)+packet.BySize);
 
+	clientSocks.push_back(session);
+
 	// 2. 다른 사람에게 알려주기
 	FIGHTER_CMD_CREATE_OTHER_CHARACTER otherPacket;
 	otherPacket.ByCode = 0x89;
@@ -162,24 +164,9 @@ void FighterServer::ReadProc(Session* session)
 	int retval;
 
 	int recvAvailableSize = session->RecvBuffer.DirectEnqueueSize();
-	PACKET_HEADER header;
-	session->RecvBuffer.Peek((char*)&header, sizeof(PACKET_HEADER));
-	if (recvAvailableSize < sizeof(PACKET_HEADER) + header.BySize)
-	{
-		char buffer[MAX_PACKET_SIZE];
-		retval = recv(session->Sock, buffer, MAX_PACKET_SIZE, 0);
-
-		if (session->RecvBuffer.GetFreeSize() > retval)
-			session->RecvBuffer.Enqueue(buffer, retval);
-		else
-			Disconnect(session);
-	}
-	else
-	{
-		char* ptr = session->RecvBuffer.GetRearBufferPtr();
-		retval = recv(session->Sock, ptr, recvAvailableSize, 0);
-		session->RecvBuffer.MoveRear(retval);
-	}
+	char* ptr = session->RecvBuffer.GetRearBufferPtr();
+	retval = recv(session->Sock, ptr, recvAvailableSize, 0);
+	session->RecvBuffer.MoveRear(retval);
 
 	if (retval == SOCKET_ERROR)
 	{
@@ -201,6 +188,7 @@ void FighterServer::ReadProc(Session* session)
 
 	while (1)
 	{
+		PACKET_HEADER header;
 		session->RecvBuffer.Peek((char*)&header, sizeof(PACKET_HEADER));
 		if (session->RecvBuffer.GetUseSize() < sizeof(PACKET_HEADER) + header.BySize)
 			break;
@@ -248,7 +236,6 @@ void FighterServer::ReadProc(Session* session)
 			response.ID = session->ID;
 			response.X = packet.X;
 			response.Y = packet.Y;
-
 			SendBroadcast(session, (char*)&response, sizeof(PACKET_HEADER) + response.BySize);
 		}
 		break;
@@ -282,8 +269,9 @@ void FighterServer::ReadProc(Session* session)
 			response.Direct = session->_Player->_Direct;
 			response.ID = session->ID;
 			session->_Player->NotifyPlayer(&response.X, &response.Y, nullptr);
-
 			SendBroadcast(session, (char*)&response, sizeof(PACKET_HEADER) + response.BySize);
+			
+			CheckDamage(session, ATTACK_TYPE::ATTACK002);
 		}
 		break;
 		case PacketType::FIGHTER_QRY_ATTACK_003:
@@ -298,8 +286,9 @@ void FighterServer::ReadProc(Session* session)
 			response.Direct = session->_Player->_Direct;
 			response.ID = session->ID;
 			session->_Player->NotifyPlayer(&response.X, &response.Y, nullptr);
-
 			SendBroadcast(session, (char*)&response, sizeof(PACKET_HEADER) + response.BySize);
+		
+			CheckDamage(session, ATTACK_TYPE::ATTACK003);
 		}
 		break;
 		default:
@@ -311,8 +300,30 @@ void FighterServer::ReadProc(Session* session)
 
 void FighterServer::WriteProc(Session* session)
 {
+	while (1)
+	{
+		if (session->SendBuffer.GetUseSize() <= 0)
+			return;
 
+		int retval;
+		int sendAvailableSize = session->SendBuffer.DirectDequeueSize();
+		char* ptr = session->RecvBuffer.GetFrontBufferPtr();
+		retval = send(session->Sock, ptr, sendAvailableSize, 0);
+		session->RecvBuffer.MoveFront(retval);
 
+		if (retval == SOCKET_ERROR)
+		{
+			retval = GetLastError();
+
+			if (retval == WSAEWOULDBLOCK)
+				return;
+			else if (retval == WSAECONNRESET)
+			{
+				Disconnect(session);
+				return;
+			}
+		}
+	}
 }
 
 void FighterServer::CheckDamage(Session* session, ATTACK_TYPE attackType)

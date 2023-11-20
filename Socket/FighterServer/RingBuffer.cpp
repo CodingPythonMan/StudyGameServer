@@ -111,9 +111,9 @@ int RingBuffer::DirectEnqueueSize()
 	{
 		size = Front - Rear - 1;
 	}
-	else
+	else if (size > 0)
 	{
-		size = BufferSize - Rear;
+		size = BufferSize - Rear - 1;
 	}
 
 	return size;
@@ -135,8 +135,7 @@ int RingBuffer::MoveRear(int size)
 {
 	if (Rear + size > BufferSize)
 	{
-		int rest = BufferSize + 1 - Rear;
-		Rear = size - rest;
+		Rear = Rear + size - BufferSize - 1;
 	}
 	else
 	{
@@ -150,8 +149,7 @@ int RingBuffer::MoveFront(int size)
 {
 	if (Front + size > BufferSize)
 	{
-		int rest = BufferSize + 1 - Front;
-		Front = size - rest;
+		Front = Front + size - BufferSize - 1;
 	}
 	else
 	{
