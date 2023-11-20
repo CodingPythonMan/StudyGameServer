@@ -42,6 +42,6 @@ public:
 private:
 	short _X;
 	short _Y;
-	unsigned char _HP;
+	char _HP;
 	bool _IsMove;
 };

@@ -133,20 +133,22 @@ bool Player::OnAttackRange(Player* otherPlayer, ATTACK_TYPE attackType)
 
 	if (otherPlayer->_X + halfX >= _X && otherPlayer->_X - halfX <= _X
 		&& otherPlayer->_Y + halfY >= _Y && otherPlayer->_Y - halfY <= _Y)
-		return true;
-
-	switch (attackType)
 	{
-	case ATTACK_TYPE::ATTACK001:
-		otherPlayer->_HP -= ATTACK1_DAMAGE;
-		break;
-	case ATTACK_TYPE::ATTACK002:
-		otherPlayer->_HP -= ATTACK2_DAMAGE;
-		break;
-	case ATTACK_TYPE::ATTACK003:
-		otherPlayer->_HP -= ATTACK3_DAMAGE;
-		break;
-	}
+		switch (attackType)
+		{
+		case ATTACK_TYPE::ATTACK001:
+			otherPlayer->_HP -= ATTACK1_DAMAGE;
+			break;
+		case ATTACK_TYPE::ATTACK002:
+			otherPlayer->_HP -= ATTACK2_DAMAGE;
+			break;
+		case ATTACK_TYPE::ATTACK003:
+			otherPlayer->_HP -= ATTACK3_DAMAGE;
+			break;
+		}
 
+		return true;
+	}
+		
 	return false;
 }
