@@ -49,6 +49,10 @@ bool FighterServer::SelectLoop()
 	FD_SET rset, wset;
 	int retval;
 
+	unsigned int tick = 0;
+	unsigned int curTime = timeGetTime();
+	unsigned int ourTime = curTime;
+
 	while (1)
 	{
 		FD_ZERO(&rset);
@@ -96,8 +100,24 @@ bool FighterServer::SelectLoop()
 			}
 		}
 
-		// 프레임 계산 필요.
+		// Disconnect 처리
+		DeleteSessions();
 
+		// 플레이어들 이동
+		for (iter = clientSocks.begin(); iter != clientSocks.end(); ++iter)
+		{
+			(*iter)->_Player->MovePlayer();
+		}
+		
+		// 프레임 계산 필요
+		curTime = timeGetTime();
+		tick = curTime - ourTime;
+		ourTime += WAIT;
+
+		if (tick <= WAIT)
+		{
+			Sleep(WAIT - tick);
+		}
 	}
 
 	return false;
@@ -147,11 +167,11 @@ void FighterServer::AcceptProc()
 		if (*iter == session)
 			continue;
 
+		otherPacket.Direct = (*iter)->_Player->_Direct;
 		otherPacket.ID = (*iter)->ID;
 		(*iter)->_Player->NotifyPlayer(&otherPacket.X, &otherPacket.Y, &otherPacket.HP);
 
-		if (session->SendBuffer.GetFreeSize() > sizeof(PACKET_HEADER)+otherPacket.BySize)
-			session->SendBuffer.Enqueue((char*)&otherPacket, sizeof(PACKET_HEADER)+otherPacket.BySize);
+		SendUnicast(session, (char*)&otherPacket, sizeof(PACKET_HEADER) + otherPacket.BySize);
 	}
 
 	// UniqueID 증가
@@ -188,6 +208,10 @@ void FighterServer::ReadProc(Session* session)
 
 	while (1)
 	{
+		// Peek 전에 오류 나버린다.
+		if (session->RecvBuffer.GetUseSize() <= sizeof(PACKET_HEADER))
+			break;
+
 		PACKET_HEADER header;
 		session->RecvBuffer.Peek((char*)&header, sizeof(PACKET_HEADER));
 		if (session->RecvBuffer.GetUseSize() < sizeof(PACKET_HEADER) + header.BySize)
@@ -197,6 +221,7 @@ void FighterServer::ReadProc(Session* session)
 		if (header.ByCode != 0x89)
 			break;
 
+		// 마샬링
 		char message[MAX_PACKET_SIZE];
 		retval = session->RecvBuffer.Dequeue(message, sizeof(PACKET_HEADER)+header.BySize);
 
@@ -207,7 +232,11 @@ void FighterServer::ReadProc(Session* session)
 		{
 			FIGHTER_QRY_MOVE_START packet = *((FIGHTER_QRY_MOVE_START*)message);
 			session->_Player->_MoveType = packet.Move;
-			session->_Player->MovePos(packet.X, packet.Y, true);
+			if (true == session->_Player->MovePos(packet.X, packet.Y, true))
+			{
+				Disconnect(session);
+				break;
+			}
 
 			FIGHTER_REP_MOVE_START response;
 			response.ByCode = 0x89;
@@ -226,7 +255,11 @@ void FighterServer::ReadProc(Session* session)
 		{
 			FIGHTER_QRY_MOVE_STOP packet = *((FIGHTER_QRY_MOVE_STOP*)message);
 			session->_Player->_Direct = packet.Direct;
-			session->_Player->MovePos(packet.X, packet.Y, false);
+			if(true == session->_Player->MovePos(packet.X, packet.Y, false))
+			{
+				Disconnect(session);
+				break;
+			}
 
 			FIGHTER_REP_MOVE_STOP response;
 			response.ByCode = 0x89;
@@ -307,9 +340,9 @@ void FighterServer::WriteProc(Session* session)
 
 		int retval;
 		int sendAvailableSize = session->SendBuffer.DirectDequeueSize();
-		char* ptr = session->RecvBuffer.GetFrontBufferPtr();
+		char* ptr = session->SendBuffer.GetFrontBufferPtr();
 		retval = send(session->Sock, ptr, sendAvailableSize, 0);
-		session->RecvBuffer.MoveFront(retval);
+		session->SendBuffer.MoveFront(retval);
 
 		if (retval == SOCKET_ERROR)
 		{
@@ -340,7 +373,7 @@ void FighterServer::CheckDamage(Session* session, ATTACK_TYPE attackType)
 		if (*iter == session)
 			continue;
 
-		bool result = (*iter)->_Player->OnAttackRange(session->_Player, attackType);
+		bool result = session->_Player->OnAttackRange((*iter)->_Player, attackType);
 		if (result)
 		{
 			damage.DamageID = (*iter)->ID;
@@ -391,10 +424,23 @@ void FighterServer::Disconnect(Session* session)
 	packet.BySize = sizeof(FIGHTER_CMD_DELETE_CHARACTER);
 	packet.ByType = (unsigned char)PacketType::FIGHTER_CMD_DELETE_CHARACTER;
 	packet.ID = session->ID;
-	SendBroadcast(session, (char*)&packet, packet.BySize);
+	SendBroadcast(session, (char*)&packet, sizeof(PACKET_HEADER) + packet.BySize);
 
 	// 2. ClientList 에서 삭제 => 우선 임시로 삭제 리스트에 추가
 	deleteClients.push_back(session);
+}
+
+void FighterServer::DeleteSessions()
+{
+	MyList<Session*>::iterator iter;
+	for (iter = deleteClients.begin(); iter != deleteClients.end(); ++iter)
+	{
+		clientSocks.remove(*iter);
+		closesocket((*iter)->Sock);
+		delete ((*iter)->_Player);
+		delete (*iter);
+	}
+	deleteClients.clear();
 }
 
 void FighterServer::Close() 

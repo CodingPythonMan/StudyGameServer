@@ -35,7 +35,7 @@ void Player::MovePlayer()
 	short moveX = 0;
 	short moveY = 0;
 
-	if (false == _IsMove)
+	if (true == _IsMove)
 	{
 		switch (_MoveType)
 		{
@@ -138,13 +138,13 @@ bool Player::OnAttackRange(Player* otherPlayer, ATTACK_TYPE attackType)
 	switch (attackType)
 	{
 	case ATTACK_TYPE::ATTACK001:
-		_HP -= ATTACK1_DAMAGE;
+		otherPlayer->_HP -= ATTACK1_DAMAGE;
 		break;
 	case ATTACK_TYPE::ATTACK002:
-		_HP -= ATTACK2_DAMAGE;
+		otherPlayer->_HP -= ATTACK2_DAMAGE;
 		break;
 	case ATTACK_TYPE::ATTACK003:
-		_HP -= ATTACK3_DAMAGE;
+		otherPlayer->_HP -= ATTACK3_DAMAGE;
 		break;
 	}
 

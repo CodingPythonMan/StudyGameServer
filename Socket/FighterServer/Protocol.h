@@ -17,13 +17,15 @@ enum class PacketType : unsigned char {
 	FIGHTER_REP_ATTACK_002,
 	FIGHTER_QRY_ATTACK_003,
 	FIGHTER_REP_ATTACK_003,
-	FIGHTER_CMD_DAMAGE,
+
+	FIGHTER_CMD_DAMAGE = 30,
 
 	FIGHTER_QRY_SYNC = 250,
 	FIGHTER_REP_SYNC,
 
 };
 
+#pragma pack(push, 1)
 struct PACKET_HEADER {
 	unsigned char ByCode;	// 패킷코드 0x89 고정.
 	unsigned char BySize;	// 패킷 사이즈.
@@ -326,3 +328,4 @@ struct FIGHTER_REP_SYNC : PACKET_HEADER {
 	short X;
 	short Y;
 };
+#pragma pack(pop)
