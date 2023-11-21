@@ -1,4 +1,5 @@
 ﻿#include "FighterServer.h"
+#include <cstdio>
 
 FighterServer::FighterServer()
 {
@@ -134,6 +135,11 @@ void FighterServer::AcceptProc()
 	Session* session = new Session;
 	session->Sock = clientSock;
 	session->ID = UniqueID;
+	session->Port = ntohs(clientAddr.sin_port);
+	InetNtop(AF_INET, &clientAddr.sin_addr, session->IP, 16);
+	// Session 생성 알려주기
+	wprintf(L"[Client Connect] ID : %d, IP : %s, Port : %d\n", 
+		UniqueID, session->IP, session->Port);
 	
 	Player* player = new Player;
 	session->_Player = player;
@@ -249,6 +255,10 @@ void FighterServer::ReadProc(Session* session)
 
 			// 이 유저가 움직이기 시작했다는 것을 모두에게 알려줘야 한다.
 			SendBroadcast(session, (char*)&response, sizeof(PACKET_HEADER)+response.BySize);
+		
+			// 로그
+			wprintf(L"[Move Start] ID : %d, X : %d, Y : %d, Direction : %d \n", 
+				session->ID, packet.X, packet.Y, session->_Player->_MoveType);
 		}
 		break;
 		case PacketType::FIGHTER_QRY_MOVE_STOP:
@@ -270,6 +280,10 @@ void FighterServer::ReadProc(Session* session)
 			response.X = packet.X;
 			response.Y = packet.Y;
 			SendBroadcast(session, (char*)&response, sizeof(PACKET_HEADER) + response.BySize);
+			
+			// 로그
+			wprintf(L"[Move Stop] ID : %d, X : %d, Y : %d, Direct : %d \n", 
+				session->ID, packet.X, packet.Y, session->_Player->_Direct);
 		}
 		break;
 		case PacketType::FIGHTER_QRY_ATTACK_001:
@@ -373,12 +387,16 @@ void FighterServer::CheckDamage(Session* session, ATTACK_TYPE attackType)
 		if (*iter == session)
 			continue;
 
-		bool result = session->_Player->OnAttackRange((*iter)->_Player, attackType);
+		bool result = session->_Player->OnAttack((*iter)->_Player, attackType);
 		if (result)
 		{
 			damage.DamageID = (*iter)->ID;
 			(*iter)->_Player->NotifyPlayer(nullptr, nullptr, &damage.DamageHP);
 			SendBroadcast(nullptr, (char*)&damage, sizeof(PACKET_HEADER) + damage.BySize);
+
+			// 어택 로그
+			wprintf(L"[Attack] Attack ID : %d, Attacked ID : %d, AttackType : %d \n",
+				session->ID, (*iter)->ID, attackType);
 
 			if ((*iter)->_Player->IsDead())
 			{
@@ -388,6 +406,9 @@ void FighterServer::CheckDamage(Session* session, ATTACK_TYPE attackType)
 				del.ByType = (unsigned char)PacketType::FIGHTER_CMD_DELETE_CHARACTER;
 				del.ID = (*iter)->ID;
 				SendBroadcast(nullptr, (char*)&del, sizeof(PACKET_HEADER) + del.BySize);
+
+				// 죽었으니 연결을 끊어줘야 한다.
+				Disconnect(*iter);
 			}
 		}
 	}
@@ -425,6 +446,10 @@ void FighterServer::Disconnect(Session* session)
 	packet.ByType = (unsigned char)PacketType::FIGHTER_CMD_DELETE_CHARACTER;
 	packet.ID = session->ID;
 	SendBroadcast(session, (char*)&packet, sizeof(PACKET_HEADER) + packet.BySize);
+
+	// Session 제거 알려주기
+	wprintf(L"[Client Disconnect] ID : %d, IP : %s, Port : %d\n",
+		session->ID, session->IP, session->Port);
 
 	// 2. ClientList 에서 삭제 => 우선 임시로 삭제 리스트에 추가
 	deleteClients.push_back(session);

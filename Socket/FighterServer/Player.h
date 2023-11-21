@@ -35,10 +35,14 @@ public:
 	void MovePlayer();
 	bool MovePos(short X, short Y, bool Move);
 	void NotifyPlayer(short* X, short* Y, unsigned char* HP);
-	bool OnAttackRange(Player* otherPlayer, ATTACK_TYPE attackType);
-
+	bool OnAttack(Player* otherPlayer, ATTACK_TYPE attackType);
+	
 	MoveType _MoveType;
 	Direction _Direct;
+
+private:
+	bool CheckAttackRange(Player* otherPlayer, ATTACK_TYPE attackType);
+
 private:
 	short _X;
 	short _Y;

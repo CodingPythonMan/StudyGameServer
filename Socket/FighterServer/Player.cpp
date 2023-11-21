@@ -106,33 +106,14 @@ void Player::NotifyPlayer(short* X, short* Y, unsigned char* HP)
 		*HP = _HP;
 }
 
-bool Player::OnAttackRange(Player* otherPlayer, ATTACK_TYPE attackType)
+bool Player::OnAttack(Player* otherPlayer, ATTACK_TYPE attackType)
 {
-	short halfX;
-	short halfY;
+	// 쿨타임 계산 (이건 때려보면서 필요하겠으면 넣는다.)
 
-	switch (attackType)
-	{
-	case ATTACK_TYPE::ATTACK001:
-		halfX = ATTACK1_RANGE_X / 2;
-		halfY = ATTACK1_RANGE_Y / 2;
-		break;
-	case ATTACK_TYPE::ATTACK002:
-		halfX = ATTACK2_RANGE_X / 2;
-		halfY = ATTACK2_RANGE_Y / 2;
-		break;
-	case ATTACK_TYPE::ATTACK003:
-		halfX = ATTACK3_RANGE_X / 2;
-		halfY = ATTACK3_RANGE_Y / 2;
-		break;
-	default:
-		halfX = 0;
-		halfY = 0;
-		break;
-	}
+	// 공격범위 안 인지 판단
+	bool AttackResult = CheckAttackRange(otherPlayer, attackType);
 
-	if (otherPlayer->_X + halfX >= _X && otherPlayer->_X - halfX <= _X
-		&& otherPlayer->_Y + halfY >= _Y && otherPlayer->_Y - halfY <= _Y)
+	if (true == AttackResult)
 	{
 		switch (attackType)
 		{
@@ -146,9 +127,52 @@ bool Player::OnAttackRange(Player* otherPlayer, ATTACK_TYPE attackType)
 			otherPlayer->_HP -= ATTACK3_DAMAGE;
 			break;
 		}
-
-		return true;
 	}
-		
+
+	return AttackResult;
+}
+
+bool Player::CheckAttackRange(Player* otherPlayer, ATTACK_TYPE attackType)
+{
+	short RangeX;
+	short RangeY;
+
+	switch (attackType)
+	{
+	case ATTACK_TYPE::ATTACK001:
+		RangeX = ATTACK1_RANGE_X;
+		RangeY = ATTACK1_RANGE_Y;
+		break;
+	case ATTACK_TYPE::ATTACK002:
+		RangeX = ATTACK2_RANGE_X;
+		RangeY = ATTACK2_RANGE_Y;
+		break;
+	case ATTACK_TYPE::ATTACK003:
+		RangeX = ATTACK3_RANGE_X;
+		RangeY = ATTACK3_RANGE_Y;
+		break;
+	default:
+		RangeX = 0;
+		RangeY = 0;
+		break;
+	}
+
+	if (_Direct == Direction::LL)
+	{
+		if (_X - RangeX <= otherPlayer->_X && _X >= otherPlayer->_X
+			&& _Y + RangeY >= otherPlayer->_Y && _Y - RangeY <= otherPlayer->_Y)
+		{
+			return true;
+		}
+	}
+	else
+	{
+		if (_X + RangeX >= otherPlayer->_X && _X <= otherPlayer->_X
+			&& _Y + RangeY >= otherPlayer->_Y && _Y - RangeY <= otherPlayer->_Y)
+		{
+			return true;
+		}
+	}
+
 	return false;
 }
