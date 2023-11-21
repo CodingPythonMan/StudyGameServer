@@ -17,7 +17,7 @@ bool FighterServer::Init()
 	int retval;
 
 	// 윈속 초기화
-	WSADATA wsa;
+	WSADATA wsa;	
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
 		return true;
 
@@ -36,12 +36,18 @@ bool FighterServer::Init()
 	if (retval == SOCKET_ERROR)
 		return true;
 
+	// linger 옵션 설정
+	linger Linger;
+	Linger.l_onoff = 1;
+	Linger.l_linger = 0;
+	setsockopt(listenSock, SOL_SOCKET, SO_LINGER, (char*)&Linger, sizeof(Linger));
+
 	// listen
 	retval = listen(listenSock, SOMAXCONN);
 	if (retval == SOCKET_ERROR)
 		return true;
 
-	wprintf(L"[Listen Status] : OK");
+	wprintf(L"[Listen Status] : OK\n");
 
 	return false;
 }

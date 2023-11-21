@@ -14,7 +14,7 @@ public:
 	void LoadFile(const char* fileName);
 	bool GetValueInt(const char* valueName, int* column);
 	bool GetNextWord(char** chrBuffer, int* length);
-	bool SkipNoneCommand(char* chrBuffer);
+	bool SkipToNextWord(char** chrBufferPtr);
 
 	int Version;
 	int ServerID;
