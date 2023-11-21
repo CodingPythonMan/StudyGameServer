@@ -55,21 +55,20 @@ bool Parser::GetValueInt(const char* valueName, int* column)
 			memcpy(word, chrBuffer, length);
 			word[255] = '\0';
 
+			chrBuffer += length;
 			// 인자로 입력받은 단어와 같은지 검사한다.
 			if (0 == strcmp(valueName, word))
 			{
-				chrBuffer += length;
 				// 바로 뒤 = 을 찾는다.
-				length = 0;
 				if (GetNextWord(&chrBuffer, &length))
 				{
 					memset(word, 0, 256);
 					memcpy(word, chrBuffer, length);
+
+					chrBuffer += length;
 					if (0 == strcmp(word, "="))
 					{
-						chrBuffer += length;
 						// 바로 뒤 값을 찾는다.
-						length = 0;
 						if (GetNextWord(&chrBuffer, &length))
 						{
 							memset(word, 0, 256);
@@ -90,6 +89,9 @@ bool Parser::GetValueInt(const char* valueName, int* column)
 
 bool Parser::GetNextWord(char** chrBufferPtr, int* lengthPtr)
 {
+	// length 는 처음에 초기화
+	*lengthPtr = 0;
+
 	// 다음 유효 글자 첫번째까지 이동
 	if (SkipToNextWord(chrBufferPtr))
 	{
