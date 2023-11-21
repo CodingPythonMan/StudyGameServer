@@ -41,6 +41,8 @@ bool FighterServer::Init()
 	if (retval == SOCKET_ERROR)
 		return true;
 
+	wprintf(L"[Listen Status] : OK");
+
 	return false;
 }
 
