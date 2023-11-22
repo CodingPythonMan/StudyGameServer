@@ -128,6 +128,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Dummy.cpp" />
+    <ClCompile Include="Main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Dummy.h" />
+    <ClInclude Include="FighterProtocol.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

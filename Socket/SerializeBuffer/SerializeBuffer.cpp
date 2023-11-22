@@ -31,8 +31,9 @@ void Packet::Clear(void)
 
 int Packet::MoveWritePos(int size)
 {
-	if (size > 0)
+	if (size > 0 && DataSize + size < BufferSize)
 	{
+		WritePos += size;
 
 	}
 	else
@@ -63,12 +64,14 @@ Packet& Packet::operator=(Packet& srcPacket)
 
 Packet& Packet::operator<<(unsigned char value)
 {
-	
+
+
+	WritePos++;
 }
 
 Packet& Packet::operator<<(char value)
 {
-	// TODO: insert return statement here
+	
 }
 
 Packet& Packet::operator<<(short value)
