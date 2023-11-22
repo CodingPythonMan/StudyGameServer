@@ -44,19 +44,26 @@ int RingBuffer::GetFreeSize()
 
 int RingBuffer::Enqueue(char* src, int size)
 {
-	Rear++;
-
-	if (Rear + size > BufferSize)
+	if (size > 0)
 	{
-		int rest = BufferSize + 1 - Rear;
-		memcpy(&Buffer[Rear], src, rest);
-		memcpy(&Buffer[0], src + rest, size - rest);
-		Rear = size - rest - 1;
+		Rear++;
+
+		if (Rear + size > BufferSize)
+		{
+			int rest = BufferSize + 1 - Rear;
+			memcpy(&Buffer[Rear], src, rest);
+			memcpy(&Buffer[0], src + rest, size - rest);
+			Rear = size - rest - 1;
+		}
+		else
+		{
+			memcpy(&Buffer[Rear], src, size);
+			Rear += size - 1;
+		}
 	}
 	else
 	{
-		memcpy(&Buffer[Rear], src, size);
-		Rear += size - 1;
+		size = 0;
 	}
 
 	return size;
@@ -64,19 +71,26 @@ int RingBuffer::Enqueue(char* src, int size)
 
 int RingBuffer::Dequeue(char* dest, int size)
 {
-	Front++;
-
-	if (Front + size > BufferSize)
+	if (size > 0)
 	{
-		int rest = BufferSize + 1 - Front;
-		memcpy(dest, &Buffer[Front], rest);
-		memcpy(dest + rest, &Buffer[0], size - rest);
-		Front = size - rest - 1;
+		Front++;
+
+		if (Front + size > BufferSize)
+		{
+			int rest = BufferSize + 1 - Front;
+			memcpy(dest, &Buffer[Front], rest);
+			memcpy(dest + rest, &Buffer[0], size - rest);
+			Front = size - rest - 1;
+		}
+		else
+		{
+			memcpy(dest, &Buffer[Front], size);
+			Front += size - 1;
+		}
 	}
 	else
 	{
-		memcpy(dest, &Buffer[Front], size);
-		Front += size - 1;
+		size = 0;
 	}
 
 	return size;
@@ -84,15 +98,22 @@ int RingBuffer::Dequeue(char* dest, int size)
 
 int RingBuffer::Peek(char* dest, int size)
 {
-	if (Front + 1 + size > BufferSize)
+	if (size > 0)
 	{
-		int rest = BufferSize - Front;
-		memcpy(dest, &Buffer[Front + 1], rest);
-		memcpy(dest + rest, &Buffer[0], size - rest);
+		if (Front + 1 + size > BufferSize)
+		{
+			int rest = BufferSize - Front;
+			memcpy(dest, &Buffer[Front + 1], rest);
+			memcpy(dest + rest, &Buffer[0], size - rest);
+		}
+		else
+		{
+			memcpy(dest, &Buffer[Front + 1], size);
+		}
 	}
 	else
 	{
-		memcpy(dest, &Buffer[Front + 1], size);
+		size = 0;
 	}
 
 	return size;
@@ -161,7 +182,7 @@ int RingBuffer::MoveFront(int size)
 			Front += size;
 		}
 	}
-	
+
 	return size;
 }
 

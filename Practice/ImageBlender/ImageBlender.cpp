@@ -78,6 +78,10 @@ void AlphaBlending(const char* bmp1, const char* bmp2, const char* result)
 
 	memcpy(imageResult, &BitmapFileHeader, sizeof(BitmapFileHeader));
 	memcpy(imageResult + sizeof(BitmapFileHeader), &BitmapInfoHeader, sizeof(BitmapInfoHeader));
+
+	// 여기서 image 를 잘 설정해주면 된다.
+	
+
 	memcpy(imageResult + sizeof(BitmapFileHeader) + sizeof(BitmapInfoHeader), image2, imageSize);
 
 	// 픽셀 데이터 조절하기
