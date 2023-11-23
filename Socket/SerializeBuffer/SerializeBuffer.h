@@ -199,7 +199,7 @@ public:
 	// Parameters: (char *)Src 포인터. (int)SrcSize.
 	// Return: (int)복사한 사이즈.
 	//////////////////////////////////////////////////////////////////////////
-	int		PutData(char* chpSrc, int srcSize);
+	int		PutData(char* chpSrc, int size);
 
 
 

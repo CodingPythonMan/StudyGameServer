@@ -26,15 +26,21 @@ Packet::~Packet()
 
 void Packet::Clear(void)
 {
-	memset(Buffer, 0, BufferSize);
+	ReadPos = 0;
+	WritePos = 0;
 }
 
 int Packet::MoveWritePos(int size)
 {
-	if (size > 0 && DataSize + size < BufferSize)
+	if (size > 0)
 	{
 		WritePos += size;
+		DataSize += size;
 
+		if (WritePos + size > BufferSize)
+		{
+			__debugbreak();
+		}
 	}
 	else
 	{
@@ -48,24 +54,34 @@ int Packet::MoveReadPos(int size)
 {
 	if (size > 0)
 	{
+		ReadPos += size;
+		DataSize -= size;
 
+		if (ReadPos + size > BufferSize)
+		{
+			__debugbreak();
+		}
 	}
 	else
 	{
 		size = 0;
 	}
+
+	return size;
 }
 
 Packet& Packet::operator=(Packet& srcPacket)
 {
 	Buffer = srcPacket.Buffer;
-
+	ReadPos = srcPacket.ReadPos;
+	WritePos = srcPacket.WritePos;
+	BufferSize = srcPacket.BufferSize;
+	DataSize = srcPacket.DataSize;
 }
 
 Packet& Packet::operator<<(unsigned char value)
 {
-
-
+	
 	WritePos++;
 }
 
@@ -156,10 +172,11 @@ Packet& Packet::operator>>(double& value)
 
 int Packet::GetData(char* chpDest, int size)
 {
-	return 0;
+	return size;
 }
 
-int Packet::PutData(char* chpSrc, int srcSize)
+int Packet::PutData(char* chpSrc, int size)
 {
-	return 0;
+
+	return size;
 }
