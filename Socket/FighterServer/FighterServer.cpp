@@ -1,4 +1,5 @@
 ﻿#include "FighterServer.h"
+#include "Packet.h"
 #include <cstdio>
 
 FighterServer::FighterServer()
@@ -244,6 +245,10 @@ void FighterServer::ReadProc(Session* session)
 		{
 		case PacketType::FIGHTER_QRY_MOVE_START:
 		{
+			Packet packet;
+
+
+
 			FIGHTER_QRY_MOVE_START packet = *((FIGHTER_QRY_MOVE_START*)message);
 			session->_Player->_MoveType = packet.Move;
 			if (true == session->_Player->MovePos(packet.X, packet.Y, true))
