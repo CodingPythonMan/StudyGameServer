@@ -72,111 +72,185 @@ int Packet::MoveReadPos(int size)
 
 Packet& Packet::operator=(Packet& srcPacket)
 {
-	Buffer = srcPacket.Buffer;
-	ReadPos = srcPacket.ReadPos;
-	WritePos = srcPacket.WritePos;
-	BufferSize = srcPacket.BufferSize;
-	DataSize = srcPacket.DataSize;
+	this->Buffer = srcPacket.Buffer;
+	this->ReadPos = srcPacket.ReadPos;
+	this->WritePos = srcPacket.WritePos;
+	this->BufferSize = srcPacket.BufferSize;
+	this->DataSize = srcPacket.DataSize;
+
+	return *this;
 }
 
 Packet& Packet::operator<<(unsigned char value)
 {
-	
+	Buffer[WritePos] = value;
 	WritePos++;
+
+	return *this;
 }
 
 Packet& Packet::operator<<(char value)
 {
-	
+	Buffer[WritePos] = value;
+	WritePos++;
+
+	return *this;
 }
 
 Packet& Packet::operator<<(short value)
 {
-	// TODO: insert return statement here
+	memcpy(&Buffer[WritePos], &value, sizeof(short));
+	WritePos+= sizeof(short);
+
+	return *this;
 }
 
 Packet& Packet::operator<<(unsigned short value)
 {
-	// TODO: insert return statement here
+	memcpy(&Buffer[WritePos], &value, sizeof(unsigned short));
+	WritePos += sizeof(unsigned short);
+
+	return *this;
 }
 
 Packet& Packet::operator<<(int value)
 {
-	// TODO: insert return statement here
+	memcpy(&Buffer[WritePos], &value, sizeof(int));
+	WritePos += sizeof(int);
+
+	return *this;
 }
 
 Packet& Packet::operator<<(long value)
 {
-	// TODO: insert return statement here
+	memcpy(&Buffer[WritePos], &value, sizeof(long));
+	WritePos += sizeof(long);
+
+	return *this;
 }
 
 Packet& Packet::operator<<(float value)
 {
-	// TODO: insert return statement here
+	memcpy(&Buffer[WritePos], &value, sizeof(float));
+	WritePos += sizeof(float);
+
+	return *this;
 }
 
 Packet& Packet::operator<<(__int64 value)
 {
-	// TODO: insert return statement here
+	memcpy(&Buffer[WritePos], &value, sizeof(__int64));
+	WritePos += sizeof(__int64);
+
+	return *this;
 }
 
 Packet& Packet::operator<<(double value)
 {
-	// TODO: insert return statement here
+	memcpy(&Buffer[WritePos], &value, sizeof(double));
+	WritePos += sizeof(double);
+
+	return *this;
 }
 
 Packet& Packet::operator>>(unsigned char& value)
 {
-	// TODO: insert return statement here
+	value = Buffer[ReadPos];
+	ReadPos++;
+
+	return *this;
 }
 
 Packet& Packet::operator>>(char& value)
 {
-	// TODO: insert return statement here
+	value = Buffer[ReadPos];
+	ReadPos++;
+
+	return *this;
 }
 
 Packet& Packet::operator>>(short& value)
 {
-	// TODO: insert return statement here
+	value = (short)*(Buffer+ReadPos);
+	ReadPos+=sizeof(short);
+
+	return *this;
 }
 
 Packet& Packet::operator>>(unsigned short& value)
 {
-	// TODO: insert return statement here
+	value = (unsigned short)*(Buffer + ReadPos);
+	ReadPos += sizeof(unsigned short);
+
+	return *this;
 }
 
 Packet& Packet::operator>>(int& value)
 {
-	// TODO: insert return statement here
+	value = (int)*(Buffer + ReadPos);
+	ReadPos += sizeof(int);
+
+	return *this;
 }
 
 Packet& Packet::operator>>(unsigned int& value)
 {
-	// TODO: insert return statement here
+	value = (unsigned int)*(Buffer + ReadPos);
+	ReadPos += sizeof(unsigned int);
+
+	return *this;
 }
 
 Packet& Packet::operator>>(float& value)
 {
-	// TODO: insert return statement here
+	value = (float)*(Buffer + ReadPos);
+	ReadPos += sizeof(float);
+
+	return *this;
 }
 
 Packet& Packet::operator>>(__int64& value)
 {
-	// TODO: insert return statement here
+	value = (__int64)*(Buffer + ReadPos);
+	ReadPos += sizeof(__int64);
+
+	return *this;
 }
 
 Packet& Packet::operator>>(double& value)
 {
-	// TODO: insert return statement here
+	value = (double)*(Buffer + ReadPos);
+	ReadPos += sizeof(double);
+
+	return *this;
 }
 
 int Packet::GetData(char* chpDest, int size)
 {
+	if (size > 0)
+	{
+		memcpy(chpDest, &Buffer[ReadPos], size);
+		ReadPos += size;
+	}
+	else
+	{
+		size = 0;
+	}
+
 	return size;
 }
 
 int Packet::PutData(char* chpSrc, int size)
 {
+	if (size > 0)
+	{
+		memcpy(&Buffer[WritePos], chpSrc, size);
+		WritePos += size;
+	}
+	else
+	{
+		size = 0;
+	}
 
 	return size;
 }

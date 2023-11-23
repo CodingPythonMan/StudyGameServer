@@ -182,9 +182,6 @@ public:
 	Packet& operator >> (__int64& value);
 	Packet& operator >> (double& value);
 
-
-
-
 	//////////////////////////////////////////////////////////////////////////
 	// 데이타 얻기.
 	//
@@ -200,9 +197,6 @@ public:
 	// Return: (int)복사한 사이즈.
 	//////////////////////////////////////////////////////////////////////////
 	int		PutData(char* chpSrc, int size);
-
-
-
 
 protected:
 	char* Buffer;

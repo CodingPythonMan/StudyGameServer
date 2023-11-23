@@ -11,7 +11,7 @@ struct Header {
 	unsigned char ByType;
 };
 
-void MoveStart(Packet* srcPacket, unsigned dir, short x, short y)
+void MoveStart(Packet* srcPacket, unsigned char dir, short x, short y)
 {
 	Header header;
 	header.ByCode = PACKET_CODE;
@@ -27,15 +27,23 @@ void MoveStart(Packet* srcPacket, unsigned dir, short x, short y)
 
 void SendPacket(Packet* dstPacket)
 {
+	unsigned char dir;
+	short x;
+	short y;
 
+	*dstPacket >> dir;
+	*dstPacket >> x;
+	*dstPacket >> y;
+
+	printf("[Send Packet] : Dir : %d, X : %d, Y : %d \n", dir, x, y);
 }
 
 int main()
 {
 	// 皋技瘤 积己. 皋技瘤 积己 饶
-	unsigned char dir = 0;
-	short x = 0;
-	short y = 0;
+	unsigned char dir = 1;
+	short x = 30;
+	short y = 40;
 
 	Packet packet;
 	MoveStart(&packet, dir, x, y);
