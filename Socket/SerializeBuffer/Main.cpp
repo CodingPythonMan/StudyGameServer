@@ -31,6 +31,9 @@ void SendPacket(Packet* dstPacket)
 	short x;
 	short y;
 
+	Header header;
+	dstPacket->GetData((char*)&header, HEADER_SIZE);
+
 	*dstPacket >> dir;
 	*dstPacket >> x;
 	*dstPacket >> y;
