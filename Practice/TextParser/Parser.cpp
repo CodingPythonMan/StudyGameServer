@@ -5,11 +5,18 @@
 
 Parser::Parser() : Version{ 0 }, ServerID{ 0 }, buffer{ nullptr }
 {
+	Path = nullptr;
+	FileName = nullptr;
 }
 
 Parser::~Parser()
 {
 	free(buffer);
+
+	// 데이터 반환
+	// 그래도 프로세스 끝날 때 해줄 것이기 때문에 굳이 해줄 필요는 없음
+	delete[] Path;
+	delete[] FileName;
 }
 
 Parser* Parser::GetInstance()
@@ -74,6 +81,53 @@ bool Parser::GetValueInt(const char* valueName, int* column)
 							memset(word, 0, 256);
 							memcpy(word, chrBuffer, length);
 							*column = atoi(word);
+							return true;
+						}
+						return false;
+					}
+				}
+				return false;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool Parser::GetValueStr(const char* valueName, char** column)
+{
+	int length = 0;
+	char word[256];
+	char* chrBuffer = buffer;
+
+	while (1)
+	{
+		if (GetNextWord(&chrBuffer, &length))
+		{
+			// Word 버퍼에 찾은 단어 저장
+			memset(word, 0, 256);
+			memcpy(word, chrBuffer, length);
+			word[255] = '\0';
+
+			chrBuffer += length;
+			// 인자로 입력받은 단어와 같은지 검사한다.
+			if (0 == strcmp(valueName, word))
+			{
+				// 바로 뒤 = 을 찾는다.
+				if (GetNextWord(&chrBuffer, &length))
+				{
+					memset(word, 0, 256);
+					memcpy(word, chrBuffer, length);
+
+					chrBuffer += length;
+					if (0 == strcmp(word, "="))
+					{
+						// 바로 뒤 값을 찾는다.
+						if (GetNextWord(&chrBuffer, &length))
+						{
+							*column = new char[length+1];
+							memcpy(*column, chrBuffer, length);
+							(*column)[length] = '\0';
 							return true;
 						}
 						return false;
@@ -154,7 +208,7 @@ bool Parser::SkipToNextWord(char** chrBufferPtr)
 		// 0x0a 라인 피드
 		// 0x0d 캐리지 리턴
 		if (*chrBuffer == 0x20 || *chrBuffer == 0x08 || *chrBuffer == 0x09 || 
-			*chrBuffer == 0x0a || *chrBuffer == 0x0d || *chrBuffer == '{')
+			*chrBuffer == 0x0a || *chrBuffer == 0x0d || *chrBuffer == '{' || *chrBuffer == '"')
 		{
 			(*chrBufferPtr)++;
 		}
