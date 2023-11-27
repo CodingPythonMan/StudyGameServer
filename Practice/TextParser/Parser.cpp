@@ -41,7 +41,7 @@ void Parser::LoadFile(const char* fileName)
 	if (buffer == nullptr)
 		return;
 
-	fread_s(buffer, length + 1, 1, length, file);
+	fread_s(buffer, length + 1, 1, length+1, file);
 	buffer[length] = '\0';
 
 	fclose(file);
