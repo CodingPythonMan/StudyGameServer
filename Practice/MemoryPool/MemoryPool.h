@@ -2,9 +2,9 @@ template <class T>
 class MemoryPool
 {
 public:
-	class Node {
+	struct Node {
 		T Data;
-		Node* Next;
+		Node* Prev;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -51,32 +51,36 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	int		GetUseCount(void) { return _UseCount; }
 
-
-	// 스택 방식으로 반환된 (미사용) 오브젝트 블럭을 관리.
-	Node* FreeNode;
-
 private:
 	int _Capacity;
 	int _UseCount;
 	bool _PlacementNew;
+	// 스택 방식으로 반환된 (미사용) 오브젝트 블럭을 관리.
+	Node* _FreeNode;
 };
 
 template<class T>
 inline MemoryPool<T>::MemoryPool(int BlockNum, bool PlacementNew)
 {
+	_FreeNode = nullptr;
 	_Capacity = BlockNum;
 	_PlacementNew = PlacementNew;
+	_UseCount = 0;
 
-	// 시작 시엔 생성자를 호출해줘야 한다.
-	if (_PlacementNew == false)
+	for (int i = 0; i < _Capacity; i++)
 	{
-		Node* top;
-		for (int i = 0; i < _Capacity; i++)
+		Node* node;
+		// PlacementNew 가 활성화 되어있다면 생성자가 호출되지 않는다.
+		if (PlacementNew == true)
 		{
-			Node* node = new Node;
-			FreeNode = new T;
-
+			node = (Node*)malloc(sizeof(Node));
 		}
+		else
+		{
+			node = new Node;
+		}
+		node->Prev = _FreeNode;
+		_FreeNode = node;
 	}
 }
 
@@ -89,6 +93,11 @@ inline MemoryPool<T>::~MemoryPool()
 template<class T>
 inline T* MemoryPool<T>::Alloc(void)
 {
+	if (_FreeNode == nullptr)
+	{
+
+	}
+
 	return nullptr;
 }
 
