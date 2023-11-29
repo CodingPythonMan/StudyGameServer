@@ -7,14 +7,14 @@ Player::Player()
 	_Y = 50;
 	_Name = new char[30];
 	
-	printf("Player 생성자 호출! \n");
+	//printf("Player 생성자 호출! \n");
 }
 
 Player::~Player()
 {
 	delete[] _Name;
 
-	printf("Player 소멸자 호출! \n");
+	//printf("Player 소멸자 호출! \n");
 }
 
 void Player::MakeName(char* Name)

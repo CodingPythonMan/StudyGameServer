@@ -62,7 +62,8 @@ private:
 template<class T>
 inline MemoryPool<T>::MemoryPool(int BlockNum, bool PlacementNew)
 {
-	_FreeNode = nullptr;
+	// 더미 노드 설정
+	_FreeNode = (Node*)malloc(sizeof(Node));
 	_Capacity = BlockNum;
 	_PlacementNew = PlacementNew;
 	_UseCount = 0;
@@ -79,8 +80,12 @@ inline MemoryPool<T>::MemoryPool(int BlockNum, bool PlacementNew)
 		{
 			node = new Node;
 		}
+		if(node == nullptr)
+			return;
+
 		node->Prev = _FreeNode;
 		_FreeNode = node;
+		//printf("[Node %d] : 0x%p\n", i, node);
 	}
 }
 
@@ -93,16 +98,55 @@ inline MemoryPool<T>::~MemoryPool()
 template<class T>
 inline T* MemoryPool<T>::Alloc(void)
 {
-	if (_FreeNode == nullptr)
-	{
+	T* ptr;
+	Node* node;
 
+	// 가용 풀을 모두 쓰고 있을 때 이 경우가 호출된다.
+	ptr = &_FreeNode->Data;
+	// 생성자 호출
+	if (_PlacementNew == true)
+	{
+		new(&_FreeNode->Data) T;
 	}
 
-	return nullptr;
+	// Capacity 가 충분할 때 쉽게 할당해줄 수 있다.
+	if (_Capacity > 0)
+	{
+		_FreeNode = _FreeNode->Prev;
+		_Capacity--;
+	}
+	else
+	{
+		node = (Node*)malloc(sizeof(Node));
+		_FreeNode->Prev = node;
+		_FreeNode = node;
+	}
+	
+	_UseCount++;
+
+	//printf("[Node Alloc] : 0x%p, Capacity : %d, UseCount : %d\n", ptr, _Capacity, _UseCount);
+
+	return ptr;
 }
 
 template<class T>
 inline bool MemoryPool<T>::Free(T* pData)
 {
-	return false;
+	if (pData != nullptr)
+	{
+		(*pData).~T();
+		((Node*)pData)->Prev = _FreeNode;
+		_FreeNode = (Node*)pData;
+		_UseCount--;
+		_Capacity++;
+	}
+	else
+	{
+		__debugbreak();
+		return false;
+	}
+
+	//printf("[Node Free] : 0x%p, Capacity : %d, UseCount : %d\n", pData, _Capacity, _UseCount);
+
+	return true;
 }
