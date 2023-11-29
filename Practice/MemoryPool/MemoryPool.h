@@ -92,7 +92,6 @@ inline MemoryPool<T>::MemoryPool(int BlockNum, bool PlacementNew)
 template<class T>
 inline MemoryPool<T>::~MemoryPool()
 {
-
 }
 
 template<class T>
@@ -134,7 +133,7 @@ inline bool MemoryPool<T>::Free(T* pData)
 {
 	if (pData != nullptr)
 	{
-		(*pData).~T();
+		pData->~T();
 		((Node*)pData)->Prev = _FreeNode;
 		_FreeNode = (Node*)pData;
 		_UseCount--;
