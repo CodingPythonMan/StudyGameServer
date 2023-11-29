@@ -5,38 +5,32 @@
 
 #pragma comment(lib, "winmm.lib")
 
-MemoryPool<Player> PlayerPool(3, true);
+MemoryPool<Player> PlayerPool(0, true);
 
 void Test1()
 {
-	for (int i = 0; i < 100; i++)
-	{
-		Player* p1 = PlayerPool.Alloc();
-		PlayerPool.Free(p1);
+	Player* p1 = PlayerPool.Alloc();
+	PlayerPool.Free(p1);
 
-		Player* p2 = PlayerPool.Alloc();
-		Player* p3 = PlayerPool.Alloc();
-		Player* p4 = PlayerPool.Alloc();
-		PlayerPool.Free(p3);
-		PlayerPool.Free(p4);
-		PlayerPool.Free(p2);
-	}
+	Player* p2 = PlayerPool.Alloc();
+	Player* p3 = PlayerPool.Alloc();
+	Player* p4 = PlayerPool.Alloc();
+	PlayerPool.Free(p3);
+	PlayerPool.Free(p4);
+	PlayerPool.Free(p2);
 }
 
 void Test2()
 {
-	for (int i = 0; i < 100; i++)
-	{
-		Player* p1 = new Player;
-		delete p1;
+	Player* p1 = new Player;
+	delete p1;
 
-		Player* p2 = new Player;
-		Player* p3 = new Player;
-		Player* p4 = new Player;
-		delete p3;
-		delete p4;
-		delete p2;
-	}
+	Player* p2 = new Player;
+	Player* p3 = new Player;
+	Player* p4 = new Player;
+	delete p3;
+	delete p4;
+	delete p2;
 }
 
 int main()

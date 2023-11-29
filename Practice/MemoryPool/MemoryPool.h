@@ -5,6 +5,11 @@ public:
 	struct Node {
 		T Data;
 		Node* Prev;
+
+		Node()
+		{
+			Prev = nullptr;
+		}
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -63,7 +68,11 @@ template<class T>
 inline MemoryPool<T>::MemoryPool(int BlockNum, bool PlacementNew)
 {
 	// 더미 노드 설정
-	_FreeNode = (Node*)malloc(sizeof(Node));
+	if(PlacementNew == true)
+		_FreeNode = (Node*)malloc(sizeof(Node));
+	else
+		_FreeNode = new Node;
+	
 	_Capacity = BlockNum;
 	_PlacementNew = PlacementNew;
 	_UseCount = 0;
@@ -98,10 +107,10 @@ template<class T>
 inline T* MemoryPool<T>::Alloc(void)
 {
 	T* ptr;
-	Node* node;
 
 	// 가용 풀을 모두 쓰고 있을 때 이 경우가 호출된다.
 	ptr = &_FreeNode->Data;
+	
 	// 생성자 호출
 	if (_PlacementNew == true)
 	{
@@ -116,9 +125,10 @@ inline T* MemoryPool<T>::Alloc(void)
 	}
 	else
 	{
-		node = (Node*)malloc(sizeof(Node));
-		_FreeNode->Prev = node;
-		_FreeNode = node;
+		if (_PlacementNew == true)
+			_FreeNode = (Node*)malloc(sizeof(Node));
+		else
+			_FreeNode = new Node;
 	}
 	
 	_UseCount++;
