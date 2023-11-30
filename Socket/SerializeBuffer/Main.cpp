@@ -50,5 +50,9 @@ int main()
 
 	Packet packet;
 	MoveStart(&packet, dir, x, y);
+
+	Packet aPacket;
+	aPacket = packet;
+
 	SendPacket(&packet);
 }

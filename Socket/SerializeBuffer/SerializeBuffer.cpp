@@ -5,7 +5,6 @@ Packet::Packet()
 {
 	Buffer = new char[MAX_PACKET_SIZE];
 	BufferSize = MAX_PACKET_SIZE;
-	DataSize = 0;
 	ReadPos = 0;
 	WritePos = 0;
 }
@@ -14,7 +13,6 @@ Packet::Packet(int bufferSize)
 {
 	Buffer = new char[bufferSize];
 	BufferSize = bufferSize;
-	DataSize = 0;
 	ReadPos = 0;
 	WritePos = 0;
 }
@@ -35,7 +33,6 @@ int Packet::MoveWritePos(int size)
 	if (size > 0)
 	{
 		WritePos += size;
-		DataSize += size;
 
 		if (WritePos + size > BufferSize)
 		{
@@ -55,7 +52,6 @@ int Packet::MoveReadPos(int size)
 	if (size > 0)
 	{
 		ReadPos += size;
-		DataSize -= size;
 
 		if (ReadPos + size > BufferSize)
 		{
@@ -72,11 +68,17 @@ int Packet::MoveReadPos(int size)
 
 Packet& Packet::operator=(Packet& srcPacket)
 {
-	this->Buffer = srcPacket.Buffer;
-	this->ReadPos = srcPacket.ReadPos;
-	this->WritePos = srcPacket.WritePos;
-	this->BufferSize = srcPacket.BufferSize;
-	this->DataSize = srcPacket.DataSize;
+	ReadPos = srcPacket.ReadPos;
+	WritePos = srcPacket.WritePos;
+
+	if (srcPacket.GetBufferSize() != BufferSize)
+	{
+		delete[] Buffer;
+		BufferSize = srcPacket.BufferSize;
+		Buffer = new char[BufferSize];
+	}
+
+	memcpy(Buffer + ReadPos, srcPacket.GetBufferPtr(), WritePos - ReadPos);
 
 	return *this;
 }

@@ -118,7 +118,7 @@ public:
 	// Parameters: 없음.
 	// Return: (int)사용중인 데이타 사이즈.
 	//////////////////////////////////////////////////////////////////////////
-	int		GetDataSize(void) { return DataSize; }
+	int		GetDataSize(void) { return WritePos - ReadPos; }
 
 
 
@@ -203,10 +203,6 @@ protected:
 	int ReadPos;
 	int WritePos;
 	int	BufferSize;
-	//------------------------------------------------------------
-	// 현재 버퍼에 사용중인 사이즈.
-	//------------------------------------------------------------
-	int	DataSize;
 };
 
 #endif
