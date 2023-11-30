@@ -5,7 +5,7 @@
 
 #pragma comment(lib, "winmm.lib")
 
-MemoryPool<Player> PlayerPool(0, true);
+MemoryPool<Player> PlayerPool(3, true);
 
 void Test1()
 {
@@ -35,7 +35,7 @@ void Test2()
 
 int main()
 {
-	// 이 세가지 경우가 몇번 함수로 호출될 수 있는지 테스트 해보자.
+	/*
 	timeBeginPeriod(1);
 	unsigned int currentTime = timeGetTime();
 	int CallCount = 0;
@@ -53,5 +53,45 @@ int main()
 		Test2();
 		CallCount++;
 	}
-	printf("[Heap Test] : %d\n", CallCount);
+	printf("[Heap Test] : %d\n", CallCount);*/
+
+	printf("Player Size : %d\n", (int)sizeof(Player));
+
+	Player* p1 = PlayerPool.Alloc();
+	p1->Move(3, 5);
+	p1->MakeName("HHHaaa");
+
+	Player* p3 = PlayerPool.Alloc();
+	PlayerPool.Free(p3);
+	p3 = PlayerPool.Alloc();
+	PlayerPool.Free(p3);
+	p3 = PlayerPool.Alloc();
+	PlayerPool.Free(p3);
+	p3 = PlayerPool.Alloc();
+	p3->Move(3, 5);
+	p3->MakeName("HHHaaa");
+	PlayerPool.Free(p3);
+	p3 = PlayerPool.Alloc();
+	PlayerPool.Free(p3);
+	p3 = PlayerPool.Alloc();
+	PlayerPool.Free(p3);
+	
+	Player* p2 = PlayerPool.Alloc();
+	Player* p4 = PlayerPool.Alloc();
+	Player* p5 = PlayerPool.Alloc();
+	Player* p6 = PlayerPool.Alloc();
+	p2->Move(3, 5);
+	p2->MakeName("HHHaaa");
+	p1->Move(3, 5);
+	p1->MakeName("HHHaaa");
+
+	p5->Move(3, 5);
+	p6->MakeName("HHHaaa");
+	p4->MakeName("HHHaaa");
+
+	PlayerPool.Free(p2);
+	PlayerPool.Free(p1);
+	PlayerPool.Free(p4);
+	PlayerPool.Free(p5);
+	PlayerPool.Free(p6);
 }

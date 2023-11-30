@@ -3,11 +3,15 @@ class MemoryPool
 {
 public:
 	struct Node {
+		Node* UniqueValue;
 		T Data;
+		Node* FirstNode;
 		Node* Prev;
 
 		Node()
 		{
+			UniqueValue = nullptr;
+			FirstNode = nullptr;
 			Prev = nullptr;
 		}
 	};
@@ -77,6 +81,8 @@ inline MemoryPool<T>::MemoryPool(int BlockNum, bool PlacementNew)
 	_PlacementNew = PlacementNew;
 	_UseCount = 0;
 
+	printf("Node Size : %d\n", (int)sizeof(Node));
+
 	for (int i = 0; i < _Capacity; i++)
 	{
 		Node* node;
@@ -89,12 +95,13 @@ inline MemoryPool<T>::MemoryPool(int BlockNum, bool PlacementNew)
 		{
 			node = new Node;
 		}
+
 		if(node == nullptr)
 			return;
 
 		node->Prev = _FreeNode;
 		_FreeNode = node;
-		//printf("[Node %d] : 0x%p\n", i, node);
+		printf("[Node %d] : 0x%p\n", i, node);
 	}
 }
 
@@ -106,15 +113,12 @@ inline MemoryPool<T>::~MemoryPool()
 template<class T>
 inline T* MemoryPool<T>::Alloc(void)
 {
-	T* ptr;
-
-	// 가용 풀을 모두 쓰고 있을 때 이 경우가 호출된다.
-	ptr = &_FreeNode->Data;
+	T* ptr = &_FreeNode->Data;
 	
-	// 생성자 호출
+	// Placement New 활성화라면 Alloc 호출할 때, 생성자 호출
 	if (_PlacementNew == true)
 	{
-		new(&_FreeNode->Data) T;
+		new(ptr) T;
 	}
 
 	// Capacity 가 충분할 때 쉽게 할당해줄 수 있다.
@@ -125,7 +129,8 @@ inline T* MemoryPool<T>::Alloc(void)
 	}
 	else
 	{
-		if (_PlacementNew == true)
+		// Placement New 라면 생성될 때, 생성자 호출되면 안 됨.
+		if (_PlacementNew == true)  
 			_FreeNode = (Node*)malloc(sizeof(Node));
 		else
 			_FreeNode = new Node;
@@ -133,7 +138,7 @@ inline T* MemoryPool<T>::Alloc(void)
 	
 	_UseCount++;
 
-	//printf("[Node Alloc] : 0x%p, Capacity : %d, UseCount : %d\n", ptr, _Capacity, _UseCount);
+	printf("[Node Alloc] : 0x%p, Capacity : %d, UseCount : %d\n", ptr, _Capacity, _UseCount);
 
 	return ptr;
 }
@@ -155,7 +160,7 @@ inline bool MemoryPool<T>::Free(T* pData)
 		return false;
 	}
 
-	//printf("[Node Free] : 0x%p, Capacity : %d, UseCount : %d\n", pData, _Capacity, _UseCount);
+	printf("[Node Free] : 0x%p, Capacity : %d, UseCount : %d\n", pData, _Capacity, _UseCount);
 
 	return true;
 }

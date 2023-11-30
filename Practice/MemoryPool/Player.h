@@ -3,7 +3,7 @@ public:
 	Player();
 	virtual ~Player();
 
-	void MakeName(char* Name);
+	void MakeName(const char* Name);
 	void Move(int X, int Y);
 	void NotifyPos();
 
