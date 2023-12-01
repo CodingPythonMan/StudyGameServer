@@ -8,6 +8,7 @@ public:
 	void NotifyPos();
 
 private:
+	unsigned char _Fly;
 	int _X;
 	int _Y;
 	char* _Name;

@@ -66,6 +66,7 @@ private:
 	bool _PlacementNew;
 	// 스택 방식으로 반환된 (미사용) 오브젝트 블럭을 관리.
 	Node* _FreeNode;
+	Node* _PoolUniqueNode;
 };
 
 template<class T>
@@ -77,6 +78,7 @@ inline MemoryPool<T>::MemoryPool(int BlockNum, bool PlacementNew)
 	else
 		_FreeNode = new Node;
 	
+	_PoolUniqueNode = _FreeNode;
 	_Capacity = BlockNum;
 	_PlacementNew = PlacementNew;
 	_UseCount = 0;
@@ -108,6 +110,7 @@ inline MemoryPool<T>::MemoryPool(int BlockNum, bool PlacementNew)
 template<class T>
 inline MemoryPool<T>::~MemoryPool()
 {
+	delete _PoolUniqueNode;
 }
 
 template<class T>
@@ -138,7 +141,7 @@ inline T* MemoryPool<T>::Alloc(void)
 	
 	_UseCount++;
 
-	printf("[Node Alloc] : 0x%p, Capacity : %d, UseCount : %d\n", ptr, _Capacity, _UseCount);
+	printf("[Node Alloc] : 0x%p, Capacity : %d, UseCount : %d\n", ptr-8, _Capacity, _UseCount);
 
 	return ptr;
 }
@@ -149,8 +152,8 @@ inline bool MemoryPool<T>::Free(T* pData)
 	if (pData != nullptr)
 	{
 		pData->~T();
-		((Node*)pData)->Prev = _FreeNode;
-		_FreeNode = (Node*)pData;
+		reinterpret_cast<Node*>(pData - sizeof(Node*))->Prev = _FreeNode;
+		_FreeNode = reinterpret_cast<Node*>(pData - sizeof(Node*));
 		_UseCount--;
 		_Capacity++;
 	}
@@ -160,7 +163,7 @@ inline bool MemoryPool<T>::Free(T* pData)
 		return false;
 	}
 
-	printf("[Node Free] : 0x%p, Capacity : %d, UseCount : %d\n", pData, _Capacity, _UseCount);
+	printf("[Node Free] : 0x%p, Capacity : %d, UseCount : %d\n", pData-8, _Capacity, _UseCount);
 
 	return true;
 }

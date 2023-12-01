@@ -3,6 +3,7 @@
 
 Player::Player()
 {
+	_Fly = 0;
 	_X = 50;
 	_Y = 50;
 	_Name = new char[30];
