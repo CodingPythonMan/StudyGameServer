@@ -35,7 +35,6 @@ void Test2()
 
 int main()
 {
-	/*
 	timeBeginPeriod(1);
 	unsigned int currentTime = timeGetTime();
 	int CallCount = 0;
@@ -53,8 +52,9 @@ int main()
 		Test2();
 		CallCount++;
 	}
-	printf("[Heap Test] : %d\n", CallCount);*/
+	printf("[Heap Test] : %d\n", CallCount);
 
+	/*
 	printf("Player Size : %d\n", (int)sizeof(Player));
 
 	Player* p1 = PlayerPool.Alloc();
@@ -93,5 +93,5 @@ int main()
 	PlayerPool.Free(p1);
 	PlayerPool.Free(p4);
 	PlayerPool.Free(p5);
-	PlayerPool.Free(p6);
+	PlayerPool.Free(p6);*/
 }

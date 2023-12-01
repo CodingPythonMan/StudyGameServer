@@ -11,5 +11,5 @@ private:
 	unsigned char _Fly;
 	int _X;
 	int _Y;
-	char* _Name;
+	char _Name[30];
 };

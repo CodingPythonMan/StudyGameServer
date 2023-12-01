@@ -2,19 +2,21 @@ template <class T>
 class MemoryPool
 {
 public:
+#ifdef _DEBUG
+#pragma pack(push, 1)
 	struct Node {
-		Node* UniqueValue;
+		void* First;
 		T Data;
-		Node* FirstNode;
-		Node* Prev;
-
-		Node()
-		{
-			UniqueValue = nullptr;
-			FirstNode = nullptr;
-			Prev = nullptr;
-		}
+		void* Last;
+		Node* Next;
 	};
+#pragma pack(pop)
+#else
+	struct Node {
+		T Data;
+		Node* Next;
+	};
+#endif
 
 	//////////////////////////////////////////////////////////////////////////
 	// 생성자, 파괴자.
@@ -66,82 +68,74 @@ private:
 	bool _PlacementNew;
 	// 스택 방식으로 반환된 (미사용) 오브젝트 블럭을 관리.
 	Node* _FreeNode;
-	Node* _PoolUniqueNode;
 };
 
 template<class T>
 inline MemoryPool<T>::MemoryPool(int BlockNum, bool PlacementNew)
 {
-	// 더미 노드 설정
-	if(PlacementNew == true)
-		_FreeNode = (Node*)malloc(sizeof(Node));
-	else
-		_FreeNode = new Node;
-	
-	_PoolUniqueNode = _FreeNode;
+	_FreeNode = nullptr;
 	_Capacity = BlockNum;
 	_PlacementNew = PlacementNew;
 	_UseCount = 0;
 
-	printf("Node Size : %d\n", (int)sizeof(Node));
-
 	for (int i = 0; i < _Capacity; i++)
 	{
-		Node* node;
-		// PlacementNew 가 활성화 되어있다면 생성자가 호출되지 않는다.
-		if (PlacementNew == true)
-		{
-			node = (Node*)malloc(sizeof(Node));
-		}
-		else
-		{
-			node = new Node;
-		}
-
-		if(node == nullptr)
+		Node* node = (Node*)malloc(sizeof(Node));
+#ifdef _DEBUG
+		if (node == nullptr)
 			return;
 
-		node->Prev = _FreeNode;
+		node->First = this;
+		node->Last = this;
+#endif
+		// PlacementNew 가 활성화 안 되어있다면 생성자 호출
+		if (PlacementNew == false)
+		{
+			new(&node->Data) T;
+		}
+
+		node->Next = _FreeNode;
 		_FreeNode = node;
-		printf("[Node %d] : 0x%p\n", i, node);
 	}
 }
 
 template<class T>
 inline MemoryPool<T>::~MemoryPool()
 {
-	delete _PoolUniqueNode;
+	
 }
 
 template<class T>
 inline T* MemoryPool<T>::Alloc(void)
 {
-	T* ptr = &_FreeNode->Data;
-	
-	// Placement New 활성화라면 Alloc 호출할 때, 생성자 호출
-	if (_PlacementNew == true)
-	{
-		new(ptr) T;
-	}
+	T* ptr;
 
-	// Capacity 가 충분할 때 쉽게 할당해줄 수 있다.
-	if (_Capacity > 0)
+	if (_Capacity <= 0)
 	{
-		_FreeNode = _FreeNode->Prev;
-		_Capacity--;
+		_FreeNode = (Node*)malloc(sizeof(Node));
+#ifdef _DEBUG
+		if (_FreeNode == nullptr)
+			return nullptr;
+
+		_FreeNode->First = this;
+		_FreeNode->Last = this;
+#endif
+		ptr = &_FreeNode->Data;
+		new(ptr) T;
 	}
 	else
 	{
-		// Placement New 라면 생성될 때, 생성자 호출되면 안 됨.
-		if (_PlacementNew == true)  
-			_FreeNode = (Node*)malloc(sizeof(Node));
-		else
-			_FreeNode = new Node;
+		ptr = &_FreeNode->Data;
+		// Placement New 활성화라면 Alloc 에서 생성자 호출.
+		if (_PlacementNew == true)
+		{
+			new(ptr) T;
+		}
+		_FreeNode = _FreeNode->Next;
+		_Capacity--;
 	}
 	
 	_UseCount++;
-
-	printf("[Node Alloc] : 0x%p, Capacity : %d, UseCount : %d\n", ptr-8, _Capacity, _UseCount);
 
 	return ptr;
 }
@@ -149,21 +143,29 @@ inline T* MemoryPool<T>::Alloc(void)
 template<class T>
 inline bool MemoryPool<T>::Free(T* pData)
 {
-	if (pData != nullptr)
-	{
-		pData->~T();
-		reinterpret_cast<Node*>(pData - sizeof(Node*))->Prev = _FreeNode;
-		_FreeNode = reinterpret_cast<Node*>(pData - sizeof(Node*));
-		_UseCount--;
-		_Capacity++;
-	}
-	else
+#ifdef _DEBUG
+	if (pData == nullptr)
 	{
 		__debugbreak();
 		return false;
 	}
+	Node* ptr = reinterpret_cast<Node*>((char*)pData - sizeof(MemoryPool*));
 
-	printf("[Node Free] : 0x%p, Capacity : %d, UseCount : %d\n", pData-8, _Capacity, _UseCount);
+	if (ptr->First != this || ptr->Last != this)
+		__debugbreak();
+#endif
+
+	pData->~T();
+
+#ifdef _DEBUG
+	ptr->Next = _FreeNode;
+	_FreeNode = ptr;
+#else
+	reinterpret_cast<Node*>pData->Next = _FreeNode;
+	_FreeNode = reinterpret_cast<Node*>pData;
+#endif
+	_UseCount--;
+	_Capacity++;
 
 	return true;
 }
