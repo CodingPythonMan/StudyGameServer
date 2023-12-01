@@ -8,12 +8,16 @@ Player::Player()
 	_Y = 50;
 	memset(_Name, 0, 30);
 
+#ifdef _DEBUG
 	printf("Player 생성자 호출! \n");
+#endif
 }
 
 Player::~Player()
 {
+#ifdef _DEBUG
 	printf("Player 소멸자 호출! \n");
+#endif
 }
 
 void Player::MakeName(const char* Name)
@@ -26,10 +30,14 @@ void Player::Move(int X, int Y)
 	_X = X;
 	_Y = Y;
 
+#ifdef _DEBUG
 	printf("_X : %d, _Y : %d\n", _X, _Y);
+#endif
 }
 
 void Player::NotifyPos()
 {
-	//printf("_X : %d, _Y : %d\n", _X, _Y);
+#ifdef _DEBUG
+	printf("_X : %d, _Y : %d\n", _X, _Y);
+#endif
 }

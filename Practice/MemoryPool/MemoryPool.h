@@ -161,8 +161,8 @@ inline bool MemoryPool<T>::Free(T* pData)
 	ptr->Next = _FreeNode;
 	_FreeNode = ptr;
 #else
-	reinterpret_cast<Node*>pData->Next = _FreeNode;
-	_FreeNode = reinterpret_cast<Node*>pData;
+	reinterpret_cast<Node*>(pData)->Next = _FreeNode;
+	_FreeNode = reinterpret_cast<Node*>(pData);
 #endif
 	_UseCount--;
 	_Capacity++;
