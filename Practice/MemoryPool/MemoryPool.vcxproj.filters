@@ -18,6 +18,9 @@
     <ClCompile Include="Player.cpp">
       <Filter>Example</Filter>
     </ClCompile>
+    <ClCompile Include="RawMemoryPool.cpp">
+      <Filter>MemoryPool</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MemoryPool.h">
@@ -25,6 +28,9 @@
     </ClInclude>
     <ClInclude Include="Player.h">
       <Filter>Example</Filter>
+    </ClInclude>
+    <ClInclude Include="RawMemoryPool.h">
+      <Filter>MemoryPool</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
