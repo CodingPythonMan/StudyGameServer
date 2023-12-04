@@ -1,3 +1,5 @@
+#define BUCKET_COUNT 
+
 class RawMemoryPool
 {
 public:
@@ -14,13 +16,7 @@ public:
 
 	bool	Free(void* pData);
 
-	int		GetCapacityCount(void) { return _Capacity; }
-
-	int		GetUseCount(void) { return _UseCount; }
-
 private:
-	int _Capacity;
-	int _UseCount;
-	bool _PlacementNew;
-	Node* _FreeNode;
+	Node* PageUnderNode;
+	Node* PageAboveNode;
 };
