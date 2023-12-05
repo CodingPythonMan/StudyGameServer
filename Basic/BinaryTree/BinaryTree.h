@@ -26,6 +26,30 @@ class BinaryTree {
 			Left = nullptr;
 			Right = nullptr;
 		}
+
+		int GetMaxDepth() const
+		{
+			int maxDepth;
+			int leftDepth = 0;
+			int rightDepth = 0;
+
+			if (Left != nullptr)
+				leftDepth = Left->GetMaxDepth();
+			
+			if (Right != nullptr)
+				rightDepth = Right->GetMaxDepth();
+
+			if (leftDepth > rightDepth)
+			{
+				maxDepth = leftDepth + 1;
+			}
+			else
+			{
+				maxDepth = rightDepth + 1;
+			}
+
+			return maxDepth;
+		}
 	};
 
 public:
@@ -41,8 +65,6 @@ public:
 	int GetMaxDepth() const;
 
 private:
-	bool Search(Node* node);
-
 	RowList GetRowList(int maxDepth) const;
 	vector<string> FormatRow(const RowList& rowList) const;
 	void TrimRow(vector<string>& rows);
