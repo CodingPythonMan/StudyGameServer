@@ -75,19 +75,17 @@ void BinaryTree::Print()
 {
 	const int maxDepth = GetMaxDepth();
 
-	// If this tree is empty, tell someone
+	// 빈 트리임을 확인
 	if (maxDepth == 0) {
 		cout << " <empty tree>\n";
 		return;
 	}
 
-	// This tree is not empty, so get a list of node values...
-	const auto rowList = GetRowList(maxDepth);
-	// then format these into a text representation...
-	auto formattedRows = FormatRow(rowList);
-	// then trim excess space characters from the left sides of the text...
+	const RowList rowList = GetRowList(maxDepth);
+	// 트리 Depth만큼 텍스트로 가공
+	vector<string> formattedRows = FormatRow(rowList);
+	// 왼쪽 Trim
 	TrimRow(formattedRows);
-	// then dump the text to cout.
 	for (const auto& row : formattedRows) {
 		cout << ' ' << row << '\n';
 	}
@@ -155,14 +153,13 @@ RowList BinaryTree::GetRowList(int maxDepth) const
 		--depth;
 	}
 
-	// Use rows of Node pointers to populate rows of cell_display structs.
+	// 각 행마다 텍스트로 가공되기 위해 준비
 	for (const auto& row : rows) {
 		rowList.emplace_back();
 		for (Node* pn : row) {
 			Cell cell;
 			if (pn) {
 				cell.Value = to_string(pn->Data);
-				cell.Value += " R";
 				cell.Present = true;
 				rowList.back().push_back(cell);
 			}
@@ -283,21 +280,24 @@ vector<string> BinaryTree::FormatRow(const RowList& rowList) const
 	return formatted_rows;
 }
 
-// Trims an equal number of space characters from
-// the beginning of each string in the vector.
-// At least one string in the vector will end up beginning
-// with no space characters.
 void BinaryTree::TrimRow(vector<string>& rows) 
 {
-	if (!rows.size()) return;
+	if (rows.size() == 0) 
+		return;
+
 	auto min_space = rows.front().length();
-	for (const auto& row : rows) {
+	for (const auto& row : rows) 
+	{
 		auto i = row.find_first_not_of(' ');
-		if (i == string::npos) i = row.length();
-		if (i == 0) return;
-		if (i < min_space) min_space = i;
+		if (i == string::npos) 
+			i = row.length();
+		if (i == 0) 
+			return;
+		if (i < min_space) 
+			min_space = i;
 	}
-	for (auto& row : rows) {
+	for (auto& row : rows) 
+	{
 		row.erase(0, min_space);
 	}
 }
