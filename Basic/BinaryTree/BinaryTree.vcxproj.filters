@@ -8,6 +8,9 @@
     <Filter Include="Tree">
       <UniqueIdentifier>{f6237718-de53-40c4-9ca6-b657f2a7cf00}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Test">
+      <UniqueIdentifier>{89878ea3-330d-4894-97d0-8a38f90f8155}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BinaryTree.cpp">
@@ -16,10 +19,16 @@
     <ClCompile Include="Main.cpp">
       <Filter>Main</Filter>
     </ClCompile>
+    <ClCompile Include="Test.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BinaryTree.h">
       <Filter>Tree</Filter>
+    </ClInclude>
+    <ClInclude Include="Test.h">
+      <Filter>Test</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

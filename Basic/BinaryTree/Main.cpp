@@ -1,5 +1,6 @@
 #include <iostream>
 #include "BinaryTree.h"
+#include "Test.h"
 using namespace std;
 
 int main()
@@ -30,4 +31,11 @@ int main()
 
 	cout << Result1 << "\n";
 	cout << Result2 << "\n";
+
+	Test test;
+	test.PutReliableData(3);
+	test.PutReliableData(4);
+	test.PutReliableData(5);
+
+
 }
