@@ -27,8 +27,6 @@ int main()
 
 	bool Result2 = binaryTree.Find(3);
 
-	binaryTree.Print();
-
 	cout << Result1 << "\n";
 	cout << Result2 << "\n";
 
@@ -36,6 +34,4 @@ int main()
 	test.PutReliableData(3);
 	test.PutReliableData(4);
 	test.PutReliableData(5);
-
-
 }

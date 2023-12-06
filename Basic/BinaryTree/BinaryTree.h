@@ -62,17 +62,11 @@ public:
 	
 	bool Find(int Data);
 
-	void Print();
-	
 private:
 	bool Delete(Node* node, Node* Parent, int Data);
 	bool Find(Node* node, int Data);
 
 	int GetMaxDepth() const;
-
-	RowList GetRowList(int maxDepth) const;
-	vector<string> FormatRow(const RowList& rowList) const;
-	void TrimRow(vector<string>& rows);
 
 	Node* _Root;
 };
