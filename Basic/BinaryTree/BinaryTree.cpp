@@ -62,13 +62,14 @@ bool BinaryTree::Insert(int Data)
 
 bool BinaryTree::Delete(int Data)
 {
-
-	return false;
+	// 하위 두개 있으면 오류날 확률 있음
+	return Delete(_Root, nullptr, Data);
 }
+
 
 bool BinaryTree::Find(int Data)
 {
-	return 0;
+	return Find(_Root, Data);
 }
 
 void BinaryTree::Print()
@@ -86,9 +87,92 @@ void BinaryTree::Print()
 	vector<string> formattedRows = FormatRow(rowList);
 	// 왼쪽 Trim
 	TrimRow(formattedRows);
-	for (const auto& row : formattedRows) {
+	for (const auto& row : formattedRows) 
+	{
 		cout << ' ' << row << '\n';
 	}
+}
+
+bool BinaryTree::Delete(Node* node, Node* Parent, int Data)
+{
+	if (node == nullptr)
+		return false;
+
+	bool leftResult, rightResult;
+	leftResult = Delete(node->Left, node, Data);
+	// 데이터에 대한 값 처리할 때 하위 있는지 확인 필요
+	if (Data == node->Data)
+	{
+		// 자식 둘다 있을 경우
+		if (node->Left != nullptr && node->Right != nullptr)
+		{
+			// 왼쪽의 맨 오른쪽으로 접근하고, 해당 node 설정 후 삭제.
+			node = node->Left;
+			while (node == nullptr)
+			{
+				Parent = node;
+				node = node->Right;
+			}
+		}
+
+		// 왼쪽 자식이 있는 경우
+		if (node->Left != nullptr)
+		{
+			if (Parent->Left == node)
+			{
+				Parent->Left = node->Left;
+			}
+			else
+			{
+				Parent->Right = node->Left;
+			}
+		}
+		else if (node->Right != nullptr)
+		{
+			if (Parent->Left == node)
+			{
+				Parent->Left = node->Right;
+			}
+			else
+			{
+				Parent->Right = node->Right;
+			}
+		}
+		else
+		{
+			// 자식이 없는 경우
+			if (Parent->Left == node)
+			{
+				Parent->Left = nullptr;
+			}
+			else
+			{
+				Parent->Right = nullptr;
+			}
+		}
+		delete node;
+		return true;
+	}
+	rightResult = Delete(node->Right, node, Data);
+
+	return leftResult || rightResult;
+}
+
+bool BinaryTree::Find(Node* node, int Data)
+{
+	if (node == nullptr)
+		return false;
+
+	bool leftResult, rightResult;
+
+	leftResult = Find(node->Left, Data);
+	if (node->Data == Data)
+	{
+		return true;
+	}
+	rightResult = Find(node->Right, Data);
+
+	return leftResult || rightResult;
 }
 
 int BinaryTree::GetMaxDepth() const
@@ -97,7 +181,7 @@ int BinaryTree::GetMaxDepth() const
 
 	if (_Root == nullptr)
 		return maxLevel;
-	
+
 	maxLevel = _Root->GetMaxDepth();
 
 	return maxLevel;

@@ -57,14 +57,19 @@ public:
 	virtual ~BinaryTree();
 
 	bool Insert(int Data);
-	bool Delete(int Data);
 
+	bool Delete(int Data);
+	
 	bool Find(int Data);
 
 	void Print();
+	
+private:
+	bool Delete(Node* node, Node* Parent, int Data);
+	bool Find(Node* node, int Data);
+
 	int GetMaxDepth() const;
 
-private:
 	RowList GetRowList(int maxDepth) const;
 	vector<string> FormatRow(const RowList& rowList) const;
 	void TrimRow(vector<string>& rows);
