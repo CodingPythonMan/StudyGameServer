@@ -23,12 +23,14 @@ int main()
 
 	binaryTree.Delete(3);
 	binaryTree.Delete(6);
-	binaryTree.Delete(15);
+	binaryTree.Delete(10);
 
 	bool Result2 = binaryTree.Find(3);
+	bool Result3 = binaryTree.Find(10);
 
 	cout << Result1 << "\n";
 	cout << Result2 << "\n";
+	cout << Result3 << "\n";
 
 	Test test;
 	test.PutReliableData(3);

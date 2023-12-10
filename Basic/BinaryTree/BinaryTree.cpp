@@ -66,7 +66,6 @@ bool BinaryTree::Delete(int Data)
 	return Delete(_Root, nullptr, Data);
 }
 
-
 bool BinaryTree::Find(int Data)
 {
 	return Find(_Root, Data);
