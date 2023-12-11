@@ -108,6 +108,10 @@ bool BinaryTree::Delete(Node* node, Node* Parent, int Data)
 			{
 				_Root = node->Right;
 			}
+			else
+			{
+				_Root = nullptr;
+			}
 			delete node;
 			return true;
 		}
