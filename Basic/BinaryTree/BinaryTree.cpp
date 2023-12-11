@@ -85,12 +85,16 @@ bool BinaryTree::Delete(Node* node, Node* Parent, int Data)
 		if (node->Left != nullptr && node->Right != nullptr)
 		{
 			// 왼쪽의 맨 오른쪽으로 접근하고, 해당 node 설정 후 삭제.
+			Node* thisNode = node;
+			Parent = node;
 			node = node->Left;
-			while (node == nullptr)
+			while (node->Right != nullptr)
 			{
 				Parent = node;
 				node = node->Right;
 			}
+			thisNode->Data = node->Data;
+			// 여기서 return 되지 않는 이유는 node 는 지워질 때 아래 사항 고려.
 		}
 
 		// 왼쪽 자식이 있는 경우
@@ -105,6 +109,7 @@ bool BinaryTree::Delete(Node* node, Node* Parent, int Data)
 				Parent->Right = node->Left;
 			}
 		}
+		// 오른 자식이 있는 경우
 		else if (node->Right != nullptr)
 		{
 			if (Parent->Left == node)
@@ -116,9 +121,9 @@ bool BinaryTree::Delete(Node* node, Node* Parent, int Data)
 				Parent->Right = node->Right;
 			}
 		}
+		// 자식이 없는 경우
 		else
 		{
-			// 자식이 없는 경우
 			if (Parent->Left == node)
 			{
 				Parent->Left = nullptr;
