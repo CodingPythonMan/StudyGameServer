@@ -8,7 +8,7 @@ BinaryTree::BinaryTree()
 
 BinaryTree::~BinaryTree()
 {
-	delete _Root;
+	DeleteDestructor(_Root);
 }
 
 bool BinaryTree::Insert(int Data)
@@ -96,6 +96,21 @@ bool BinaryTree::Delete(Node* node, Node* Parent, int Data)
 			thisNode->Data = node->Data;
 			// 여기서 return 되지 않는 이유는 node 는 지워질 때 아래 사항 고려.
 		}
+		
+		// Root 면 Parent 관련 설정할 필요가 없다.
+		if (node == _Root)
+		{
+			if (node->Left != nullptr)
+			{
+				_Root = node->Left;
+			}
+			else if (node->Right != nullptr)
+			{
+				_Root = node->Right;
+			}
+			delete node;
+			return true;
+		}
 
 		// 왼쪽 자식이 있는 경우
 		if (node->Left != nullptr)
@@ -156,6 +171,17 @@ bool BinaryTree::Find(Node* node, int Data)
 	rightResult = Find(node->Right, Data);
 
 	return leftResult || rightResult;
+}
+
+void BinaryTree::DeleteDestructor(Node* node)
+{
+	if (node == nullptr)
+		return;
+
+	// 소멸자는 후위 연산
+	DeleteDestructor(node->Left);
+	DeleteDestructor(node->Right);
+	delete node;
 }
 
 int BinaryTree::GetMaxDepth() const

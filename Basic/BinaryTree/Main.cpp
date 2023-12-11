@@ -3,7 +3,7 @@
 #include "Test.h"
 using namespace std;
 
-int main()
+void TestCode1()
 {
 	BinaryTree binaryTree;
 
@@ -36,4 +36,16 @@ int main()
 	test.PutReliableData(3);
 	test.PutReliableData(4);
 	test.PutReliableData(5);
+}
+
+int main()
+{
+	BinaryTree binaryTree;
+
+	binaryTree.Insert(30);
+	binaryTree.Insert(20);
+	binaryTree.Insert(40);
+
+	binaryTree.Delete(30);
+	binaryTree.Delete(20);
 }
