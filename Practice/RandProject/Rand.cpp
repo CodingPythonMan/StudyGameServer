@@ -1,14 +1,7 @@
-#include <iostream>
-#include <conio.h>
+#include "Rand.h"
 
-struct st_ITEM
-{
-	char	Name[30];
-	int	Rate;		// 일반 랜덤 뽑기와 같은 용도
-	int	WinTime;	// 이 아이템이 나올 뽑기 회차.
-	// 0 이면 일반 아이템
-	// 0 이 아니면 그 회차에만 나옴
-};
+// 뽑기의 회차가 누적 계산이 되고 있어야 함.
+int iCount = 0;
 
 st_ITEM g_Gatcha[] = {
 	{"칼",				20, 0},
@@ -24,9 +17,6 @@ st_ITEM g_Gatcha[] = {
 	// 마지막 3개의 아이템은 일반 확률로는 나오지 않으며
 	// 뒤에 입력된 WinTime 회차때만 100% 로 나옴.
 };
-
-// 뽑기의 회차가 누적 계산이 되고 있어야 함.
-int iCount = 0;
 
 void Gatcha()
 {
@@ -90,12 +80,7 @@ void Gatcha()
 	// 5. 뽑기 회차를 초기화 해야할지 판단하여 초기화.
 }
 
-
-int main()
+int MakeBigNumRand()
 {
-	while (1)
-	{
-		_getch();
-		Gatcha();
-	}
+	return 5;
 }
