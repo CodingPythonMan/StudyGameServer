@@ -1,6 +1,9 @@
 #pragma once
 #include <vector>
+#include <windows.h>
 using namespace std;
+
+#define DIRECTION 8
 
 struct Node {
 	int X;
@@ -21,14 +24,20 @@ struct Node {
 	}
 };
 
+
 class Astar
 {
 public:
 	Astar();
 	virtual ~Astar();
 
+	void RoutingStart(HWND hWnd);
+
 	Node* _Start;
 	Node* _End;
 	vector<Node*> _OpenList;
 	vector<Node*> _CloseList;
+
+private:
+	
 };

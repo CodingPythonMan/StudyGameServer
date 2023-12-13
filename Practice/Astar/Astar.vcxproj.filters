@@ -27,6 +27,9 @@
     <ClInclude Include="Astar.h">
       <Filter>Astar</Filter>
     </ClInclude>
+    <ClInclude Include="Tile.h">
+      <Filter>Main</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -34,6 +37,9 @@
     </ClCompile>
     <ClCompile Include="Astar.cpp">
       <Filter>Astar</Filter>
+    </ClCompile>
+    <ClCompile Include="Tile.cpp">
+      <Filter>Main</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -4,12 +4,9 @@
 #include "framework.h"
 #include "Main.h"
 #include <windowsx.h>
+#include "Tile.h"
 
 #define MAX_LOADSTRING 100
-
-#define GRID_SIZE 16
-#define GRID_WIDTH 100
-#define GRID_HEIGHT 50
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
@@ -17,10 +14,13 @@ WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
 HBRUSH gTileBrush;
+
+bool gFirstStart = true;
 HBRUSH gStartBrush;
+bool gFirstEnd = true;
 HBRUSH gEndBrush;
+
 HPEN gGridPen;
-char gTile[GRID_HEIGHT][GRID_WIDTH];            // 0 장애물 없음 / 1 장애물 있음
 
 HBITMAP gMemDCBitmap;
 HBITMAP gMemDCBitmapOld;
@@ -40,7 +40,9 @@ enum class Mode
 {
 	OBSTACLE = 1,
 	START,
-	END
+	END,
+	OPENLIST,
+	CLOSELIST
 };
 
 Mode gMode = Mode::OBSTACLE;
@@ -83,7 +85,7 @@ void RenderObstacle(HDC hdc)
 	{
 		for (int j = 0; j < GRID_HEIGHT; j++)
 		{
-			if (gTile[j][i] == 1)
+			if (gTile[j][i] == (int)Mode::OBSTACLE)
 			{
 				X = i * GRID_SIZE;
 				Y = j * GRID_SIZE;
@@ -279,24 +281,40 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		case Mode::START:
 		{
-			int OldTileX = _Astar._Start->X / GRID_SIZE;
-			int OldTileY = _Astar._Start->Y / GRID_SIZE;
-			gTile[OldTileY][OldTileX] = 0;
-
+			if (gFirstStart)
+			{
+				gFirstStart = false;
+			}
+			else
+			{
+				int OldTileX = _Astar._Start->X;
+				int OldTileY = _Astar._Start->Y;
+				gTile[OldTileY][OldTileX] = 0;
+			}
+			
 			_Astar._Start->X = TileX;
 			_Astar._Start->Y = TileY;
-			gTile[OldTileY][OldTileX] = (int)Mode::START;
+			gTile[TileY][TileX] = (int)Mode::START;
+			InvalidateRect(hWnd, NULL, false);
 		}
 		break;
 		case Mode::END:
 		{
-			int OldTileX = _Astar._End->X / GRID_SIZE;
-			int OldTileY = _Astar._End->Y / GRID_SIZE;
-			gTile[OldTileY][OldTileX] = 0;
-
+			if (gFirstEnd)
+			{
+				gFirstEnd = false;
+			}
+			else
+			{
+				int OldTileX = _Astar._End->X;
+				int OldTileY = _Astar._End->Y;
+				gTile[OldTileY][OldTileX] = 0;
+			}
+			
 			_Astar._End->X = TileX;
 			_Astar._End->Y = TileY;
-			gTile[OldTileY][OldTileX] = (int)Mode::END;
+			gTile[TileY][TileX] = (int)Mode::END;
+			InvalidateRect(hWnd, NULL, false);
 		}
 		break;
 		default:
@@ -350,6 +368,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// 화면 깜빡임을 없앤다. WM_PAINT 에서는 윈도우 전체를 덮어쓰기 때문에 지우지 않아도 된다.
 	}
 	break;
+	case WM_KEYDOWN:
+		if (wParam == 0x52)
+		{
+			_Astar.RoutingStart(hWnd);
+		}
+		break;
 	case WM_CREATE:
 	{
 		gGridPen = CreatePen(PS_SOLID, 1, RGB(200, 200, 200));
