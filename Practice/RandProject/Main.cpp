@@ -11,5 +11,6 @@ void Test1()
 
 int main()
 {
-	cout << MakeBigNumRand() << "\n";
+	for(int i=0; i<10000; i++)
+		cout << MakeIntRand() << "\n";
 }

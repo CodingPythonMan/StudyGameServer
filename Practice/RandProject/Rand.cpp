@@ -80,7 +80,13 @@ void Gatcha()
 	// 5. 뽑기 회차를 초기화 해야할지 판단하여 초기화.
 }
 
-int MakeBigNumRand()
+// 10억까지 난수를 설정할 수 있다.
+int MakeIntRand()
 {
-	return 5;
+	// int 를 돌려줄 때, 최상위 비트가 1이 아니면 된다.
+	unsigned int num = rand();
+	num <<= 15;
+	num += rand();
+
+	return num;
 }

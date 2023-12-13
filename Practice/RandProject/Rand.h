@@ -14,4 +14,4 @@ struct st_ITEM
 void Gatcha();
 
 // 큰 숫자 Rand 만들기
-int MakeBigNumRand();
+int MakeIntRand();
