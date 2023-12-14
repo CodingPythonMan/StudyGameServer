@@ -19,6 +19,9 @@ bool gFirstStart = true;
 HBRUSH gStartBrush;
 bool gFirstEnd = true;
 HBRUSH gEndBrush;
+HBRUSH gOpenBrush;
+HBRUSH gCloseBrush;
+HBRUSH gRouteBrush;
 
 HPEN gGridPen;
 
@@ -34,16 +37,6 @@ RECT gMemDCRect;
 
 bool gErase = false;
 bool gDrag = false;
-
-// 모드 정하기
-enum class Mode
-{
-	OBSTACLE = 1,
-	START,
-	END,
-	OPENLIST,
-	CLOSELIST
-};
 
 Mode gMode = Mode::OBSTACLE;
 Astar _Astar;
@@ -130,6 +123,72 @@ void RenderEnd(HDC hdc)
 		for (int j = 0; j < GRID_HEIGHT; j++)
 		{
 			if (gTile[j][i] == (int)Mode::END)
+			{
+				X = i * GRID_SIZE;
+				Y = j * GRID_SIZE;
+				// 테두리 크기가 있으므로 + 2 한다.
+				Rectangle(hdc, X, Y, X + GRID_SIZE + 2, Y + GRID_SIZE + 2);
+			}
+		}
+	}
+	SelectObject(hdc, OldBrush);
+}
+
+void RenderOpen(HDC hdc)
+{
+	int X = 0;
+	int Y = 0;
+	HBRUSH OldBrush = (HBRUSH)SelectObject(hdc, gOpenBrush);
+	SelectObject(hdc, GetStockObject(NULL_PEN));
+	for (int i = 0; i < GRID_WIDTH; i++)
+	{
+		for (int j = 0; j < GRID_HEIGHT; j++)
+		{
+			if (gTile[j][i] == (int)Mode::OPENLIST)
+			{
+				X = i * GRID_SIZE;
+				Y = j * GRID_SIZE;
+				// 테두리 크기가 있으므로 + 2 한다.
+				Rectangle(hdc, X, Y, X + GRID_SIZE + 2, Y + GRID_SIZE + 2);
+			}
+		}
+	}
+	SelectObject(hdc, OldBrush);
+}
+
+void RenderClose(HDC hdc)
+{
+	int X = 0;
+	int Y = 0;
+	HBRUSH OldBrush = (HBRUSH)SelectObject(hdc, gCloseBrush);
+	SelectObject(hdc, GetStockObject(NULL_PEN));
+	for (int i = 0; i < GRID_WIDTH; i++)
+	{
+		for (int j = 0; j < GRID_HEIGHT; j++)
+		{
+			if (gTile[j][i] == (int)Mode::CLOSELIST)
+			{
+				X = i * GRID_SIZE;
+				Y = j * GRID_SIZE;
+				// 테두리 크기가 있으므로 + 2 한다.
+				Rectangle(hdc, X, Y, X + GRID_SIZE + 2, Y + GRID_SIZE + 2);
+			}
+		}
+	}
+	SelectObject(hdc, OldBrush);
+}
+
+void RenderRoute(HDC hdc)
+{
+	int X = 0;
+	int Y = 0;
+	HBRUSH OldBrush = (HBRUSH)SelectObject(hdc, gRouteBrush);
+	SelectObject(hdc, GetStockObject(NULL_PEN));
+	for (int i = 0; i < GRID_WIDTH; i++)
+	{
+		for (int j = 0; j < GRID_HEIGHT; j++)
+		{
+			if (gTile[j][i] == (int)Mode::ROUTE)
 			{
 				X = i * GRID_SIZE;
 				Y = j * GRID_SIZE;
@@ -287,13 +346,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			else
 			{
-				int OldTileX = _Astar._Start->X;
-				int OldTileY = _Astar._Start->Y;
+				int OldTileX = _Astar._Start->_X;
+				int OldTileY = _Astar._Start->_Y;
 				gTile[OldTileY][OldTileX] = 0;
 			}
 			
-			_Astar._Start->X = TileX;
-			_Astar._Start->Y = TileY;
+			_Astar._Start->_X = TileX;
+			_Astar._Start->_Y = TileY;
 			gTile[TileY][TileX] = (int)Mode::START;
 			InvalidateRect(hWnd, NULL, false);
 		}
@@ -306,13 +365,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			else
 			{
-				int OldTileX = _Astar._End->X;
-				int OldTileY = _Astar._End->Y;
+				int OldTileX = _Astar._End->_X;
+				int OldTileY = _Astar._End->_Y;
 				gTile[OldTileY][OldTileX] = 0;
 			}
 			
-			_Astar._End->X = TileX;
-			_Astar._End->Y = TileY;
+			_Astar._End->_X = TileX;
+			_Astar._End->_Y = TileY;
 			gTile[TileY][TileX] = (int)Mode::END;
 			InvalidateRect(hWnd, NULL, false);
 		}
@@ -380,6 +439,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		gTileBrush = CreateSolidBrush(RGB(100, 100, 100));
 		gStartBrush = CreateSolidBrush(RGB(250, 0, 0));
 		gEndBrush = CreateSolidBrush(RGB(0, 0, 250));
+		gOpenBrush = CreateSolidBrush(RGB(0, 250, 0));
+		gCloseBrush = CreateSolidBrush(RGB(0, 250, 250));
+		gRouteBrush = CreateSolidBrush(RGB(250, 250, 0));
 
 		// 윈도우 생성 시 현 윈도우 크기와 동일한 메모리 DC 생성
 		HDC hdc = GetDC(hWnd);
@@ -399,6 +461,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		RenderGrid(gMemDC);
 		RenderStart(gMemDC);
 		RenderEnd(gMemDC);
+		RenderOpen(gMemDC);
+		RenderClose(gMemDC);
+		RenderRoute(gMemDC);
 
 		// 메모리 DC 에 랜더링이 끝나면, 메모리 DC->윈도우 DC 출력
 		hdc = BeginPaint(hWnd, &ps);

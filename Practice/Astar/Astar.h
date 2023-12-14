@@ -6,21 +6,31 @@ using namespace std;
 #define DIRECTION 8
 
 struct Node {
-	int X;
-	int Y;
-	double G;
-	double H;
-	double F;
-	Node* Parent;
+	int _X;
+	int _Y;
+	double _G;
+	double _H;
+	double _F;
+	Node* _Parent;
 
 	Node()
 	{
-		X = 0;
-		Y = 0;
-		G = 0;
-		H = 0;
-		F = 0;
-		Parent = nullptr;
+		_X = 0;
+		_Y = 0;
+		_G = 0;
+		_H = 0;
+		_F = 0;
+		_Parent = nullptr;
+	}
+
+	Node(int X, int Y)
+	{
+		_X = X;
+		_Y = Y;
+		_G = 0;
+		_H = 0;
+		_F = 0;
+		_Parent = nullptr;
 	}
 };
 
@@ -39,5 +49,8 @@ public:
 	vector<Node*> _CloseList;
 
 private:
-	
+	double CalUclide(Node* node1, Node* node2);
+	double CalManhatan(Node* node1, Node* node2);
+
+	void SetCloseList();
 };
