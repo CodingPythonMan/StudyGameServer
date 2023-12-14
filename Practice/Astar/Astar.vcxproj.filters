@@ -10,6 +10,9 @@
     <Filter Include="Astar">
       <UniqueIdentifier>{5a2cd04c-d64b-4699-b3c4-9f0f6a5d74d9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Render">
+      <UniqueIdentifier>{5ff8d9f5-b610-4fbc-a7c9-72597c7f2acf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h">
@@ -28,7 +31,7 @@
       <Filter>Astar</Filter>
     </ClInclude>
     <ClInclude Include="Tile.h">
-      <Filter>Main</Filter>
+      <Filter>Render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -39,7 +42,7 @@
       <Filter>Astar</Filter>
     </ClCompile>
     <ClCompile Include="Tile.cpp">
-      <Filter>Main</Filter>
+      <Filter>Render</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

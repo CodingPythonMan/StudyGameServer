@@ -34,7 +34,6 @@ struct Node {
 	}
 };
 
-
 class Astar
 {
 public:

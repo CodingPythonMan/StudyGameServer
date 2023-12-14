@@ -19,6 +19,7 @@ Astar::~Astar()
 
 void Astar::RoutingStart(HWND hWnd)
 {
+	HDC hdc = GetDC(hWnd);
 	// 0. 장애물을 CloseList에 추가한다.
 	SetCloseList();
 
@@ -26,33 +27,47 @@ void Astar::RoutingStart(HWND hWnd)
 	_OpenList.push_back(_Start);
 
 	// 2. 반복문을 돈다.
+	bool existInClose;
 	while (1)
 	{
 		// 3. F가 가장 작은 아이를 참조한다.
 		Node* node = _OpenList[(int)_OpenList.size() - 1];
 		_OpenList.pop_back();
-		
+
 		// 4. 목적지 도착.
 		if (node->_X == _End->_X && node->_Y == _End->_Y)
 		{
 			node = node->_Parent;
-			while (nullptr != node)
+			while (_Start == node)
 			{
 				gTile[node->_Y][node->_X] = (int)Mode::ROUTE;
 				node = node->_Parent;
-				InvalidateRect(hWnd, NULL, false);
+				RenderRoute(hdc);
 			}
 			return;
 		}
 		else
 		{
-			_CloseList.push_back(node);
-			gTile[node->_Y][node->_X] = (int)Mode::CLOSELIST;
-			InvalidateRect(hWnd, NULL, false);
+			existInClose = false;
+			for (int i = 0; i < _CloseList.size(); i++)
+			{
+				if (_CloseList[i]->_X == node->_X && _CloseList[i]->_Y == node->_Y)
+				{
+					existInClose = true;
+					break;
+				}
+			}
+
+			if (existInClose == false)
+			{
+				_CloseList.push_back(node);
+				gTile[node->_Y][node->_X] = (int)Mode::CLOSELIST;
+				RenderClose(hdc);
+			}
 		}
 
 		// 5. Open List 추가
-		bool existInClose;
+		
 		int dx, dy;
 		for (int i = 0; i < DIRECTION; i++)
 		{
@@ -81,7 +96,7 @@ void Astar::RoutingStart(HWND hWnd)
 			_OpenList.push_back(newNode);
 
 			gTile[newNode->_Y][newNode->_X] = (int)Mode::OPENLIST;
-			InvalidateRect(hWnd, NULL, false);
+			RenderOpen(hdc);
 		}
 
 		sort(_OpenList.begin(), _OpenList.end(), [](const Node* o1, const Node* o2) {
