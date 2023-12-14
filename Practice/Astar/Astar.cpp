@@ -15,6 +15,12 @@ Astar::~Astar()
 {
 	delete _Start;
 	delete _End;
+
+	for (int i = 0; i < _OpenList.size(); i++)
+		delete _OpenList[i];
+
+	for (int i = 0; i < _CloseList.size(); i++)
+		delete _CloseList[i];
 }
 
 void Astar::RoutingStart(HWND hWnd)
@@ -38,12 +44,14 @@ void Astar::RoutingStart(HWND hWnd)
 		if (node->_X == _End->_X && node->_Y == _End->_Y)
 		{
 			node = node->_Parent;
-			while (_Start == node)
+			while (_Start != node)
 			{
 				gTile[node->_Y][node->_X] = (int)Mode::ROUTE;
 				node = node->_Parent;
 				RenderRoute(hdc);
 			}
+			_OpenList.clear();
+			_CloseList.clear();
 			return;
 		}
 		else
@@ -60,14 +68,16 @@ void Astar::RoutingStart(HWND hWnd)
 
 			if (existInClose == false)
 			{
+				if (node->_Y != _Start->_Y || node->_X != _Start->_X)
+				{
+					gTile[node->_Y][node->_X] = (int)Mode::CLOSELIST;
+				}
 				_CloseList.push_back(node);
-				gTile[node->_Y][node->_X] = (int)Mode::CLOSELIST;
 				RenderClose(hdc);
 			}
 		}
 
 		// 5. Open List Ãß°¡
-		
 		int dx, dy;
 		for (int i = 0; i < DIRECTION; i++)
 		{
@@ -95,7 +105,8 @@ void Astar::RoutingStart(HWND hWnd)
 			newNode->_F = newNode->_G + newNode->_H;
 			_OpenList.push_back(newNode);
 
-			gTile[newNode->_Y][newNode->_X] = (int)Mode::OPENLIST;
+			if(dx != _End->_X || dy != _End->_Y)
+				gTile[newNode->_Y][newNode->_X] = (int)Mode::OPENLIST;
 			RenderOpen(hdc);
 		}
 
