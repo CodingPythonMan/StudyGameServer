@@ -49,7 +49,12 @@ public:
 
 private:
 	double CalUclide(Node* node1, Node* node2);
+	double CalUclide(int X, int Y, Node* node);
+
 	double CalManhatan(Node* node1, Node* node2);
+
+	bool IsExistCloseList(int X, int Y);
+	bool IsExistOpenList(int X, int Y, Node* Parent);
 
 	void SetCloseList();
 };

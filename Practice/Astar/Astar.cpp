@@ -52,7 +52,7 @@ void Astar::RoutingStart(HWND hWnd)
 			}
 			_OpenList.clear();
 			_CloseList.clear();
-			return;
+			return;	
 		}
 		else
 		{
@@ -83,17 +83,11 @@ void Astar::RoutingStart(HWND hWnd)
 		{
 			dx = node->_X + _dx[i];
 			dy = node->_Y + _dy[i];
-			existInClose = false;
-			for (int j = 0; j < _CloseList.size(); j++)
-			{
-				if (_CloseList[j]->_X == dx && _CloseList[j]->_Y == dy)
-				{
-					existInClose = true;
-					break;
-				}
-			}
 
-			if (existInClose)
+			if (IsExistCloseList(dx, dy))
+				continue;
+
+			if (IsExistOpenList(dx, dy, node))
 				continue;
 
 			Node* newNode = new Node(dx, dy);
@@ -124,12 +118,54 @@ double Astar::CalUclide(Node* node1, Node* node2)
 	return sqrt(dx*dx + dy*dy);
 }
 
+double Astar::CalUclide(int X, int Y, Node* node)
+{
+	double dx = X - node->_X;
+	double dy = Y - node->_Y;
+
+	return sqrt(dx * dx + dy * dy);
+}
+
 double Astar::CalManhatan(Node* node1, Node* node2)
 {
 	double dx = abs(node2->_X - node1->_X);
 	double dy = abs(node2->_Y - node1->_Y);
 
 	return dx + dy;
+}
+
+bool Astar::IsExistCloseList(int X, int Y)
+{
+	for (int i = 0; i < _CloseList.size(); i++)
+	{
+		if (_CloseList[i]->_X == X && _CloseList[i]->_Y == Y)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool Astar::IsExistOpenList(int X, int Y, Node* node)
+{
+	for (int i = 0; i < _OpenList.size(); i++)
+	{
+		if (_OpenList[i]->_X == X && _OpenList[i]->_Y == Y)
+		{
+			double G = CalUclide(X, Y, _Start);
+			// 이번에 들어온 X, Y 가 G가 가깝다면 새롭게 Parent 설정
+			if (G < _OpenList[i]->_G)
+			{
+				_OpenList[i]->_Parent = node;
+				_OpenList[i]->_G = G;
+				_OpenList[i]->_F = G + _OpenList[i]->_H;
+			}
+
+			return true;
+		}
+	}
+	return false;
 }
 
 void Astar::SetCloseList()

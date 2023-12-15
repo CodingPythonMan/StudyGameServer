@@ -21,7 +21,10 @@ void RenderOpen(HDC hdc)
 				X = i * GRID_SIZE;
 				Y = j * GRID_SIZE;
 				// 테두리 크기가 있으므로 + 2 한다.
+				//RECT rect;
 				Rectangle(hdc, X, Y, X + GRID_SIZE + 2, Y + GRID_SIZE + 2);
+
+				//DrawText(hdc, TEXT("T"), (int)strlen("T"), &rect, DT_TOP | DT_LEFT);
 			}
 		}
 	}
