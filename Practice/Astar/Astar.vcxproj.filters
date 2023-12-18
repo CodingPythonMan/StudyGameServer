@@ -24,9 +24,6 @@
     <ClInclude Include="Resource.h">
       <Filter>Win</Filter>
     </ClInclude>
-    <ClInclude Include="Main.h">
-      <Filter>Main</Filter>
-    </ClInclude>
     <ClInclude Include="Astar.h">
       <Filter>Astar</Filter>
     </ClInclude>

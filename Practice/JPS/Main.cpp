@@ -27,6 +27,8 @@ RECT gMemDCRect;
 bool gErase = false;
 bool gDrag = false;
 
+JumpPointSearch JPS;
+
 void RenderGrid(HDC hdc)
 {
 	int X = 0;
@@ -177,7 +179,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 
 	wcex.cbSize = sizeof(WNDCLASSEX);
 
-	wcex.style = CS_HREDRAW | CS_VREDRAW;
+	wcex.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
 	wcex.lpfnWndProc = WndProc;
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
@@ -260,9 +262,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_MOUSEMOVE:
 	{
-		int xPos = GET_X_LPARAM(lParam);
-		int yPos = GET_Y_LPARAM(lParam);
-
 		if (gDrag)
 		{
 			int xPos = GET_X_LPARAM(lParam);
@@ -274,17 +273,72 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 
 			gTile[TileY][TileX] = !gErase;
-			//InvalidateRect(hWnd, NULL, true);
+			
 			InvalidateRect(hWnd, NULL, false);
 		}
 		// 마우스 드래그로 데이터가 변경되어 갱신을 요청할 시 마지막 Erase 플래그를 false 로 하여
 		// 화면 깜빡임을 없앤다. WM_PAINT 에서는 윈도우 전체를 덮어쓰기 때문에 지우지 않아도 된다.
 	}
 	break;
+	case WM_LBUTTONDBLCLK:
+	{
+		if (gFirstStart)
+		{
+			gFirstStart = false;
+		}
+		else
+		{
+			int OldTileX = JPS._Start->_X;
+			int OldTileY = JPS._Start->_Y;
+			gTile[OldTileY][OldTileX] = 0;
+		}
+
+		int xPos = GET_X_LPARAM(lParam);
+		int yPos = GET_Y_LPARAM(lParam);
+		int TileX = xPos / GRID_SIZE;
+		int TileY = yPos / GRID_SIZE;
+
+		if (TileX >= GRID_WIDTH || TileY >= GRID_HEIGHT)
+			break;
+
+		JPS._Start->_X = TileX;
+		JPS._Start->_Y = TileY;
+		gTile[TileY][TileX] = (int)Mode::START;
+		InvalidateRect(hWnd, NULL, false);
+	}
+	break;
+	case WM_RBUTTONDBLCLK:
+	{
+		if (gFirstEnd)
+		{
+			gFirstEnd = false;
+		}
+		else
+		{
+			int OldTileX = JPS._End->_X;
+			int OldTileY = JPS._End->_Y;
+			gTile[OldTileY][OldTileX] = 0;
+		}
+
+		int xPos = GET_X_LPARAM(lParam);
+		int yPos = GET_Y_LPARAM(lParam);
+
+		int TileX = xPos / GRID_SIZE;
+		int TileY = yPos / GRID_SIZE;
+
+		if (TileX >= GRID_WIDTH || TileY >= GRID_HEIGHT)
+			break;
+
+		JPS._End->_X = TileX;
+		JPS._End->_Y = TileY;
+		gTile[TileY][TileX] = (int)Mode::END;
+		InvalidateRect(hWnd, NULL, false);
+	}
+	break;
 	case WM_KEYDOWN:
 		if (wParam == 0x52)
 		{
-			//_Astar.RoutingStart(hWnd);
+			JPS.RoutingStart(hWnd);
 		}
 		break;
 	case WM_CREATE:
@@ -317,7 +371,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		RenderEnd(gMemDC);
 		RenderOpen(gMemDC);
 		RenderClose(gMemDC);
-		RenderRoute(gMemDC);
 
 		// 메모리 DC 에 랜더링이 끝나면, 메모리 DC->윈도우 DC 출력
 		hdc = BeginPaint(hWnd, &ps);

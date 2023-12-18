@@ -251,15 +251,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		int TileX = xPos / GRID_SIZE;
 		int TileY = yPos / GRID_SIZE;
 
+		// 첫 선택 타일이 장애물이면 지우기 모드 아니면 장애물 넣기 모드
+		if (TileX >= GRID_WIDTH || TileY >= GRID_HEIGHT)
+			break;
+
 		switch (gMode)
 		{
 		case Mode::OBSTACLE:
 			gDrag = true;
 			{
-				// 첫 선택 타일이 장애물이면 지우기 모드 아니면 장애물 넣기 모드
-				if (TileX >= GRID_WIDTH || TileY >= GRID_HEIGHT)
-					break;
-
 				if (gTile[TileY][TileX] == 1)
 					gErase = true;
 				else

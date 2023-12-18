@@ -1,6 +1,7 @@
 #pragma once
 
 #include <windows.h>
+#include "Pos.h"
 
 #define GRID_SIZE 16
 #define GRID_WIDTH 100
@@ -14,7 +15,9 @@ enum class Mode
 	END,
 	OPENLIST,
 	CLOSELIST,
-	ROUTE
+	ROUTE,
+	SEARCHED,
+	SEARCH
 };
 
 extern char gTile[GRID_HEIGHT][GRID_WIDTH];            // 0 장애물 없음 / 1 장애물 있음
@@ -26,3 +29,4 @@ extern HBRUSH gRouteBrush;
 void RenderOpen(HDC hdc);
 void RenderClose(HDC hdc);
 void RenderRoute(HDC hdc);
+void RenderSearch(HDC hdc);
