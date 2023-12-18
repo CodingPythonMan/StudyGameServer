@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Main">
+      <UniqueIdentifier>{7ce5c9b0-ad4b-41e4-a320-4ed44500e50b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="JPS">
+      <UniqueIdentifier>{5d00614d-7282-426f-9b34-711d22bdc130}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource">
+      <UniqueIdentifier>{60c74250-311a-46ea-bdc8-9466f483d5a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render">
+      <UniqueIdentifier>{75ff89a7-52c2-44fb-809b-c2ec65f35360}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Tile.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="JPS.h">
+      <Filter>JPS</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="JPS.cpp">
+      <Filter>JPS</Filter>
+    </ClCompile>
+    <ClCompile Include="Tile.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="JPS.ico">
+      <Filter>Resource</Filter>
+    </Image>
+    <Image Include="small.ico">
+      <Filter>Resource</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="JPS.rc">
+      <Filter>Resource</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

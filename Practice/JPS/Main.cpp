@@ -1,4 +1,4 @@
-#include "Astar.h"
+#include "JPS.h"
 #include "framework.h"
 #include "resource.h"
 #include <windowsx.h>
@@ -24,16 +24,8 @@ HBITMAP gMemDCBitmapOld;
 HDC gMemDC;
 RECT gMemDCRect;
 
-// 타일의 속성 입력 / 제거 모드 플래그
-// 더블 클릭 시 해당 타일의 속성을 단순 반전만 시켜준다면 드래그를 통해서 장애물 입력을 수월하게 하기가 어렵다.
-// 첫 클릭 시 해당 타일의 속성에 따라서 장애물 입력모드/제거모드를 본 플래그로 지정하여, 마우스 이동시 지정된 방법으로
-// 장애물을 연속적으로 셋팅하도록 한다.
-
 bool gErase = false;
 bool gDrag = false;
-
-Mode gMode = Mode::OBSTACLE;
-Astar _Astar;
 
 void RenderGrid(HDC hdc)
 {
@@ -135,41 +127,41 @@ LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
+	_In_opt_ HINSTANCE hPrevInstance,
+	_In_ LPWSTR    lpCmdLine,
+	_In_ int       nCmdShow)
 {
-    UNREFERENCED_PARAMETER(hPrevInstance);
-    UNREFERENCED_PARAMETER(lpCmdLine);
+	UNREFERENCED_PARAMETER(hPrevInstance);
+	UNREFERENCED_PARAMETER(lpCmdLine);
 
-    // TODO: Place code here.
+	// TODO: Place code here.
 
-    // Initialize global strings
-    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_ASTAR, szWindowClass, MAX_LOADSTRING);
-    MyRegisterClass(hInstance);
+	// Initialize global strings
+	LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
+	LoadStringW(hInstance, IDC_JPS, szWindowClass, MAX_LOADSTRING);
+	MyRegisterClass(hInstance);
 
-    // Perform application initialization:
-    if (!InitInstance (hInstance, nCmdShow))
-    {
-        return FALSE;
-    }
+	// Perform application initialization:
+	if (!InitInstance(hInstance, nCmdShow))
+	{
+		return FALSE;
+	}
 
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_ASTAR));
+	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_JPS));
 
-    MSG msg;
+	MSG msg;
 
-    // Main message loop:
-    while (GetMessage(&msg, nullptr, 0, 0))
-    {
-        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-    }
+	// Main message loop:
+	while (GetMessage(&msg, nullptr, 0, 0))
+	{
+		if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
 
-    return (int) msg.wParam;
+	return (int)msg.wParam;
 }
 
 
@@ -181,23 +173,23 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 //
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
-    WNDCLASSEXW wcex;
+	WNDCLASSEXW wcex;
 
-    wcex.cbSize = sizeof(WNDCLASSEX);
+	wcex.cbSize = sizeof(WNDCLASSEX);
 
-    wcex.style          = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = WndProc;
-    wcex.cbClsExtra     = 0;
-    wcex.cbWndExtra     = 0;
-    wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ASTAR));
-    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_ASTAR);
-    wcex.lpszClassName  = szWindowClass;
-    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+	wcex.style = CS_HREDRAW | CS_VREDRAW;
+	wcex.lpfnWndProc = WndProc;
+	wcex.cbClsExtra = 0;
+	wcex.cbWndExtra = 0;
+	wcex.hInstance = hInstance;
+	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_JPS));
+	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_JPS);
+	wcex.lpszClassName = szWindowClass;
+	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
-    return RegisterClassExW(&wcex);
+	return RegisterClassExW(&wcex);
 }
 
 //
@@ -212,20 +204,20 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-   hInst = hInstance; // Store instance handle in our global variable
+	hInst = hInstance; // Store instance handle in our global variable
 
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+	HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
 
-   if (!hWnd)
-   {
-      return FALSE;
-   }
+	if (!hWnd)
+	{
+		return FALSE;
+	}
 
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+	ShowWindow(hWnd, nCmdShow);
+	UpdateWindow(hWnd);
 
-   return TRUE;
+	return TRUE;
 }
 
 //
@@ -245,111 +237,45 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	switch (message)
 	{
 	case WM_LBUTTONDOWN:
-	{
-		int xPos = GET_X_LPARAM(lParam);
-		int yPos = GET_Y_LPARAM(lParam);
-		int TileX = xPos / GRID_SIZE;
-		int TileY = yPos / GRID_SIZE;
-
-		switch (gMode)
-		{
-		case Mode::OBSTACLE:
-			gDrag = true;
-			{
-				// 첫 선택 타일이 장애물이면 지우기 모드 아니면 장애물 넣기 모드
-				if (TileX >= GRID_WIDTH || TileY >= GRID_HEIGHT)
-					break;
-
-				if (gTile[TileY][TileX] == 1)
-					gErase = true;
-				else
-					gErase = false;
-			}
-			break;
-		case Mode::START:
-		{
-			if (gFirstStart)
-			{
-				gFirstStart = false;
-			}
-			else
-			{
-				int OldTileX = _Astar._Start->_X;
-				int OldTileY = _Astar._Start->_Y;
-				gTile[OldTileY][OldTileX] = 0;
-			}
-			
-			_Astar._Start->_X = TileX;
-			_Astar._Start->_Y = TileY;
-			gTile[TileY][TileX] = (int)Mode::START;
-			InvalidateRect(hWnd, NULL, false);
-		}
-		break;
-		case Mode::END:
-		{
-			if (gFirstEnd)
-			{
-				gFirstEnd = false;
-			}
-			else
-			{
-				int OldTileX = _Astar._End->_X;
-				int OldTileY = _Astar._End->_Y;
-				gTile[OldTileY][OldTileX] = 0;
-			}
-			
-			_Astar._End->_X = TileX;
-			_Astar._End->_Y = TileY;
-			gTile[TileY][TileX] = (int)Mode::END;
-			InvalidateRect(hWnd, NULL, false);
-		}
-		break;
-		default:
-			break;
-		}
-	}
-	break;
-	case WM_LBUTTONUP:
-		if(gMode == Mode::OBSTACLE)
-			gDrag = false;
-		break;
-	case WM_RBUTTONDOWN:
-		switch (gMode)
-		{
-		case Mode::OBSTACLE:
-			gMode = Mode::START;
-			break;
-		case Mode::START:
-			gMode = Mode::END;
-			break;
-		case Mode::END:
-			gMode = Mode::OBSTACLE;
-			break;
-		default:
-			break;
-		}
-		break;
-	case WM_MOUSEMOVE:
-	{
-		if (gMode == Mode::OBSTACLE)
+		gDrag = true;
 		{
 			int xPos = GET_X_LPARAM(lParam);
 			int yPos = GET_Y_LPARAM(lParam);
+			int TileX = xPos / GRID_SIZE;
+			int TileY = yPos / GRID_SIZE;
 
-			if (gDrag)
-			{
-				int xPos = GET_X_LPARAM(lParam);
-				int yPos = GET_Y_LPARAM(lParam);
-				int TileX = xPos / GRID_SIZE;
-				int TileY = yPos / GRID_SIZE;
+			// 첫 선택 타일이 장애물이면 지우기 모드 아니면 장애물 넣기 모드
+			if (TileX >= GRID_WIDTH || TileY >= GRID_HEIGHT)
+				break;
 
-				if (TileX >= GRID_WIDTH || TileY >= GRID_HEIGHT)
-					break;
+			if (gTile[TileY][TileX] == 1)
+				gErase = true;
+			else
+				gErase = false;
+		}
+		break;
+	break;
+	case WM_LBUTTONUP:
+		gDrag = false;
+		break;
+	case WM_MOUSEMOVE:
+	{
+		int xPos = GET_X_LPARAM(lParam);
+		int yPos = GET_Y_LPARAM(lParam);
 
-				gTile[TileY][TileX] = !gErase;
-				//InvalidateRect(hWnd, NULL, true);
-				InvalidateRect(hWnd, NULL, false);
-			}
+		if (gDrag)
+		{
+			int xPos = GET_X_LPARAM(lParam);
+			int yPos = GET_Y_LPARAM(lParam);
+			int TileX = xPos / GRID_SIZE;
+			int TileY = yPos / GRID_SIZE;
+
+			if (TileX >= GRID_WIDTH || TileY >= GRID_HEIGHT)
+				break;
+
+			gTile[TileY][TileX] = !gErase;
+			//InvalidateRect(hWnd, NULL, true);
+			InvalidateRect(hWnd, NULL, false);
 		}
 		// 마우스 드래그로 데이터가 변경되어 갱신을 요청할 시 마지막 Erase 플래그를 false 로 하여
 		// 화면 깜빡임을 없앤다. WM_PAINT 에서는 윈도우 전체를 덮어쓰기 때문에 지우지 않아도 된다.
@@ -358,7 +284,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_KEYDOWN:
 		if (wParam == 0x52)
 		{
-			_Astar.RoutingStart(hWnd);
+			//_Astar.RoutingStart(hWnd);
 		}
 		break;
 	case WM_CREATE:
@@ -446,19 +372,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 // Message handler for about box.
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    UNREFERENCED_PARAMETER(lParam);
-    switch (message)
-    {
-    case WM_INITDIALOG:
-        return (INT_PTR)TRUE;
+	UNREFERENCED_PARAMETER(lParam);
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		return (INT_PTR)TRUE;
 
-    case WM_COMMAND:
-        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-        {
-            EndDialog(hDlg, LOWORD(wParam));
-            return (INT_PTR)TRUE;
-        }
-        break;
-    }
-    return (INT_PTR)FALSE;
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
 }
