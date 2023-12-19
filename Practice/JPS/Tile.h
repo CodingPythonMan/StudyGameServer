@@ -21,6 +21,7 @@ enum class Mode
 };
 
 extern char gTile[GRID_HEIGHT][GRID_WIDTH];            // 0 장애물 없음 / 1 장애물 있음
+extern char gDesignTile[GRID_HEIGHT][GRID_WIDTH];
 
 extern HBRUSH gOpenBrush;
 extern HBRUSH gCloseBrush;

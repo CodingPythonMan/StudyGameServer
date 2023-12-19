@@ -1,6 +1,7 @@
 #include "Tile.h"
 
 char gTile[GRID_HEIGHT][GRID_WIDTH];
+char gDesignTile[GRID_HEIGHT][GRID_WIDTH];
 
 HBRUSH gOpenBrush;
 HBRUSH gCloseBrush;
@@ -16,7 +17,7 @@ void RenderOpen(HDC hdc)
 	{
 		for (int j = 0; j < GRID_HEIGHT; j++)
 		{
-			if (gTile[j][i] == (int)Mode::OPENLIST)
+			if (gDesignTile[j][i] == (int)Mode::OPENLIST)
 			{
 				X = i * GRID_SIZE;
 				Y = j * GRID_SIZE;
@@ -40,7 +41,7 @@ void RenderClose(HDC hdc)
 	{
 		for (int j = 0; j < GRID_HEIGHT; j++)
 		{
-			if (gTile[j][i] == (int)Mode::CLOSELIST)
+			if (gDesignTile[j][i] == (int)Mode::CLOSELIST)
 			{
 				X = i * GRID_SIZE;
 				Y = j * GRID_SIZE;
@@ -62,7 +63,7 @@ void RenderRoute(HDC hdc)
 	{
 		for (int j = 0; j < GRID_HEIGHT; j++)
 		{
-			if (gTile[j][i] == (int)Mode::ROUTE)
+			if (gDesignTile[j][i] == (int)Mode::ROUTE)
 			{
 				X = i * GRID_SIZE;
 				Y = j * GRID_SIZE;
@@ -86,13 +87,13 @@ void RenderSearch(HDC hdc)
 	{
 		for (int j = 0; j < GRID_WIDTH; j++)
 		{
-			if (gTile[i][j] == (int)Mode::SEARCH)
+			if (gDesignTile[i][j] == (int)Mode::SEARCH)
 			{
 				Y = i * GRID_SIZE;
 				X = j * GRID_SIZE;
 				// 테두리 크기가 있으므로 + 2 한다.
 				Rectangle(hdc, X, Y, X + GRID_SIZE + 2, Y + GRID_SIZE + 2);
-				gTile[i][j] = (int)Mode::SEARCHED;
+				gDesignTile[i][j] = (int)Mode::SEARCHED;
 			}
 		}
 	}

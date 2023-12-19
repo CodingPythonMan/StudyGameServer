@@ -59,7 +59,7 @@ public:
 
 	bool Search(Node* node, Direction direct);
 
-	void CreateOpenNode(int X, int Y);
+	void CreateOpenNode(Node* Parent, int X, int Y);
 
 	Node* _Start;
 	Node* _End;
