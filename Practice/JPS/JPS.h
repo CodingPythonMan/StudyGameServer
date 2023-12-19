@@ -59,7 +59,16 @@ public:
 
 	bool Search(Node* node, Direction direct);
 
-	void CreateOpenNode(Node* Parent, int X, int Y);
+	bool SearchRR(Node* node, int X, int Y);
+	bool SearchRU(Node* node, int X, int Y);
+	bool SearchUU(Node* node, int X, int Y);
+	bool SearchLU(Node* node, int X, int Y);
+	bool SearchLL(Node* node, int X, int Y);
+	bool SearchLD(Node* node, int X, int Y);
+	bool SearchDD(Node* node, int X, int Y);
+	bool SearchRD(Node* node, int X, int Y);
+
+	Node* CreateOpenNode(Node* Parent, int X, int Y);
 
 	Node* _Start;
 	Node* _End;

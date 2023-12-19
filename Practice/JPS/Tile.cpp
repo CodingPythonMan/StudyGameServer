@@ -18,14 +18,12 @@ void RenderOpen(HDC hdc)
 	{
 		for (int j = 0; j < GRID_HEIGHT; j++)
 		{
-			if (gDesignTile[j][i] == (int)Mode::OPENLIST)
+			if (gTile[j][i] == (int)Mode::OPENLIST)
 			{
 				X = i * GRID_SIZE;
 				Y = j * GRID_SIZE;
 				// 테두리 크기가 있으므로 + 2 한다.
 				Rectangle(hdc, X, Y, X + GRID_SIZE + 2, Y + GRID_SIZE + 2);
-
-				//DrawText(hdc, TEXT("T"), (int)strlen("T"), &rect, DT_TOP | DT_LEFT);
 			}
 		}
 	}
