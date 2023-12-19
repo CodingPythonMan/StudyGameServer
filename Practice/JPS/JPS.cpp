@@ -18,7 +18,8 @@ JumpPointSearch::~JumpPointSearch()
 
 void JumpPointSearch::RoutingStart(HWND hWnd)
 {
-	HDC _HDC = GetDC(hWnd);
+	Init();
+	_HDC = GetDC(hWnd);
 	_OpenList.push_back(_Start);
 
 	while (_OpenList.size() > 0)
@@ -28,7 +29,8 @@ void JumpPointSearch::RoutingStart(HWND hWnd)
 
 		if (node->_Parent == nullptr)
 		{
-			if(Search(node, Direction::RR))
+			if (Search(node, Direction::RR))
+				break;
 
 			Search(node, Direction::RU);
 			Search(node, Direction::UU);
@@ -75,18 +77,25 @@ bool JumpPointSearch::Search(Node* node, Direction direct)
 		int X = node->_X + 1;
 		int Y = node->_Y;
 		// 끝에 도달했다면 더이상 탐색하지 않음.
-		while (Y >= 0 && X >= 0 && Y <= GRID_HEIGHT && X <= GRID_WIDTH)
+		while (Y >= 0 && X >= 0 && Y < GRID_HEIGHT && X < GRID_WIDTH)
 		{
+			if (gTile[Y][X] > 0)
+				break;
+
 			if (_End->_X == X && _End->_Y == Y)
 				return true;
 			
 			// 노드 생성
-			if (IsRUConner(X, Y) || IsRDConner(X, Y))
+			if ((gTile[Y - 1][X] > 0 && gTile[Y - 1][X + 1] == 0) 
+				|| gTile[Y + 1][X] > 0 && gTile[Y + 1][X + 1] == 0)
 			{
 				CreateOpenNode(X, Y);
 				RenderSearch(_HDC);
 				break;
 			}
+
+			if (X == 0)
+				break;
 
 			gTile[Y][X] = (int)Mode::SEARCH;
 			X = X + 1;
@@ -109,22 +118,6 @@ bool JumpPointSearch::Search(Node* node, Direction direct)
 	case Direction::RD:
 		break;
 	}
-
-	return false;
-}
-
-bool JumpPointSearch::IsRUConner(int X, int Y)
-{
-	if (gTile[Y - 1][X] == 0 && gTile[Y - 1][X + 1] > 0)
-		return true;
-
-	return false;
-}
-
-bool JumpPointSearch::IsRDConner(int X, int Y)
-{
-	if (gTile[Y + 1][X] == 0 && gTile[Y + 1][X + 1] > 0)
-		return true;
 
 	return false;
 }
@@ -167,4 +160,22 @@ bool JumpPointSearch::IsExistCloseList(int X, int Y)
 bool JumpPointSearch::IsExistOpenList(int X, int Y, Node* Parent)
 {
 	return false;
+}
+
+void JumpPointSearch::Init()
+{
+	for (int i = 0; i < GRID_HEIGHT; i++)
+	{
+		for (int j = 0; j < GRID_WIDTH; j++)
+		{
+			if (gTile[i][j] == (int)Mode::SEARCHED)
+				gTile[i][j] = 0;
+
+			if (gTile[i][j] == (int)Mode::OPENLIST)
+				gTile[i][j] = 0;
+
+			if (gTile[i][j] == (int)Mode::CLOSELIST)
+				gTile[i][j] = 0;
+		}
+	}
 }

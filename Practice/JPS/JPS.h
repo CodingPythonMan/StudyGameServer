@@ -59,9 +59,6 @@ public:
 
 	bool Search(Node* node, Direction direct);
 
-	bool IsRUConner(int X, int Y);
-	bool IsRDConner(int X, int Y);
-
 	void CreateOpenNode(int X, int Y);
 
 	Node* _Start;
@@ -77,4 +74,6 @@ private:
 
 	bool IsExistCloseList(int X, int Y);
 	bool IsExistOpenList(int X, int Y, Node* Parent);
+
+	void Init();
 };
