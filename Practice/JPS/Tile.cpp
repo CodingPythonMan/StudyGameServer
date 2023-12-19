@@ -6,6 +6,7 @@ char gDesignTile[GRID_HEIGHT][GRID_WIDTH];
 HBRUSH gOpenBrush;
 HBRUSH gCloseBrush;
 HBRUSH gRouteBrush;
+HPEN gGridPen;
 
 void RenderOpen(HDC hdc)
 {
@@ -98,4 +99,27 @@ void RenderSearch(HDC hdc)
 		}
 	}
 	SelectObject(hdc, OldBrush);
+	RenderGrid(hdc);
+}
+
+void RenderGrid(HDC hdc)
+{
+	int X = 0;
+	int Y = 0;
+	HPEN OldPen = (HPEN)SelectObject(hdc, gGridPen);
+	// 그리드의 마지막 선을 추가로 그리기 위해 <= 의 반복 조건
+	for (int i = 0; i <= GRID_WIDTH; i++)
+	{
+		MoveToEx(hdc, X, 0, NULL);
+		LineTo(hdc, X, GRID_HEIGHT * GRID_SIZE);
+		X += GRID_SIZE;
+	}
+
+	for (int i = 0; i <= GRID_HEIGHT; i++)
+	{
+		MoveToEx(hdc, 0, Y, NULL);
+		LineTo(hdc, GRID_WIDTH * GRID_SIZE, Y);
+		Y += GRID_SIZE;
+	}
+	SelectObject(hdc, OldPen);
 }

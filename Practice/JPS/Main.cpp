@@ -14,7 +14,6 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 bool gFirstStart = true;
 bool gFirstEnd = true;
 
-HPEN gGridPen;
 HBRUSH gTileBrush;
 HBRUSH gStartBrush;
 HBRUSH gEndBrush;
@@ -28,28 +27,6 @@ bool gErase = false;
 bool gDrag = false;
 
 JumpPointSearch JPS;
-
-void RenderGrid(HDC hdc)
-{
-	int X = 0;
-	int Y = 0;
-	HPEN OldPen = (HPEN)SelectObject(hdc, gGridPen);
-	// 그리드의 마지막 선을 추가로 그리기 위해 <= 의 반복 조건
-	for (int i = 0; i <= GRID_WIDTH; i++)
-	{
-		MoveToEx(hdc, X, 0, NULL);
-		LineTo(hdc, X, GRID_HEIGHT * GRID_SIZE);
-		X += GRID_SIZE;
-	}
-
-	for (int i = 0; i <= GRID_HEIGHT; i++)
-	{
-		MoveToEx(hdc, 0, Y, NULL);
-		LineTo(hdc, GRID_WIDTH * GRID_SIZE, Y);
-		Y += GRID_SIZE;
-	}
-	SelectObject(hdc, OldPen);
-}
 
 void RenderObstacle(HDC hdc)
 {

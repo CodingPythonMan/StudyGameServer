@@ -122,22 +122,28 @@ bool JumpPointSearch::Search(Node* node, Direction direct)
 			int UY = Y - 1;
 			while (UY >= 0 && UX >= 0 && UY < GRID_HEIGHT && UX < GRID_WIDTH)
 			{
-				if ((gTile[UY - 1][UX] == 1 && gTile[UY - 1][UX + 1] == 0)
-					|| gTile[UY + 1][UX] == 1 && gTile[UY + 1][UX + 1] == 0)
+				if ((UY >= 1 && UX < GRID_WIDTH - 1 &&
+					gTile[UY - 1][UX] == 1 && gTile[UY - 1][UX + 1] == 0)
+					|| (UY < GRID_HEIGHT - 1 && UX < GRID_WIDTH - 1 &&
+					gTile[UY + 1][UX] == 1 && gTile[UY + 1][UX + 1] == 0))
 				{
+					if(_End->_X == X && _End->_Y == Y)
+
 					CreateOpenNode(node, UX, UY);
 					break;
 				}
 				gDesignTile[UY][UX] = (int)Mode::SEARCH;
-				UY = UY + 1;
+				UY = UY - 1;
 			}
 			// 수평 조사
 			int RX = X + 1;
 			int RY = Y;
 			while (RY >= 0 && RX >= 0 && RY < GRID_HEIGHT && RX < GRID_WIDTH)
 			{
-				if ((gTile[RY][RX - 1] == 1 && gTile[RY - 1][RX - 1] == 0)
-					|| gTile[RY][RX + 1] == 1 && gTile[RY - 1][RX + 1] == 0)
+				if ((RX >= 1 && RY >= 1 &&
+					gTile[RY][RX - 1] == 1 && gTile[RY - 1][RX - 1] == 0)
+					|| (RY >= 1 && RX < GRID_WIDTH - 1 &&
+					gTile[RY][RX + 1] == 1 && gTile[RY - 1][RX + 1] == 0))
 				{
 					CreateOpenNode(node, RX, RY);
 					break;
@@ -147,8 +153,10 @@ bool JumpPointSearch::Search(Node* node, Direction direct)
 			}
 
 			// 노드 생성
-			if ((gTile[Y][X - 1] == 1 && gTile[Y - 1][X - 1] == 0)
-				|| gTile[Y + 1][X] == 1 && gTile[Y + 1][X + 1] == 0)
+			if ((X >= 1 && Y >= 1 &&
+				gTile[Y][X - 1] == 1 && gTile[Y - 1][X - 1] == 0)
+				||(Y < GRID_HEIGHT - 1 && X < GRID_WIDTH - 1 &&
+				gTile[Y + 1][X] == 1 && gTile[Y + 1][X + 1] == 0))
 			{
 				CreateOpenNode(node, X, Y);
 				break;
@@ -175,8 +183,10 @@ bool JumpPointSearch::Search(Node* node, Direction direct)
 				return true;
 
 			// 노드 생성
-			if ((gTile[Y][X - 1] > 0 && gTile[Y - 1][X - 1] == 0)
-				|| gTile[Y][X + 1] > 0 && gTile[Y - 1][X + 1] == 0)
+			if ((X >= 1 && Y >= 1 &&
+				gTile[Y][X - 1] > 0 && gTile[Y - 1][X - 1] == 0)
+				|| (X < GRID_WIDTH - 1 && Y >= 1 &&
+				gTile[Y][X + 1] > 0 && gTile[Y - 1][X + 1] == 0))
 			{
 				CreateOpenNode(node, X, Y);
 				break;
@@ -201,9 +211,44 @@ bool JumpPointSearch::Search(Node* node, Direction direct)
 			if (_End->_X == X && _End->_Y == Y)
 				return true;
 
+			// 수직 조사
+			int UX = X;
+			int UY = Y - 1;
+			while (UY >= 0 && UX >= 0 && UY < GRID_HEIGHT && UX < GRID_WIDTH)
+			{
+				if ((UY >= 1 && UX < GRID_WIDTH - 1 &&
+					gTile[UY - 1][UX] == 1 && gTile[UY - 1][UX + 1] == 0)
+					|| (UY < GRID_HEIGHT - 1 && UX < GRID_WIDTH - 1 &&
+					gTile[UY + 1][UX] == 1 && gTile[UY + 1][UX + 1] == 0))
+				{
+					CreateOpenNode(node, UX, UY);
+					break;
+				}
+				gDesignTile[UY][UX] = (int)Mode::SEARCH;
+				UY = UY - 1;
+			}
+			// 수평 조사
+			int LX = X - 1;
+			int LY = Y;
+			while (LY >= 0 && LX >= 0 && LY < GRID_HEIGHT && LX < GRID_WIDTH)
+			{
+				if ((LY >= 1 && LX < GRID_WIDTH - 1 &&
+					gTile[LY - 1][LX] > 0 && gTile[LY - 1][LX - 1] == 0)
+					|| (LY < GRID_HEIGHT - 1 && LX >= 1 &&
+					gTile[LY + 1][LX] > 0 && gTile[LY + 1][LX - 1] == 0))
+				{
+					CreateOpenNode(node, LX, LY);
+					break;
+				}
+				gDesignTile[LY][LX] = (int)Mode::SEARCH;
+				LX = LX - 1;
+			}
+
 			// 노드 생성
-			if ((gTile[Y][X + 1] > 0 && gTile[Y - 1][X + 1] == 0)
-				|| gTile[Y + 1][X] > 0 && gTile[Y + 1][X - 1] == 0)
+			if ((X < GRID_WIDTH - 1 && Y >= 1 &&
+				gTile[Y][X + 1] > 0 && gTile[Y - 1][X + 1] == 0)
+				|| (X >= 1 && Y < GRID_HEIGHT - 1 &&
+				gTile[Y + 1][X] > 0 && gTile[Y + 1][X - 1] == 0))
 			{
 				CreateOpenNode(node, X, Y);
 				break;
@@ -230,8 +275,10 @@ bool JumpPointSearch::Search(Node* node, Direction direct)
 				return true;
 
 			// 노드 생성
-			if ((gTile[Y - 1][X] > 0 && gTile[Y - 1][X - 1] == 0)
-				|| gTile[Y + 1][X] > 0 && gTile[Y + 1][X - 1] == 0)
+			if ((Y >= 1 && X < GRID_WIDTH - 1 &&
+				gTile[Y - 1][X] > 0 && gTile[Y - 1][X - 1] == 0)
+				|| (Y < GRID_HEIGHT - 1 && X >= 1 &&
+				gTile[Y + 1][X] > 0 && gTile[Y + 1][X - 1] == 0))
 			{
 				CreateOpenNode(node, X, Y);
 				break;
@@ -255,6 +302,39 @@ bool JumpPointSearch::Search(Node* node, Direction direct)
 
 			if (_End->_X == X && _End->_Y == Y)
 				return true;
+
+			// 수직 조사
+			int DX = X;
+			int DY = Y + 1;
+			while (DY >= 0 && DX >= 0 && DY < GRID_HEIGHT && DX < GRID_WIDTH)
+			{
+				if ((DX >= 1 && DY >= 1 &&
+					gTile[DY - 1][DX - 1] > 0 && gTile[DY][DX - 1] == 0)
+					|| (DX < GRID_WIDTH - 1 && DY >= 1 &&
+					gTile[DY - 1][DX + 1] > 0 && gTile[DY][DX + 1] == 0))
+				{
+					CreateOpenNode(node, DX, DY);
+					break;
+				}
+				gDesignTile[DY][DX] = (int)Mode::SEARCH;
+				DY = DY + 1;
+			}
+			// 수평 조사
+			int LX = X - 1;
+			int LY = Y;
+			while (LY >= 0 && LX >= 0 && LY < GRID_HEIGHT && LX < GRID_WIDTH)
+			{
+				if ((LY >= 1 && LX < GRID_WIDTH - 1 &&
+					gTile[LY - 1][LX] > 0 && gTile[LY - 1][LX - 1] == 0)
+					|| (LY < GRID_HEIGHT - 1 && LX >= 1 &&
+						gTile[LY + 1][LX] > 0 && gTile[LY + 1][LX - 1] == 0))
+				{
+					CreateOpenNode(node, LX, LY);
+					break;
+				}
+				gDesignTile[LY][LX] = (int)Mode::SEARCH;
+				LX = LX - 1;
+			}
 
 			// 노드 생성
 			if ((gTile[Y - 1][X] > 0 && gTile[Y - 1][X - 1] == 0)
@@ -285,8 +365,10 @@ bool JumpPointSearch::Search(Node* node, Direction direct)
 				return true;
 
 			// 노드 생성
-			if ((gTile[Y - 1][X - 1] > 0 && gTile[Y][X - 1] == 0)
-				|| gTile[Y - 1][X + 1] > 0 && gTile[Y][X + 1] == 0)
+			if ((X >= 1 && Y >= 1 &&
+				gTile[Y - 1][X - 1] > 0 && gTile[Y][X - 1] == 0)
+				||(X < GRID_WIDTH - 1 && Y >= 1 &&
+				gTile[Y - 1][X + 1] > 0 && gTile[Y][X + 1] == 0))
 			{
 				CreateOpenNode(node, X, Y);
 				break;
@@ -310,6 +392,39 @@ bool JumpPointSearch::Search(Node* node, Direction direct)
 
 			if (_End->_X == X && _End->_Y == Y)
 				return true;
+
+			// 수직 조사
+			int DX = X;
+			int DY = Y + 1;
+			while (DY >= 0 && DX >= 0 && DY < GRID_HEIGHT && DX < GRID_WIDTH)
+			{
+				if ((DX >= 1 && DY >= 1 &&
+					gTile[DY - 1][DX - 1] > 0 && gTile[DY][DX - 1] == 0)
+					|| (DX < GRID_WIDTH - 1 && DY >= 1 &&
+						gTile[DY - 1][DX + 1] > 0 && gTile[DY][DX + 1] == 0))
+				{
+					CreateOpenNode(node, DX, DY);
+					break;
+				}
+				gDesignTile[DY][DX] = (int)Mode::SEARCH;
+				DY = DY + 1;
+			}
+			// 수평 조사
+			int RX = X + 1;
+			int RY = Y;
+			while (RY >= 0 && RX >= 0 && RY < GRID_HEIGHT && RX < GRID_WIDTH)
+			{
+				if ((RX >= 1 && RY >= 1 &&
+					gTile[RY][RX - 1] == 1 && gTile[RY - 1][RX - 1] == 0)
+					|| (RY >= 1 && RX < GRID_WIDTH - 1 &&
+					gTile[RY][RX + 1] == 1 && gTile[RY - 1][RX + 1] == 0))
+				{
+					CreateOpenNode(node, RX, RY);
+					break;
+				}
+				gDesignTile[RY][RX] = (int)Mode::SEARCH;
+				RX = RX + 1;
+			}
 
 			// 노드 생성
 			if ((gTile[Y - 1][X] > 0 && gTile[Y - 1][X + 1] == 0)

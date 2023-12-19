@@ -26,8 +26,10 @@ extern char gDesignTile[GRID_HEIGHT][GRID_WIDTH];
 extern HBRUSH gOpenBrush;
 extern HBRUSH gCloseBrush;
 extern HBRUSH gRouteBrush;
+extern HPEN gGridPen;
 
 void RenderOpen(HDC hdc);
 void RenderClose(HDC hdc);
 void RenderRoute(HDC hdc);
 void RenderSearch(HDC hdc);
+void RenderGrid(HDC hdc);
