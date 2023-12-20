@@ -45,7 +45,6 @@ public:
 	Node* _Start;
 	Node* _End;
 	vector<Node*> _OpenList;
-	vector<Node*> _CloseList;
 
 private:
 	double CalUclide(Node* node1, Node* node2);
@@ -53,8 +52,5 @@ private:
 
 	double CalManhatan(Node* node1, Node* node2);
 
-	bool IsExistCloseList(int X, int Y);
 	bool IsExistOpenList(int X, int Y, Node* Parent);
-
-	void SetCloseList();
 };
