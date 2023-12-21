@@ -28,9 +28,13 @@ extern Info gTileInfo[GRID_HEIGHT][GRID_WIDTH];            // 0 장애물 없음 / 1 
 extern HBRUSH gOpenBrush;
 extern HBRUSH gCloseBrush;
 extern HBRUSH gRouteBrush;
+extern HBRUSH gStartBrush;
+extern HBRUSH gEndBrush;
 
 void RenderOpen(HDC hdc);
 void RenderClose(HDC hdc);
 void RenderRoute(HDC hdc);
+void RenderStart(HDC hdc);
+void RenderEnd(HDC hdc);
 
 void RenderText(HDC hdc);

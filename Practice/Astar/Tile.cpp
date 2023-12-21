@@ -7,6 +7,8 @@ Info gTileInfo[GRID_HEIGHT][GRID_WIDTH];
 HBRUSH gOpenBrush;
 HBRUSH gCloseBrush;
 HBRUSH gRouteBrush;
+HBRUSH gStartBrush;
+HBRUSH gEndBrush;
 
 void RenderOpen(HDC hdc)
 {
@@ -74,6 +76,51 @@ void RenderRoute(HDC hdc)
 	}
 	SelectObject(hdc, OldBrush);
 }
+
+void RenderStart(HDC hdc)
+{
+	int X = 0;
+	int Y = 0;
+	HBRUSH OldBrush = (HBRUSH)SelectObject(hdc, gStartBrush);
+	SelectObject(hdc, GetStockObject(NULL_PEN));
+	for (int i = 0; i < GRID_WIDTH; i++)
+	{
+		for (int j = 0; j < GRID_HEIGHT; j++)
+		{
+			if (gTile[j][i] == (int)Mode::START)
+			{
+				X = i * GRID_SIZE;
+				Y = j * GRID_SIZE;
+				// 테두리 크기가 있으므로 + 2 한다.
+				Rectangle(hdc, X, Y, X + GRID_SIZE + 2, Y + GRID_SIZE + 2);
+			}
+		}
+	}
+	SelectObject(hdc, OldBrush);
+}
+
+void RenderEnd(HDC hdc)
+{
+	int X = 0;
+	int Y = 0;
+	HBRUSH OldBrush = (HBRUSH)SelectObject(hdc, gEndBrush);
+	SelectObject(hdc, GetStockObject(NULL_PEN));
+	for (int i = 0; i < GRID_WIDTH; i++)
+	{
+		for (int j = 0; j < GRID_HEIGHT; j++)
+		{
+			if (gTile[j][i] == (int)Mode::END)
+			{
+				X = i * GRID_SIZE;
+				Y = j * GRID_SIZE;
+				// 테두리 크기가 있으므로 + 2 한다.
+				Rectangle(hdc, X, Y, X + GRID_SIZE + 2, Y + GRID_SIZE + 2);
+			}
+		}
+	}
+	SelectObject(hdc, OldBrush);
+}
+
 
 void RenderText(HDC hdc)
 {

@@ -42,20 +42,18 @@ void Astar::RoutingStart(HWND hWnd)
 			{
 				gTile[node->_Y][node->_X] = (char)Mode::ROUTE;
 				node = node->_Parent;
-				RenderRoute(hdc);
 			}
 			_OpenList.clear();
+			gTile[_Start->_Y][_Start->_X] = (char)Mode::START;
+			RenderRoute(hdc);
+			RenderStart(hdc);
 			RenderText(hdc);
 			return;	
 		}
 		else
 		{
-			if (node->_Y != _Start->_Y || node->_X != _Start->_X)
-			{
-				// 이렇게 속성값 바꾸는 게 CloseList 추가 개념으로 간다.
-
-				gTile[node->_Y][node->_X] = (char)Mode::CLOSELIST;
-			}
+			// 이렇게 속성값 바꾸는 게 CloseList 추가 개념으로 간다.
+			gTile[node->_Y][node->_X] = (char)Mode::CLOSELIST;
 			RenderClose(hdc);
 		}
 
@@ -66,6 +64,11 @@ void Astar::RoutingStart(HWND hWnd)
 			dx = node->_X + _dx[i];
 			dy = node->_Y + _dy[i];
 
+			// 경계 범위 밖으로 나가면 안됨.
+			if (dx < 0 || dx >= GRID_WIDTH || dy < 0 || dy >= GRID_HEIGHT)
+				continue;
+
+			// 없어도 되지만 출발점 색깔 지키기 위해서 남겨둠.
 			if (dx == _Start->_X && dy == _Start->_Y)
 				continue;
 
