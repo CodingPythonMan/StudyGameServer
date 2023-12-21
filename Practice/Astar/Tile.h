@@ -17,8 +17,14 @@ enum class Mode
 	ROUTE
 };
 
+struct Info {
+	double G;
+	double H;
+	double F;
+};
+
 extern char gTile[GRID_HEIGHT][GRID_WIDTH];            // 0 장애물 없음 / 1 장애물 있음
-extern double gTileF[GRID_HEIGHT][GRID_WIDTH];            // 0 장애물 없음 / 1 장애물 있음
+extern Info gTileInfo[GRID_HEIGHT][GRID_WIDTH];            // 0 장애물 없음 / 1 장애물 있음
 
 extern HBRUSH gOpenBrush;
 extern HBRUSH gCloseBrush;
@@ -27,3 +33,5 @@ extern HBRUSH gRouteBrush;
 void RenderOpen(HDC hdc);
 void RenderClose(HDC hdc);
 void RenderRoute(HDC hdc);
+
+void RenderText(HDC hdc);

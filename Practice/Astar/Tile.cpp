@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 char gTile[GRID_HEIGHT][GRID_WIDTH];
-double gTileF[GRID_HEIGHT][GRID_WIDTH];
+Info gTileInfo[GRID_HEIGHT][GRID_WIDTH];
 
 HBRUSH gOpenBrush;
 HBRUSH gCloseBrush;
@@ -14,15 +14,6 @@ void RenderOpen(HDC hdc)
 	int Y = 0;
 	HBRUSH OldBrush = (HBRUSH)SelectObject(hdc, gOpenBrush);
 	SelectObject(hdc, GetStockObject(NULL_PEN));
-
-	HFONT hFont = CreateFont(10, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET,
-		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Arial");
-
-	SelectObject(hdc, hFont);
-
-	SetBkMode(hdc, TRANSPARENT);
-	WCHAR arr[10] = {0};
-
 	for (int i = 0; i < GRID_WIDTH; i++)
 	{
 		for (int j = 0; j < GRID_HEIGHT; j++)
@@ -33,13 +24,10 @@ void RenderOpen(HDC hdc)
 				Y = j * GRID_SIZE;
 				// 테두리 크기가 있으므로 + 2 한다.
 				Rectangle(hdc, X, Y, X + GRID_SIZE + 2, Y + GRID_SIZE + 2);
-
-				swprintf_s(arr, L"%.1f", gTileF[j][i]);
-				TextOut(hdc, X, Y, arr, (int)wcslen(arr));
 			}
 		}
 	}
-
+	
 	SelectObject(hdc, OldBrush);
 }
 
@@ -85,4 +73,35 @@ void RenderRoute(HDC hdc)
 		}
 	}
 	SelectObject(hdc, OldBrush);
+}
+
+void RenderText(HDC hdc)
+{
+	int X = 0;
+	int Y = 0;
+	HFONT hFont = CreateFont(10, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET,
+		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Arial");
+
+	SelectObject(hdc, hFont);
+
+	SetBkMode(hdc, TRANSPARENT);
+	WCHAR G[10] = { 0 };
+	WCHAR H[10] = { 0 };
+	WCHAR F[10] = { 0 };
+
+	for (int i = 0; i < GRID_HEIGHT; i++)
+	{
+		for (int j = 0; j < GRID_WIDTH; j++)
+		{
+			if (gTileInfo[i][j].F != 0)
+			{
+				X = j * GRID_SIZE;
+				Y = i * GRID_SIZE;
+				swprintf_s(G, L"%.1f", gTileInfo[i][j].G);
+				TextOut(hdc, X, Y, G, (int)wcslen(H));
+				swprintf_s(H, L"%.1f", gTileInfo[i][j].H);
+				TextOut(hdc, X, Y+7, H, (int)wcslen(G));
+			}
+		}
+	}
 }

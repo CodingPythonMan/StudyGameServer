@@ -392,6 +392,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		RenderOpen(gMemDC);
 		RenderClose(gMemDC);
 		RenderRoute(gMemDC);
+		RenderText(gMemDC);
 
 		// 메모리 DC 에 랜더링이 끝나면, 메모리 DC->윈도우 DC 출력
 		hdc = BeginPaint(hWnd, &ps);

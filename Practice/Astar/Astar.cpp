@@ -45,6 +45,7 @@ void Astar::RoutingStart(HWND hWnd)
 				RenderRoute(hdc);
 			}
 			_OpenList.clear();
+			RenderText(hdc);
 			return;	
 		}
 		else
@@ -84,7 +85,9 @@ void Astar::RoutingStart(HWND hWnd)
 			// ¸ÇÇÏÅº
 			newNode->_H = CalManhatan(newNode, _End);
 			newNode->_F = newNode->_G + newNode->_H;
-			gTileF[dy][dx] = newNode->_F;
+			gTileInfo[dy][dx].G = newNode->_G;
+			gTileInfo[dy][dx].H = newNode->_H;
+			gTileInfo[dy][dx].F = newNode->_F;
 			_OpenList.push_back(newNode);
 
 			if(dx != _End->_X || dy != _End->_Y)
