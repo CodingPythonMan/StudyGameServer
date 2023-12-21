@@ -87,13 +87,12 @@ void RenderText(HDC hdc)
 	SetBkMode(hdc, TRANSPARENT);
 	WCHAR G[10] = { 0 };
 	WCHAR H[10] = { 0 };
-	WCHAR F[10] = { 0 };
 
 	for (int i = 0; i < GRID_HEIGHT; i++)
 	{
 		for (int j = 0; j < GRID_WIDTH; j++)
 		{
-			if (gTileInfo[i][j].F != 0)
+			if (gTileInfo[i][j].G != 0)
 			{
 				X = j * GRID_SIZE;
 				Y = i * GRID_SIZE;

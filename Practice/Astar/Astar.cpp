@@ -81,13 +81,12 @@ void Astar::RoutingStart(HWND hWnd)
 			Node* newNode = new Node(dx, dy);
 			newNode->_Parent = node;
 			// 유클리드
-			newNode->_G = CalUclide(newNode, _Start);
+			newNode->_G = node->_G + CalUclide(newNode, node);
 			// 맨하탄
 			newNode->_H = CalManhatan(newNode, _End);
 			newNode->_F = newNode->_G + newNode->_H;
 			gTileInfo[dy][dx].G = newNode->_G;
 			gTileInfo[dy][dx].H = newNode->_H;
-			gTileInfo[dy][dx].F = newNode->_F;
 			_OpenList.push_back(newNode);
 
 			if(dx != _End->_X || dy != _End->_Y)
@@ -131,7 +130,7 @@ bool Astar::IsExistOpenList(int X, int Y, Node* node)
 	{
 		if (_OpenList[i]->_X == X && _OpenList[i]->_Y == Y)
 		{
-			double G = CalUclide(X, Y, _Start);
+			double G = node->_G + CalUclide(X, Y, node);
 			// 이번에 들어온 X, Y 가 G가 가깝다면 새롭게 Parent 설정
 			if (G < _OpenList[i]->_G)
 			{

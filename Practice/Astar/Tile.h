@@ -20,7 +20,6 @@ enum class Mode
 struct Info {
 	double G;
 	double H;
-	double F;
 };
 
 extern char gTile[GRID_HEIGHT][GRID_WIDTH];            // 0 장애물 없음 / 1 장애물 있음
