@@ -65,7 +65,7 @@ void RenderStart(HDC hdc)
 	{
 		for (int j = 0; j < GRID_HEIGHT; j++)
 		{
-			if (gDesignTile[j][i] == (int)Mode::START)
+			if (gTile[j][i] == (int)Mode::START)
 			{
 				X = i * GRID_SIZE;
 				Y = j * GRID_SIZE;
@@ -87,7 +87,7 @@ void RenderEnd(HDC hdc)
 	{
 		for (int j = 0; j < GRID_HEIGHT; j++)
 		{
-			if (gDesignTile[j][i] == (int)Mode::END)
+			if (gTile[j][i] == (int)Mode::END)
 			{
 				X = i * GRID_SIZE;
 				Y = j * GRID_SIZE;
@@ -267,7 +267,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			int OldTileX = JPS._Start->_X;
 			int OldTileY = JPS._Start->_Y;
-			gDesignTile[OldTileY][OldTileX] = 0;
+			gTile[OldTileY][OldTileX] = 0;
 		}
 
 		int xPos = GET_X_LPARAM(lParam);
@@ -280,7 +280,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		JPS._Start->_X = TileX;
 		JPS._Start->_Y = TileY;
-		gDesignTile[TileY][TileX] = (int)Mode::START;
+		gTile[TileY][TileX] = (int)Mode::START;
 		InvalidateRect(hWnd, NULL, false);
 	}
 	break;
@@ -294,7 +294,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			int OldTileX = JPS._End->_X;
 			int OldTileY = JPS._End->_Y;
-			gDesignTile[OldTileY][OldTileX] = 0;
+			gTile[OldTileY][OldTileX] = 0;
 		}
 
 		int xPos = GET_X_LPARAM(lParam);
@@ -308,7 +308,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		JPS._End->_X = TileX;
 		JPS._End->_Y = TileY;
-		gDesignTile[TileY][TileX] = (int)Mode::END;
+		gTile[TileY][TileX] = (int)Mode::END;
 		InvalidateRect(hWnd, NULL, false);
 	}
 	break;
