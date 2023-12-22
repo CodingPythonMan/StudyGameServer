@@ -1,6 +1,8 @@
 #include "Tile.h"
+#include <stdio.h>
 
 char gTile[GRID_HEIGHT][GRID_WIDTH];
+Info gTileInfo[GRID_HEIGHT][GRID_WIDTH];
 
 HBRUSH gOpenBrush;
 HBRUSH gCloseBrush;
@@ -103,7 +105,10 @@ void RenderSearch(HDC hdc)
 	int X = 0;
 	int Y = 0;
 	DeleteObject(gRouteBrush);
-	gRouteBrush = CreateSolidBrush(RGB(rand() % 125, rand() % 125, rand() % 125));
+	unsigned char redColor = rand() % 106 + 150;
+	unsigned char greenColor = rand() % 106 + 150;
+	unsigned char blueColor = rand() % 106 + 150;
+	gRouteBrush = CreateSolidBrush(RGB(redColor, greenColor, blueColor));
 	HBRUSH OldBrush = (HBRUSH)SelectObject(hdc, gRouteBrush);
 	SelectObject(hdc, GetStockObject(NULL_PEN));
 	for (int i = 0; i < GRID_HEIGHT; i++)
@@ -144,4 +149,34 @@ void RenderGrid(HDC hdc)
 		Y += GRID_SIZE;
 	}
 	SelectObject(hdc, OldPen);
+}
+
+void RenderText(HDC hdc)
+{
+	int X = 0;
+	int Y = 0;
+	HFONT hFont = CreateFont(10, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET,
+		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, L"Arial");
+
+	SelectObject(hdc, hFont);
+
+	SetBkMode(hdc, TRANSPARENT);
+	WCHAR G[10] = { 0 };
+	WCHAR H[10] = { 0 };
+
+	for (int i = 0; i < GRID_HEIGHT; i++)
+	{
+		for (int j = 0; j < GRID_WIDTH; j++)
+		{
+			if (gTileInfo[i][j].G != 0)
+			{
+				X = j * GRID_SIZE;
+				Y = i * GRID_SIZE;
+				swprintf_s(G, L"%.1f", gTileInfo[i][j].G);
+				TextOut(hdc, X, Y, G, (int)wcslen(H));
+				swprintf_s(H, L"%.1f", gTileInfo[i][j].H);
+				TextOut(hdc, X, Y + 7, H, (int)wcslen(G));
+			}
+		}
+	}
 }

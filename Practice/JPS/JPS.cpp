@@ -1,4 +1,5 @@
 #include "JPS.h"
+#include "Tile.h"
 #include <algorithm>
 
 int _dx[DIRECTION] = { 1,1,0,-1,-1,-1,0,1 };
@@ -33,7 +34,7 @@ void JumpPointSearch::RoutingStart(HWND hWnd)
 		{
 			Node* RouteStart = node;
 			Node* RouteEnd = node->_Parent;
-			HPEN FinishPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
+			HPEN FinishPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
 			HPEN OldPen = (HPEN)SelectObject(_HDC, FinishPen);
 			while (RouteStart != nullptr)
 			{
@@ -47,6 +48,7 @@ void JumpPointSearch::RoutingStart(HWND hWnd)
 			gTile[_End->_Y][_End->_X] = (char)Mode::END;
 			RenderStart(_HDC);
 			RenderEnd(_HDC);
+			RenderText(_HDC);
 
 			Clear();
 			_OpenList.clear();
@@ -264,10 +266,13 @@ bool JumpPointSearch::SearchRR(Node* node, int X, int Y)
 			return false;
 
 		// 진행 방향 만났을 때 종료.
-		if (gTile[Y][X] == 1)
+		if (gTile[Y][X] == 1 || gTile[Y][X] == (char)Mode::CLOSELIST)
 			return false;
 
 		if (_End->_X == X && _End->_Y == Y)
+			break;
+
+		if (gTile[Y][X] == (char)Mode::OPENLIST)
 			break;
 
 		// 노드 생성
@@ -306,10 +311,20 @@ void JumpPointSearch::SearchRU(Node* node, int X, int Y)
 	while (Y >= 0 && X >= 0 && Y < GRID_HEIGHT && X < GRID_WIDTH)
 	{
 		// 진행 방향 만났을 때 종료.
-		if (gTile[Y][X] == 1)
+		if (gTile[Y][X] == 1 || gTile[Y][X] == (char)Mode::CLOSELIST)
 			break;
 
-		if (_End->_X == X && _End->_Y == Y)
+		if ((_End->_X == X && _End->_Y == Y) || gTile[Y][X] == (char)Mode::OPENLIST)
+		{
+			CreateOpenNode(node, X, Y, Direction::RU);
+			break;
+		}
+
+		// 노드 생성
+		if ((X >= 1 && Y >= 1 &&
+			gTile[Y][X - 1] == 1 && gTile[Y - 1][X - 1] == 0)
+			|| (Y < GRID_HEIGHT - 1 && X < GRID_WIDTH - 1 &&
+			gTile[Y + 1][X] == 1 && gTile[Y + 1][X + 1] == 0))
 		{
 			CreateOpenNode(node, X, Y, Direction::RU);
 			break;
@@ -321,16 +336,6 @@ void JumpPointSearch::SearchRU(Node* node, int X, int Y)
 		// 수평 조사
 		if (SearchRR(node, X + 1, Y))
 			break;
-
-		// 노드 생성
-		if ((X >= 1 && Y >= 1 &&
-			gTile[Y][X - 1] == 1 && gTile[Y - 1][X - 1] == 0)
-			|| (Y < GRID_HEIGHT - 1 && X < GRID_WIDTH - 1 &&
-			gTile[Y + 1][X] == 1 && gTile[Y + 1][X + 1] == 0))
-		{
-			CreateOpenNode(node, X, Y, Direction::RU);
-			break;
-		}
 
 		gTile[Y][X] = (char)Mode::SEARCH;
 		X = X + 1;
@@ -352,10 +357,13 @@ bool JumpPointSearch::SearchUU(Node* node, int X, int Y)
 			return false;
 
 		// 진행 방향 만났을 때 종료.
-		if (gTile[Y][X] == 1)
+		if (gTile[Y][X] == 1 || gTile[Y][X] == (char)Mode::CLOSELIST)
 			return false;
 
 		if (_End->_X == X && _End->_Y == Y)
+			break;
+
+		if (gTile[Y][X] == (char)Mode::OPENLIST)
 			break;
 
 		// 노드 생성
@@ -395,10 +403,20 @@ void JumpPointSearch::SearchLU(Node* node, int X, int Y)
 	while (Y >= 0 && X >= 0 && Y < GRID_HEIGHT && X < GRID_WIDTH)
 	{
 		// 진행 방향 만났을 때 종료.
-		if (gTile[Y][X] == 1)
-			return;
+		if (gTile[Y][X] == 1 || gTile[Y][X] == (char)Mode::CLOSELIST)
+			break;
 
-		if (_End->_X == X && _End->_Y == Y)
+		if ((_End->_X == X && _End->_Y == Y) || gTile[Y][X] == (char)Mode::OPENLIST)
+		{
+			CreateOpenNode(node, X, Y, Direction::LU);
+			break;
+		}
+
+		// 노드 생성
+		if ((X < GRID_WIDTH - 1 && Y >= 1 &&
+			gTile[Y][X + 1] == 1 && gTile[Y - 1][X + 1] == 0)
+			|| (X >= 1 && Y < GRID_HEIGHT - 1 &&
+			gTile[Y + 1][X] == 1 && gTile[Y + 1][X - 1] == 0))
 		{
 			CreateOpenNode(node, X, Y, Direction::LU);
 			break;
@@ -411,16 +429,6 @@ void JumpPointSearch::SearchLU(Node* node, int X, int Y)
 		if (SearchLL(node, X - 1, Y))
 			break;
 			
-		// 노드 생성
-		if ((X < GRID_WIDTH - 1 && Y >= 1 &&
-			gTile[Y][X + 1] == 1 && gTile[Y - 1][X + 1] == 0)
-			|| (X >= 1 && Y < GRID_HEIGHT - 1 &&
-			gTile[Y + 1][X] == 1 && gTile[Y + 1][X - 1] == 0))
-		{
-			CreateOpenNode(node, X, Y, Direction::LU);
-			break;
-		}
-
 		gTile[Y][X] = (char)Mode::SEARCH;
 		X = X - 1;
 		Y = Y - 1;
@@ -441,10 +449,13 @@ bool JumpPointSearch::SearchLL(Node* node, int X, int Y)
 			return false;
 
 		// 진행 방향 만났을 때 종료.
-		if (gTile[Y][X] == 1)
+		if (gTile[Y][X] == 1 || gTile[Y][X] == (char)Mode::CLOSELIST)
 			return false;
 
 		if (_End->_X == X && _End->_Y == Y)
+			break;
+
+		if (gTile[Y][X] == (char)Mode::OPENLIST)
 			break;
 
 		// 노드 생성
@@ -483,10 +494,20 @@ void JumpPointSearch::SearchLD(Node* node, int X, int Y)
 	while (Y >= 0 && X >= 0 && Y < GRID_HEIGHT && X < GRID_WIDTH)
 	{
 		// 진행 방향 만났을 때 종료.
-		if (gTile[Y][X] == 1)
+		if (gTile[Y][X] == 1 || gTile[Y][X] == (char)Mode::CLOSELIST)
 			break;
 
-		if (_End->_X == X && _End->_Y == Y)
+		if ((_End->_X == X && _End->_Y == Y) || gTile[Y][X] == (char)Mode::OPENLIST)
+		{
+			CreateOpenNode(node, X, Y, Direction::LD);
+			break;
+		}
+
+		// 노드 생성
+		if ((Y >= 1 && X >= 1 &&
+			gTile[Y - 1][X] == 1 && gTile[Y - 1][X - 1] == 0)
+			|| (X < GRID_WIDTH - 1 && Y < GRID_HEIGHT - 1 &&
+			gTile[Y][X + 1] == 1 && gTile[Y + 1][X + 1] == 0))
 		{
 			CreateOpenNode(node, X, Y, Direction::LD);
 			break;
@@ -498,16 +519,6 @@ void JumpPointSearch::SearchLD(Node* node, int X, int Y)
 		// 수평 조사
 		if (SearchLL(node, X - 1, Y))
 			break;
-
-		// 노드 생성
-		if ((Y >= 1 && X >= 1 &&
-			gTile[Y - 1][X] == 1 && gTile[Y - 1][X - 1] == 0)
-			|| (X < GRID_WIDTH - 1 && Y < GRID_HEIGHT - 1 &&
-			gTile[Y][X + 1] == 1 && gTile[Y + 1][X + 1] == 0))
-		{
-			CreateOpenNode(node, X, Y, Direction::LD);
-			break;
-		}
 
 		gTile[Y][X] = (char)Mode::SEARCH;
 		X = X - 1;
@@ -529,10 +540,13 @@ bool JumpPointSearch::SearchDD(Node* node, int X, int Y)
 			return false;
 
 		// 진행 방향 만났을 때 종료.
-		if (gTile[Y][X] == 1)
+		if (gTile[Y][X] == 1 || gTile[Y][X] == (char)Mode::CLOSELIST)
 			return false;
 
 		if (_End->_X == X && _End->_Y == Y)
+			break;
+
+		if (gTile[Y][X] == (char)Mode::OPENLIST)
 			break;
 
 		// 노드 생성
@@ -571,10 +585,20 @@ void JumpPointSearch::SearchRD(Node* node, int X, int Y)
 	while (Y >= 0 && X >= 0 && Y < GRID_HEIGHT && X < GRID_WIDTH)
 	{
 		// 진행 방향 만났을 때 종료.
-		if (gTile[Y][X] == 1)
+		if (gTile[Y][X] == 1 || gTile[Y][X] == (char)Mode::CLOSELIST)
 			break;
 
-		if (_End->_X == X && _End->_Y == Y)
+		if ((_End->_X == X && _End->_Y == Y) || gTile[Y][X] == (char)Mode::OPENLIST)
+		{
+			CreateOpenNode(node, X, Y, Direction::RD);
+			break;
+		}
+
+		// 노드 생성
+		if ((Y >= 1 && X < GRID_WIDTH - 1 &&
+			gTile[Y - 1][X] == 1 && gTile[Y - 1][X + 1] == 0)
+			|| (X >= 1 && Y < GRID_HEIGHT - 1 &&
+			gTile[Y][X - 1] == 1 && gTile[Y + 1][X - 1] == 0))
 		{
 			CreateOpenNode(node, X, Y, Direction::RD);
 			break;
@@ -586,16 +610,6 @@ void JumpPointSearch::SearchRD(Node* node, int X, int Y)
 		// 수평 조사
 		if (SearchRR(node, X + 1, Y))
 			break;
-			
-		// 노드 생성
-		if ((Y >= 1 && X < GRID_WIDTH - 1 &&
-			gTile[Y - 1][X] == 1 && gTile[Y - 1][X + 1] == 0)
-			|| (X >= 1 && Y < GRID_HEIGHT - 1 &&
-			gTile[Y][X - 1] == 1 && gTile[Y + 1][X - 1] == 0))
-		{
-			CreateOpenNode(node, X, Y, Direction::RD);
-			break;
-		}
 
 		gTile[Y][X] = (char)Mode::SEARCH;
 		X = X + 1;
@@ -607,27 +621,18 @@ void JumpPointSearch::SearchRD(Node* node, int X, int Y)
 
 Node* JumpPointSearch::CreateOpenNode(Node* Parent, int X, int Y, Direction Direct)
 {
-	// CloseList 체크
-	if (gTile[Y][X] == (char)Mode::CLOSELIST)
-	{
-		for (int i = 0; i < _CloseList.size(); i++)
-		{
-			if (_CloseList[i]->_X == X && _CloseList[i]->_Y == Y)
-				return _CloseList[i];
-		}
-	}
-
 	// OpenList 체크
 	for (int i = 0; i < _OpenList.size(); i++)
 	{
 		if (_OpenList[i]->_X == X && _OpenList[i]->_Y == Y)
 		{
-			double G = CalUclide(_OpenList[i], Parent);
+			double G = Parent->_G + CalUclide(_OpenList[i], Parent);
 			if (G < _OpenList[i]->_G)
 			{
 				_OpenList[i]->_Parent = Parent;
 				_OpenList[i]->_G = G;
 				_OpenList[i]->_F = G + _OpenList[i]->_H;
+				_OpenList[i]->_Direct = Direct;
 			}
 
 			return _OpenList[i];
@@ -642,6 +647,8 @@ Node* JumpPointSearch::CreateOpenNode(Node* Parent, int X, int Y, Direction Dire
 	newNode->_F = newNode->_G + newNode->_H;
 	newNode->_Parent = Parent;
 	newNode->_Direct = Direct;
+	gTileInfo[Y][X].G = newNode->_G;
+	gTileInfo[Y][X].H = newNode->_H;
 	_OpenList.push_back(newNode);
 	
 	gTile[Y][X] = (char)Mode::OPENLIST;

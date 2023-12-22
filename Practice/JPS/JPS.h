@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
-#include "Tile.h"
-#include <wincrypt.h>
+#include <windows.h>
 using namespace std;
 
 #define DIRECTION 8

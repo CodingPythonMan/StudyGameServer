@@ -18,7 +18,13 @@ enum class Mode
 	SEARCH
 };
 
+struct Info {
+	double G;
+	double H;
+};
+
 extern char gTile[GRID_HEIGHT][GRID_WIDTH];            // 0 장애물 없음 / 1 장애물 있음
+extern Info gTileInfo[GRID_HEIGHT][GRID_WIDTH];
 
 extern HBRUSH gOpenBrush;
 extern HBRUSH gCloseBrush;
@@ -34,3 +40,4 @@ void RenderEnd(HDC hdc);
 
 void RenderSearch(HDC hdc);
 void RenderGrid(HDC hdc);
+void RenderText(HDC hdc);
