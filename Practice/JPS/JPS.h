@@ -68,11 +68,12 @@ public:
 	bool SearchDD(Node* node, int X, int Y);
 	void SearchRD(Node* node, int X, int Y);
 
-	Node* CreateOpenNode(Node* Parent, int X, int Y);
+	Node* CreateOpenNode(Node* Parent, int X, int Y, Direction Direct);
 
 	Node* _Start;
 	Node* _End;
 	vector<Node*> _OpenList;
+	vector<Node*> _CloseList;
 
 	HDC _HDC;
 
@@ -80,8 +81,6 @@ private:
 	double CalUclide(Node* node1, Node* node2);
 	double CalManhatan(Node* node1, Node* node2);
 
-	bool IsExistCloseList(int X, int Y);
-	bool IsExistOpenList(int X, int Y, Node* Parent);
-
 	void Init();
+	void Clear();
 };

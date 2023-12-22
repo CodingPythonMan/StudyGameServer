@@ -43,12 +43,22 @@ void JumpPointSearch::RoutingStart(HWND hWnd)
 				RouteStart = RouteEnd->_Parent;
 			}
 			SelectObject(_HDC, OldPen);
+			gTile[_Start->_Y][_Start->_X] = (char)Mode::START;
+			gTile[_End->_Y][_End->_X] = (char)Mode::END;
+			RenderStart(_HDC);
+			RenderEnd(_HDC);
+
+			Clear();
+			_OpenList.clear();
+			_CloseList.clear();
 			break;
 		}
 		else
 		{
 			// Close List 추가
 			gTile[node->_Y][node->_X] = (char)Mode::CLOSELIST;
+			if(node != _Start)
+				_CloseList.push_back(node);
 			RenderClose(_HDC);
 		}
 
@@ -276,20 +286,22 @@ bool JumpPointSearch::SearchRR(Node* node, int X, int Y)
 	Node* newNode;
 	if (gTile[StoreY][StoreX] != (char)Mode::CLOSELIST)
 	{
-		Node* storeNode = CreateOpenNode(node, StoreX, StoreY);
-		newNode = CreateOpenNode(storeNode, X, Y);
+		Node* storeNode = CreateOpenNode(node, StoreX, StoreY, node->_Direct);
+		newNode = CreateOpenNode(storeNode, X, Y, Direction::RR);
 	}
 	else
 	{
-		newNode = CreateOpenNode(node, X, Y);
+		newNode = CreateOpenNode(node, X, Y, Direction::RR);
 	}
-	newNode->_Direct = Direction::RR;
 
 	return true;
 }
 
 void JumpPointSearch::SearchRU(Node* node, int X, int Y)
 {
+	Direction ParentDirect = node->_Direct;
+	node->_Direct = Direction::RU;
+
 	// 끝에 도달했다면 더이상 탐색하지 않음.
 	while (Y >= 0 && X >= 0 && Y < GRID_HEIGHT && X < GRID_WIDTH)
 	{
@@ -299,7 +311,7 @@ void JumpPointSearch::SearchRU(Node* node, int X, int Y)
 
 		if (_End->_X == X && _End->_Y == Y)
 		{
-			CreateOpenNode(node, X, Y);
+			CreateOpenNode(node, X, Y, Direction::RU);
 			break;
 		}
 
@@ -316,7 +328,7 @@ void JumpPointSearch::SearchRU(Node* node, int X, int Y)
 			|| (Y < GRID_HEIGHT - 1 && X < GRID_WIDTH - 1 &&
 			gTile[Y + 1][X] == 1 && gTile[Y + 1][X + 1] == 0))
 		{
-			CreateOpenNode(node, X, Y);
+			CreateOpenNode(node, X, Y, Direction::RU);
 			break;
 		}
 
@@ -324,6 +336,8 @@ void JumpPointSearch::SearchRU(Node* node, int X, int Y)
 		X = X + 1;
 		Y = Y - 1;
 	}
+
+	node->_Direct = ParentDirect;
 }
 
 bool JumpPointSearch::SearchUU(Node* node, int X, int Y)
@@ -357,23 +371,26 @@ bool JumpPointSearch::SearchUU(Node* node, int X, int Y)
 		Y = Y - 1;
 	}
 
+
 	Node* newNode;
 	if (gTile[StoreY][StoreX] != (char)Mode::CLOSELIST)
 	{
-		Node* storeNode = CreateOpenNode(node, StoreX, StoreY);
-		newNode = CreateOpenNode(storeNode, X, Y);
+		Node* storeNode = CreateOpenNode(node, StoreX, StoreY, node->_Direct);
+		newNode = CreateOpenNode(storeNode, X, Y, Direction::UU);
 	}
 	else
 	{
-		newNode = CreateOpenNode(node, X, Y);
+		newNode = CreateOpenNode(node, X, Y, Direction::UU);
 	}
-	newNode->_Direct = Direction::UU;
 
 	return true;
 }
 
 void JumpPointSearch::SearchLU(Node* node, int X, int Y)
 {
+	Direction ParentDirect = node->_Direct;
+	node->_Direct = Direction::LU;
+
 	// 끝에 도달했다면 더이상 탐색하지 않음.
 	while (Y >= 0 && X >= 0 && Y < GRID_HEIGHT && X < GRID_WIDTH)
 	{
@@ -383,7 +400,7 @@ void JumpPointSearch::SearchLU(Node* node, int X, int Y)
 
 		if (_End->_X == X && _End->_Y == Y)
 		{
-			CreateOpenNode(node, X, Y);
+			CreateOpenNode(node, X, Y, Direction::LU);
 			break;
 		}
 
@@ -400,7 +417,7 @@ void JumpPointSearch::SearchLU(Node* node, int X, int Y)
 			|| (X >= 1 && Y < GRID_HEIGHT - 1 &&
 			gTile[Y + 1][X] == 1 && gTile[Y + 1][X - 1] == 0))
 		{
-			CreateOpenNode(node, X, Y);
+			CreateOpenNode(node, X, Y, Direction::LU);
 			break;
 		}
 
@@ -408,6 +425,8 @@ void JumpPointSearch::SearchLU(Node* node, int X, int Y)
 		X = X - 1;
 		Y = Y - 1;
 	}
+
+	node->_Direct = ParentDirect;
 }
 
 bool JumpPointSearch::SearchLL(Node* node, int X, int Y)
@@ -444,20 +463,22 @@ bool JumpPointSearch::SearchLL(Node* node, int X, int Y)
 	Node* newNode;
 	if (gTile[StoreY][StoreX] != (char)Mode::CLOSELIST)
 	{
-		Node* storeNode = CreateOpenNode(node, StoreX, StoreY);
-		newNode = CreateOpenNode(storeNode, X, Y);
+		Node* storeNode = CreateOpenNode(node, StoreX, StoreY, node->_Direct);
+		newNode = CreateOpenNode(storeNode, X, Y, Direction::LL);
 	}
 	else
 	{
-		newNode = CreateOpenNode(node, X, Y);
+		newNode = CreateOpenNode(node, X, Y, Direction::LL);
 	}
-	newNode->_Direct = Direction::LL;
 
 	return true;
 }
 
 void JumpPointSearch::SearchLD(Node* node, int X, int Y)
 {
+	Direction ParentDirect = node->_Direct;
+	node->_Direct = Direction::LD;
+
 	// 끝에 도달했다면 더이상 탐색하지 않음.
 	while (Y >= 0 && X >= 0 && Y < GRID_HEIGHT && X < GRID_WIDTH)
 	{
@@ -467,7 +488,7 @@ void JumpPointSearch::SearchLD(Node* node, int X, int Y)
 
 		if (_End->_X == X && _End->_Y == Y)
 		{
-			CreateOpenNode(node, X, Y);
+			CreateOpenNode(node, X, Y, Direction::LD);
 			break;
 		}
 
@@ -484,7 +505,7 @@ void JumpPointSearch::SearchLD(Node* node, int X, int Y)
 			|| (X < GRID_WIDTH - 1 && Y < GRID_HEIGHT - 1 &&
 			gTile[Y][X + 1] == 1 && gTile[Y + 1][X + 1] == 0))
 		{
-			CreateOpenNode(node, X, Y);
+			CreateOpenNode(node, X, Y, Direction::LD);
 			break;
 		}
 
@@ -492,6 +513,8 @@ void JumpPointSearch::SearchLD(Node* node, int X, int Y)
 		X = X - 1;
 		Y = Y + 1;
 	}
+
+	node->_Direct = ParentDirect;
 }
 
 bool JumpPointSearch::SearchDD(Node* node, int X, int Y)
@@ -528,20 +551,22 @@ bool JumpPointSearch::SearchDD(Node* node, int X, int Y)
 	Node* newNode;
 	if (gTile[StoreY][StoreX] != (char)Mode::CLOSELIST)
 	{
-		Node* storeNode = CreateOpenNode(node, StoreX, StoreY);
-		newNode = CreateOpenNode(storeNode, X, Y);
+		Node* storeNode = CreateOpenNode(node, StoreX, StoreY, node->_Direct);
+		newNode = CreateOpenNode(storeNode, X, Y, Direction::DD);
 	}
 	else
 	{
-		newNode = CreateOpenNode(node, X, Y);
+		newNode = CreateOpenNode(node, X, Y, Direction::DD);
 	}
-	newNode->_Direct = Direction::DD;
 
 	return true;
 }
 
 void JumpPointSearch::SearchRD(Node* node, int X, int Y)
 {
+	Direction ParentDirect = node->_Direct;
+	node->_Direct = Direction::RD;
+
 	// 끝에 도달했다면 더이상 탐색하지 않음.
 	while (Y >= 0 && X >= 0 && Y < GRID_HEIGHT && X < GRID_WIDTH)
 	{
@@ -551,7 +576,7 @@ void JumpPointSearch::SearchRD(Node* node, int X, int Y)
 
 		if (_End->_X == X && _End->_Y == Y)
 		{
-			CreateOpenNode(node, X, Y);
+			CreateOpenNode(node, X, Y, Direction::RD);
 			break;
 		}
 
@@ -568,7 +593,7 @@ void JumpPointSearch::SearchRD(Node* node, int X, int Y)
 			|| (X >= 1 && Y < GRID_HEIGHT - 1 &&
 			gTile[Y][X - 1] == 1 && gTile[Y + 1][X - 1] == 0))
 		{
-			CreateOpenNode(node, X, Y);
+			CreateOpenNode(node, X, Y, Direction::RD);
 			break;
 		}
 
@@ -576,10 +601,23 @@ void JumpPointSearch::SearchRD(Node* node, int X, int Y)
 		X = X + 1;
 		Y = Y + 1;
 	}
+
+	node->_Direct = ParentDirect;
 }
 
-Node* JumpPointSearch::CreateOpenNode(Node* Parent, int X, int Y)
+Node* JumpPointSearch::CreateOpenNode(Node* Parent, int X, int Y, Direction Direct)
 {
+	// CloseList 체크
+	if (gTile[Y][X] == (char)Mode::CLOSELIST)
+	{
+		for (int i = 0; i < _CloseList.size(); i++)
+		{
+			if (_CloseList[i]->_X == X && _CloseList[i]->_Y == Y)
+				return _CloseList[i];
+		}
+	}
+
+	// OpenList 체크
 	for (int i = 0; i < _OpenList.size(); i++)
 	{
 		if (_OpenList[i]->_X == X && _OpenList[i]->_Y == Y)
@@ -603,7 +641,7 @@ Node* JumpPointSearch::CreateOpenNode(Node* Parent, int X, int Y)
 	newNode->_H = CalManhatan(newNode, _End);
 	newNode->_F = newNode->_G + newNode->_H;
 	newNode->_Parent = Parent;
-	newNode->_Direct = Parent->_Direct;
+	newNode->_Direct = Direct;
 	_OpenList.push_back(newNode);
 	
 	gTile[Y][X] = (char)Mode::OPENLIST;
@@ -626,16 +664,6 @@ double JumpPointSearch::CalManhatan(Node* node1, Node* node2)
 	return dx + dy;
 }
 
-bool JumpPointSearch::IsExistCloseList(int X, int Y)
-{
-	return false;
-}
-
-bool JumpPointSearch::IsExistOpenList(int X, int Y, Node* Parent)
-{
-	return false;
-}
-
 void JumpPointSearch::Init()
 {
 	for (int i = 0; i < GRID_HEIGHT; i++)
@@ -652,4 +680,13 @@ void JumpPointSearch::Init()
 				gTile[i][j] = 0;
 		}
 	}
+}
+
+void JumpPointSearch::Clear()
+{
+	for (int i = 0; i < _OpenList.size(); i++)
+		delete _OpenList[i];
+
+	for (int i = 0; i < _CloseList.size(); i++)
+		delete _CloseList[i];
 }

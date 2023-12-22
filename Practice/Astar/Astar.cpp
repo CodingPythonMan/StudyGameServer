@@ -15,9 +15,6 @@ Astar::~Astar()
 {
 	delete _Start;
 	delete _End;
-
-	for (int i = 0; i < _OpenList.size(); i++)
-		delete _OpenList[i];
 }
 
 void Astar::RoutingStart(HWND hWnd)
@@ -43,17 +40,23 @@ void Astar::RoutingStart(HWND hWnd)
 				gTile[node->_Y][node->_X] = (char)Mode::ROUTE;
 				node = node->_Parent;
 			}
-			_OpenList.clear();
+
 			gTile[_Start->_Y][_Start->_X] = (char)Mode::START;
 			RenderRoute(hdc);
 			RenderStart(hdc);
 			RenderText(hdc);
+
+			Clear();
+			_OpenList.clear();
+			_CloseList.clear();
 			return;	
 		}
 		else
 		{
 			// 이렇게 속성값 바꾸는 게 CloseList 추가 개념으로 간다.
 			gTile[node->_Y][node->_X] = (char)Mode::CLOSELIST;
+			if(node != _Start)
+				_CloseList.push_back(node);
 			RenderClose(hdc);
 		}
 
@@ -146,4 +149,13 @@ bool Astar::IsExistOpenList(int X, int Y, Node* node)
 		}
 	}
 	return false;
+}
+
+void Astar::Clear()
+{
+	for (int i = 0; i < _OpenList.size(); i++)
+		delete _OpenList[i];
+
+	for (int i = 0; i < _CloseList.size(); i++)
+		delete _CloseList[i];
 }

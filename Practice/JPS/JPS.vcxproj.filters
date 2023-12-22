@@ -34,9 +34,6 @@
     <ClInclude Include="JPS.h">
       <Filter>JPS</Filter>
     </ClInclude>
-    <ClInclude Include="Pos.h">
-      <Filter>Render</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
