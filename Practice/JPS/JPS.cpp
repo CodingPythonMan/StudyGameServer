@@ -685,6 +685,9 @@ void JumpPointSearch::Init()
 
 			if (gTile[i][j] == (int)Mode::CLOSELIST)
 				gTile[i][j] = 0;
+
+			gTileInfo[i][j].G = 0;
+			gTileInfo[i][j].H = 0;
 		}
 	}
 }
