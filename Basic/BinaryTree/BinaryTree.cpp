@@ -62,119 +62,141 @@ bool BinaryTree::Insert(int Data)
 
 bool BinaryTree::Delete(int Data)
 {
-	// 하위 두개 있으면 오류날 확률 있음
-	return Delete(_Root, nullptr, Data);
-}
-
-bool BinaryTree::Find(int Data)
-{
-	return Find(_Root, Data);
-}
-
-bool BinaryTree::Delete(Node* node, Node* Parent, int Data)
-{
-	if (node == nullptr)
+	if (_Root == nullptr)
 		return false;
 
-	bool leftResult, rightResult;
-	leftResult = Delete(node->Left, node, Data);
-	// 데이터에 대한 값 처리할 때 하위 있는지 확인 필요
-	if (Data == node->Data)
+	Node* node = _Root;
+	Node* Parent = nullptr;
+	while (1)
 	{
-		// 자식 둘다 있을 경우
-		if (node->Left != nullptr && node->Right != nullptr)
+		if (Data < node->Data)
 		{
-			// 왼쪽의 맨 오른쪽으로 접근하고, 해당 node 설정 후 삭제.
-			Node* thisNode = node;
-			Parent = node;
-			node = node->Left;
-			while (node->Right != nullptr)
-			{
-				Parent = node;
-				node = node->Right;
-			}
-			thisNode->Data = node->Data;
-			// 여기서 return 되지 않는 이유는 node 는 지워질 때 아래 사항 고려.
-		}
-		
-		// Root 면 Parent 관련 설정할 필요가 없다.
-		if (node == _Root)
-		{
-			if (node->Left != nullptr)
-			{
-				_Root = node->Left;
-			}
-			else if (node->Right != nullptr)
-			{
-				_Root = node->Right;
-			}
+			if (node->Left == nullptr)
+				break;
 			else
 			{
-				_Root = nullptr;
+				Parent = node;
+				node = node->Left;
+			}
+		}
+		else if (Data == node->Data)
+		{
+			// 자식 둘다 있을 경우
+			if (node->Left != nullptr && node->Right != nullptr)
+			{
+				// 왼쪽의 맨 오른쪽으로 접근하고, 해당 node 설정 후 삭제.
+				Node* thisNode = node;
+				Parent = node;
+				node = node->Left;
+				while (node->Right != nullptr)
+				{
+					Parent = node;
+					node = node->Right;
+				}
+				thisNode->Data = node->Data;
+				// 여기서 return 되지 않는 이유는 node 는 지워질 때 아래 사항 고려.
+			}
+
+			// Root 면 Parent 관련 설정할 필요가 없다.
+			if (node == _Root)
+			{
+				if (node->Left != nullptr)
+				{
+					_Root = node->Left;
+				}
+				else if (node->Right != nullptr)
+				{
+					_Root = node->Right;
+				}
+				else
+				{
+					_Root = nullptr;
+				}
+				delete node;
+				return true;
+			}
+
+			// 왼쪽 자식이 있는 경우
+			if (node->Left != nullptr)
+			{
+				if (Parent->Left == node)
+				{
+					Parent->Left = node->Left;
+				}
+				else
+				{
+					Parent->Right = node->Left;
+				}
+			}
+			// 오른 자식이 있는 경우
+			else if (node->Right != nullptr)
+			{
+				if (Parent->Left == node)
+				{
+					Parent->Left = node->Right;
+				}
+				else
+				{
+					Parent->Right = node->Right;
+				}
+			}
+			// 자식이 없는 경우
+			else
+			{
+				if (Parent->Left == node)
+				{
+					Parent->Left = nullptr;
+				}
+				else
+				{
+					Parent->Right = nullptr;
+				}
 			}
 			delete node;
 			return true;
 		}
-
-		// 왼쪽 자식이 있는 경우
-		if (node->Left != nullptr)
-		{
-			if (Parent->Left == node)
-			{
-				Parent->Left = node->Left;
-			}
-			else
-			{
-				Parent->Right = node->Left;
-			}
-		}
-		// 오른 자식이 있는 경우
-		else if (node->Right != nullptr)
-		{
-			if (Parent->Left == node)
-			{
-				Parent->Left = node->Right;
-			}
-			else
-			{
-				Parent->Right = node->Right;
-			}
-		}
-		// 자식이 없는 경우
 		else
 		{
-			if (Parent->Left == node)
-			{
-				Parent->Left = nullptr;
-			}
+			if (node->Right == nullptr)
+				break;
 			else
 			{
-				Parent->Right = nullptr;
+				Parent = node;
+				node = node->Right;
 			}
 		}
-		delete node;
-		return true;
 	}
-	rightResult = Delete(node->Right, node, Data);
 
-	return leftResult || rightResult;
+	return false;
 }
 
-bool BinaryTree::Find(Node* node, int Data)
+bool BinaryTree::Find(int Data)
 {
-	if (node == nullptr)
+	if (_Root == nullptr)
 		return false;
 
-	bool leftResult, rightResult;
-
-	leftResult = Find(node->Left, Data);
-	if (node->Data == Data)
+	Node* node = _Root;
+	while (1)
 	{
-		return true;
+		if (Data < node->Data)
+		{
+			if (node->Left == nullptr)
+				break;
+			else
+				node = node->Left;
+		}
+		else if (Data == node->Data)
+			return true;
+		else
+		{
+			if (node->Right == nullptr)
+				break;
+			else
+				node = node->Right;
+		}
 	}
-	rightResult = Find(node->Right, Data);
 
-	return leftResult || rightResult;
+	return false;
 }
 
 void BinaryTree::DeleteDestructor(Node* node)

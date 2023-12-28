@@ -31,11 +31,6 @@ void TestCode1()
 	cout << Result1 << "\n";
 	cout << Result2 << "\n";
 	cout << Result3 << "\n";
-
-	Test test;
-	test.PutReliableData(3);
-	test.PutReliableData(4);
-	test.PutReliableData(5);
 }
 
 int main()
@@ -48,4 +43,6 @@ int main()
 
 	binaryTree.Delete(30);
 	binaryTree.Delete(20);
+
+	TestCode1();
 }

@@ -63,9 +63,6 @@ public:
 	bool Find(int Data);
 
 private:
-	bool Delete(Node* node, Node* Parent, int Data);
-	bool Find(Node* node, int Data);
-	
 	void DeleteDestructor(Node* node);
 
 	int GetMaxDepth() const;
