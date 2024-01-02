@@ -1,0 +1,13 @@
+{
+	CMDCreateMyCharacter(int ID, unsigned char Direct, short X, short Y, unsigned char HP);
+	CMDCreateOtherCharacter(int ID, unsigned char Direct, short X, short Y, unsigned char HP);
+	CMDDeleteCharacter();
+	
+	QRYMoveStart();
+	REPMoveStart();
+	QRYMoveStop();
+	REPMoveStop();
+
+	QRYAttack001();
+	REPAttack001();
+}

@@ -1,0 +1,2 @@
+call IDLCompiler.exe
+pause
