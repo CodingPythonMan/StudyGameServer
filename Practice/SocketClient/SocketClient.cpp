@@ -16,7 +16,8 @@ struct st_PACKET_HEADER
 
 int main()
 {
-	SetClients();
+	//SetClients();
+	SetDefaultEchoClient();
 	/*
 	// 패킷 헤더 준비
 	st_PACKET_HEADER packetHeader;

@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <iostream>
 #include <locale.h>
+#include "SetServer.h"
 using namespace std;
 
 #pragma comment(lib, "ws2_32.lib")
@@ -19,6 +20,9 @@ struct st_PACKET_HEADER
 
 int main()
 {
+	SetDefaultEchoServer();
+
+	/*
 	_wsetlocale(LC_ALL, L"korean");
 
 	// 윈속 초기화
@@ -114,5 +118,5 @@ int main()
 
 	WSACleanup();
 
-	return 0;
+	return 0;*/
 }
