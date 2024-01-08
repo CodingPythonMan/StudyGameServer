@@ -1,7 +1,7 @@
 ﻿#include "RingBuffer.h"
 #include <cstring>
 
-RingBuffer::RingBuffer() : BufferSize{ DEFAULT_SIZE }
+RingBuffer::RingBuffer() : BufferSize{ RING_DEFAULT_SIZE }
 {
 	Buffer = new char[BufferSize + 1];
 	Front = 0;
