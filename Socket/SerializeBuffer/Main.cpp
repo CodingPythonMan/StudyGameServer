@@ -5,11 +5,24 @@
 #define MOVE_START 0
 #define HEADER_SIZE 3
 
+#pragma pack(push, 1)
 struct Header {
 	unsigned char ByCode;
 	unsigned char BySize;
 	unsigned char ByType;
 };
+#pragma pack(pop)
+
+void Test()
+{
+	unsigned char Wow[8] = { 0x89, 0x05, 0x0a, 0x00, 0xf9, 0x18, 0xe2, 0x00 };
+
+	Packet packet;
+	for (int i = 0; i < 8; i++)
+		packet << Wow[i];
+
+	std::cout << 1;
+}
 
 void MoveStart(Packet* srcPacket, unsigned char dir, short x, short y)
 {
@@ -45,8 +58,10 @@ int main()
 {
 	// 皋技瘤 积己. 皋技瘤 积己 饶
 	unsigned char dir = 1;
-	short x = 30;
-	short y = 40;
+	short x = 129;
+	short y = 6400;
+
+	//Test();
 
 	Packet packet;
 	MoveStart(&packet, dir, x, y);

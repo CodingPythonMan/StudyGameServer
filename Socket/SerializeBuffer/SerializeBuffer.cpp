@@ -123,6 +123,14 @@ Packet& Packet::operator<<(int value)
 	return *this;
 }
 
+Packet& Packet::operator<<(unsigned int value)
+{
+	memcpy(&Buffer[WritePos], &value, sizeof(unsigned int));
+	WritePos += sizeof(unsigned int);
+
+	return *this;
+}
+
 Packet& Packet::operator<<(long value)
 {
 	memcpy(&Buffer[WritePos], &value, sizeof(long));
@@ -173,7 +181,7 @@ Packet& Packet::operator>>(char& value)
 
 Packet& Packet::operator>>(short& value)
 {
-	value = (short)*(Buffer+ReadPos);
+	value = *((short*)(Buffer + ReadPos));
 	ReadPos+=sizeof(short);
 
 	return *this;
@@ -181,7 +189,7 @@ Packet& Packet::operator>>(short& value)
 
 Packet& Packet::operator>>(unsigned short& value)
 {
-	value = (unsigned short)*(Buffer + ReadPos);
+	value = *((unsigned short*)(Buffer + ReadPos));
 	ReadPos += sizeof(unsigned short);
 
 	return *this;
@@ -189,7 +197,7 @@ Packet& Packet::operator>>(unsigned short& value)
 
 Packet& Packet::operator>>(int& value)
 {
-	value = (int)*(Buffer + ReadPos);
+	value = *((int*)(Buffer + ReadPos));
 	ReadPos += sizeof(int);
 
 	return *this;
@@ -197,7 +205,7 @@ Packet& Packet::operator>>(int& value)
 
 Packet& Packet::operator>>(unsigned int& value)
 {
-	value = (unsigned int)*(Buffer + ReadPos);
+	value = *((unsigned int*)(Buffer + ReadPos));
 	ReadPos += sizeof(unsigned int);
 
 	return *this;
@@ -205,7 +213,7 @@ Packet& Packet::operator>>(unsigned int& value)
 
 Packet& Packet::operator>>(float& value)
 {
-	value = (float)*(Buffer + ReadPos);
+	value = *((float*)(Buffer + ReadPos));
 	ReadPos += sizeof(float);
 
 	return *this;
@@ -213,7 +221,7 @@ Packet& Packet::operator>>(float& value)
 
 Packet& Packet::operator>>(__int64& value)
 {
-	value = (__int64)*(Buffer + ReadPos);
+	value = *((__int64*)(Buffer + ReadPos));
 	ReadPos += sizeof(__int64);
 
 	return *this;
@@ -221,7 +229,7 @@ Packet& Packet::operator>>(__int64& value)
 
 Packet& Packet::operator>>(double& value)
 {
-	value = (double)*(Buffer + ReadPos);
+	value = *((double*)(Buffer + ReadPos));
 	ReadPos += sizeof(double);
 
 	return *this;

@@ -81,6 +81,8 @@ public:
 	Packet& operator << (unsigned short value);
 
 	Packet& operator << (int value);
+	Packet& operator << (unsigned int value);
+
 	Packet& operator << (long value);
 	Packet& operator << (float value);
 
