@@ -25,20 +25,22 @@ int main()
 	timeBeginPeriod(1);
 
 	unsigned int curTime = timeGetTime();
+	unsigned int ourTime = curTime;
 	unsigned int frameTime = curTime;
 	int Frame = 0;
 	while (1)
 	{
 		A();
 
-		if (Frame < 1000 / WAIT)
+		if (ourTime < curTime)
 		{
 			B();
 			Frame++;
+			ourTime += WAIT;
 		}
-		
+
 		curTime = timeGetTime();
-		if(curTime - frameTime >= 1000)
+		if (curTime - frameTime >= 1000)
 		{
 			printf("curTime : %d, frameTime : %d\n", curTime, frameTime);
 			printf("Frame : %d\n", Frame);
@@ -47,8 +49,8 @@ int main()
 
 			// 1초동안 목표치보다 적게 돌았다면, 더 많은 Frame 돌기
 			// 그런데 1초 동안이 아니라 여러초동안 안 돌았을 수 있음.
-			Frame -= (1000 / WAIT);
-			frameTime += 1000;
+			Frame = 0;
+			frameTime = curTime;
 		}
 	}
 }
