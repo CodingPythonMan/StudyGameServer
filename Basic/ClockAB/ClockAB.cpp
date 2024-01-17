@@ -28,11 +28,12 @@ int main()
 	unsigned int ourTime = curTime;
 	unsigned int frameTime = curTime;
 	int Frame = 0;
+	printf("startTime : %d\n", curTime);
 	while (1)
 	{
 		A();
 
-		if (ourTime < curTime)
+		if (ourTime <= curTime)
 		{
 			B();
 			Frame++;
