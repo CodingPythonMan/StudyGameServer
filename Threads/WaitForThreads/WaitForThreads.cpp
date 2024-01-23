@@ -9,7 +9,10 @@ int gData = 0;
 int gConnect = 0;
 bool gShutdown = false;
 
+long UpdateThreadCall = 0;
+
 CRITICAL_SECTION cs;
+SRWLOCK lock;
 
 unsigned int WINAPI AcceptThread(LPVOID lpParam)
 {
@@ -43,13 +46,17 @@ unsigned int WINAPI UpdateThread(LPVOID lpParam)
 {
 	while (gShutdown == false)
 	{
-		EnterCriticalSection(&cs);
-
+		//EnterCriticalSection(&cs);
+		//AcquireSRWLockShared(&lock);
+		AcquireSRWLockExclusive(&lock);
 		gData++;
 		if (gData % 1000 == 0)
 			printf("gData : %d\n", gData);
+		ReleaseSRWLockExclusive(&lock);
+		//ReleaseSRWLockShared(&lock);
+		//LeaveCriticalSection(&cs);
 
-		LeaveCriticalSection(&cs);
+		InterlockedIncrement(&UpdateThreadCall);
 
 		Sleep(10);
 	}
@@ -67,6 +74,7 @@ int main()
 	hThreads[1] = (HANDLE)_beginthreadex(nullptr, 0, DisconnectThread, 0, 0, nullptr);
 
 	InitializeCriticalSection(&cs);
+	InitializeSRWLock(&lock);
 	hThreads[2] = (HANDLE)_beginthreadex(nullptr, 0, UpdateThread, 0, 0, nullptr);
 	hThreads[3] = (HANDLE)_beginthreadex(nullptr, 0, UpdateThread, 0, 0, nullptr);
 	hThreads[4] = (HANDLE)_beginthreadex(nullptr, 0, UpdateThread, 0, 0, nullptr);
@@ -83,6 +91,9 @@ int main()
 	WaitForMultipleObjects(5, hThreads, true, INFINITE);
 
 	DeleteCriticalSection(&cs);
+
+	printf("gData : %d\n", gData);
+	printf("UpdateThreadCall : %d\n", UpdateThreadCall);
 
 	return 0;
 }
