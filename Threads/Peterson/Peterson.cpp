@@ -22,6 +22,9 @@ unsigned int WINAPI Thread001(LPVOID lpParam)
 				break;
 		}
 
+		if (flag[0] != true || (flag[1] == true && turn == 0))
+			__debugbreak();
+
 		Items++;
 
 		flag[0] = false;
@@ -44,6 +47,9 @@ unsigned int WINAPI Thread002(LPVOID lpParam)
 			if (turn == 0)
 				break;
 		}
+
+		if (flag[1] != true || (flag[0] == true && turn == 1))
+			__debugbreak();
 
 		Items++;
 
