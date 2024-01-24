@@ -17,6 +17,7 @@ SRWLOCK lock;
 unsigned int WINAPI AcceptThread(LPVOID lpParam)
 {
 	int random;
+	srand(GetCurrentThreadId());
 
 	while (gShutdown == false)
 	{
@@ -31,6 +32,7 @@ unsigned int WINAPI AcceptThread(LPVOID lpParam)
 unsigned int WINAPI DisconnectThread(LPVOID lpParam)
 {
 	int random;
+	srand(GetCurrentThreadId());
 
 	while (gShutdown == false)
 	{
@@ -73,7 +75,7 @@ int main()
 
 	hThreads[1] = (HANDLE)_beginthreadex(nullptr, 0, DisconnectThread, 0, 0, nullptr);
 
-	InitializeCriticalSection(&cs);
+	//InitializeCriticalSection(&cs);
 	InitializeSRWLock(&lock);
 	hThreads[2] = (HANDLE)_beginthreadex(nullptr, 0, UpdateThread, 0, 0, nullptr);
 	hThreads[3] = (HANDLE)_beginthreadex(nullptr, 0, UpdateThread, 0, 0, nullptr);
@@ -90,7 +92,7 @@ int main()
 	// 메인에서 스레드의 종료 확인은 WaitForMultipleObjects 사용.
 	WaitForMultipleObjects(5, hThreads, true, INFINITE);
 
-	DeleteCriticalSection(&cs);
+	//DeleteCriticalSection(&cs);
 
 	printf("gData : %d\n", gData);
 	printf("UpdateThreadCall : %d\n", UpdateThreadCall);
