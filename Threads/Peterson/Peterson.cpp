@@ -16,16 +16,14 @@ unsigned int WINAPI Thread001(LPVOID lpParam)
 		turn = 0;
 		while (1)
 		{
-			if (flag[1] != true)
+			if (flag[1] != true || turn == 1)
+			{
+				long a = InterlockedExchange(&lock, 1);
+				if (a == 1)
+					printf("Thread1 break => Flag[0] : %d, Flag[1] : %d, turn : %d, Items: %d\n", flag[0], flag[1], turn, Items);
 				break;
-
-			if (turn == 1)
-				break;
+			}
 		}
-
-		long a = InterlockedExchange(&lock, 1);
-		if (a == 1)
-			__debugbreak();
 
 		Items++;
 
@@ -44,17 +42,14 @@ unsigned int WINAPI Thread002(LPVOID lpParam)
 		turn = 1;
 		while (1)
 		{
-			if (flag[0] != true)
+			if (flag[0] != true || turn == 0)
+			{
+				long a = InterlockedExchange(&lock, 1);
+				if (a == 1)
+					printf("Thread2 break => Flag[0] : %d, Flag[1] : %d, turn : %d, Items: %d\n", flag[0], flag[1], turn, Items);
 				break;
-
-			if (turn == 0)
-				break;
+			}
 		}
-
-
-		long a = InterlockedExchange(&lock, 1);
-		if (a == 1)
-			__debugbreak();
 
 		Items++;
 
