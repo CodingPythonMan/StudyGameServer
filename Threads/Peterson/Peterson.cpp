@@ -6,6 +6,7 @@ bool flag[2] = { false, false };
 int turn = 0;
 
 int Items = 0;
+long lock = 0;
 
 unsigned int WINAPI Thread001(LPVOID lpParam)
 {
@@ -22,11 +23,13 @@ unsigned int WINAPI Thread001(LPVOID lpParam)
 				break;
 		}
 
-		if (flag[0] != true || (flag[1] == true && turn == 0))
+		long a = InterlockedExchange(&lock, 1);
+		if (a == 1)
 			__debugbreak();
 
 		Items++;
 
+		lock = 0;
 		flag[0] = false;
 	}
 
@@ -48,11 +51,14 @@ unsigned int WINAPI Thread002(LPVOID lpParam)
 				break;
 		}
 
-		if (flag[1] != true || (flag[0] == true && turn == 1))
+
+		long a = InterlockedExchange(&lock, 1);
+		if (a == 1)
 			__debugbreak();
 
 		Items++;
 
+		lock = 0;
 		flag[1] = false;
 	}
 
@@ -61,11 +67,13 @@ unsigned int WINAPI Thread002(LPVOID lpParam)
 
 int main()
 {
+
 	HANDLE threads[2];
 	threads[0] = (HANDLE*)_beginthreadex(nullptr, 0, Thread001, nullptr, 0, nullptr);
 	threads[1] = (HANDLE*)_beginthreadex(nullptr, 0, Thread002, nullptr, 0, nullptr);
 
 	WaitForMultipleObjects(2, threads, true, INFINITE);
+	//WaitForSingleObject(threads[1], INFINITE);
 
 	printf("Items : %d\n", Items);
 }
