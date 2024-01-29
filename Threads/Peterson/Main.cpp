@@ -1,5 +1,4 @@
 #include <iostream>
-#include <process.h>
 #include "Peterson.h"
 
 bool flag[2] = { false, false };
@@ -10,12 +9,17 @@ long lock = 0;
 
 unsigned int WINAPI Thread001(LPVOID lpParam)
 {
+	bool a;
+	int b;
+
 	for (int i = 0; i < 100000000; i++)
 	{
 		flag[0] = true;
 		turn = 0;
 		while (1)
 		{
+			a = flag[1];
+			b = turn;
 			if (flag[1] != true || turn == 1)
 			{
 				break;
@@ -23,19 +27,15 @@ unsigned int WINAPI Thread001(LPVOID lpParam)
 		}
 
 		long a = InterlockedExchange(&lock, 1);
-		if (a == 1)
-			printf("Thread1 break => Flag[0] : %d, Flag[1] : %d, turn : %d, Items: %d\n", flag[0], flag[1], turn, items);
-		lock = 0;
+		if (a == 2)
+			printf("Thread1 break => Flag[1] : %d, turn : %d\n", a, b);
 
-		for (int j = 0; j < 100; j++)
-		{
-			items++;
-			items--;
-		}
+		items++;
 
 		a = InterlockedExchange(&lock, 1);
-		if (a == 1)
-			printf("Thread1 break => Flag[0] : %d, Flag[1] : %d, turn : %d, Items: %d\n", flag[0], flag[1], turn, items);
+		if (a == 2)
+			printf("Thread1 break => Flag[1] : %d, turn : %d\n", a, b);
+
 		lock = 0;
 	
 		flag[0] = false;
@@ -46,32 +46,33 @@ unsigned int WINAPI Thread001(LPVOID lpParam)
 
 unsigned int WINAPI Thread002(LPVOID lpParam)
 {
+	bool a;
+	int b;
+
 	for (int i = 0; i < 100000000; i++)
 	{
 		flag[1] = true;
 		turn = 1;
 		while (1)
 		{
+			a = flag[0];
+			b = turn;
 			if (flag[0] != true || turn == 0)
 			{
 				break;
 			}
 		}
 
-		long a = InterlockedExchange(&lock, 1);
+		long a = InterlockedExchange(&lock, 2);
 		if (a == 1)
-			printf("Thread2 break => Flag[0] : %d, Flag[1] : %d, turn : %d, Items: %d\n", flag[0], flag[1], turn, items);
-		lock = 0;
+			printf("Thread2 break => Flag[0] : %d, turn : %d\n", a, b);
 
-		for (int j = 0; j < 100; j++)
-		{
-			items++;
-			items--;
-		}
+		items++;
 
-		a = InterlockedExchange(&lock, 1);
+		a = InterlockedExchange(&lock, 2);
 		if (a == 1)
-			printf("Thread2 break => Flag[0] : %d, Flag[1] : %d, turn : %d, Items: %d\n", flag[0], flag[1], turn, items);
+			printf("Thread2 break => Flag[0] : %d, turn : %d\n", a, b);
+
 		lock = 0;
 
 		flag[1] = false;
@@ -84,14 +85,14 @@ int main()
 {
 
 	HANDLE threads[2];
-	//threads[0] = (HANDLE*)_beginthreadex(nullptr, 0, Thread001, nullptr, 0, nullptr);
-	//threads[1] = (HANDLE*)_beginthreadex(nullptr, 0, Thread002, nullptr, 0, nullptr);
-	threads[0] = (HANDLE*)_beginthreadex(nullptr, 0, Peterson001, nullptr, 0, nullptr);
-	threads[1] = (HANDLE*)_beginthreadex(nullptr, 0, Peterson002, nullptr, 0, nullptr);
+	threads[0] = (HANDLE*)_beginthreadex(nullptr, 0, Thread001, nullptr, 0, nullptr);
+	threads[1] = (HANDLE*)_beginthreadex(nullptr, 0, Thread002, nullptr, 0, nullptr);
+	//threads[0] = (HANDLE*)_beginthreadex(nullptr, 0, Peterson001, nullptr, 0, nullptr);
+	//threads[1] = (HANDLE*)_beginthreadex(nullptr, 0, Peterson002, nullptr, 0, nullptr);
 
 	WaitForMultipleObjects(2, threads, true, INFINITE);
 	//WaitForSingleObject(threads[1], INFINITE);
 
-	//printf("items : %d\n", items);
-	printf("Items : %d\n", Items);
+	printf("items : %d\n", items);
+	//printf("Items : %d\n", Items);
 }
