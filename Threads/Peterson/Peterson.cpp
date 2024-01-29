@@ -5,7 +5,7 @@ int Turn = 0;
 
 int Items = 0;
 
-long c = 0;
+//long c = 0;
 
 unsigned int WINAPI Peterson001(LPVOID lpParam)
 {
@@ -13,7 +13,8 @@ unsigned int WINAPI Peterson001(LPVOID lpParam)
 	{
 		Flag[0] = true;
 		Turn = 0;
-		InterlockedExchange(&c, 1);
+		_mm_mfence();
+		//InterlockedExchange(&c, 1);
 		while (1)
 		{	
 			if (Flag[1] != true || Turn == 1)
@@ -36,7 +37,8 @@ unsigned int WINAPI Peterson002(LPVOID lpParam)
 	{
 		Flag[1] = true;
 		Turn = 1;
-		InterlockedExchange(&c, 1);
+		_mm_mfence();
+		//InterlockedExchange(&c, 1);
 		while (1)
 		{
 			if (Flag[0] != true || Turn == 0)
