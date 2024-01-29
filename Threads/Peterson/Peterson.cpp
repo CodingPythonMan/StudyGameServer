@@ -13,9 +13,9 @@ unsigned int WINAPI Peterson001(LPVOID lpParam)
 	{
 		Flag[0] = true;
 		Turn = 0;
+		InterlockedExchange(&c, 1);
 		while (1)
-		{
-			//InterlockedExchange(&c, 1);
+		{	
 			if (Flag[1] != true || Turn == 1)
 			{
 				break;
@@ -36,9 +36,9 @@ unsigned int WINAPI Peterson002(LPVOID lpParam)
 	{
 		Flag[1] = true;
 		Turn = 1;
+		InterlockedExchange(&c, 1);
 		while (1)
 		{
-			//InterlockedExchange(&c, 1);
 			if (Flag[0] != true || Turn == 0)
 			{
 				break;

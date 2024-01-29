@@ -85,14 +85,14 @@ int main()
 {
 
 	HANDLE threads[2];
-	threads[0] = (HANDLE*)_beginthreadex(nullptr, 0, Thread001, nullptr, 0, nullptr);
-	threads[1] = (HANDLE*)_beginthreadex(nullptr, 0, Thread002, nullptr, 0, nullptr);
-	//threads[0] = (HANDLE*)_beginthreadex(nullptr, 0, Peterson001, nullptr, 0, nullptr);
-	//threads[1] = (HANDLE*)_beginthreadex(nullptr, 0, Peterson002, nullptr, 0, nullptr);
+	//threads[0] = (HANDLE*)_beginthreadex(nullptr, 0, Thread001, nullptr, 0, nullptr);
+	//threads[1] = (HANDLE*)_beginthreadex(nullptr, 0, Thread002, nullptr, 0, nullptr);
+	threads[0] = (HANDLE*)_beginthreadex(nullptr, 0, Peterson001, nullptr, 0, nullptr);
+	threads[1] = (HANDLE*)_beginthreadex(nullptr, 0, Peterson002, nullptr, 0, nullptr);
 
 	WaitForMultipleObjects(2, threads, true, INFINITE);
 	//WaitForSingleObject(threads[1], INFINITE);
 
-	printf("items : %d\n", items);
-	//printf("Items : %d\n", Items);
+	//printf("items : %d\n", items);
+	printf("Items : %d\n", Items);
 }
