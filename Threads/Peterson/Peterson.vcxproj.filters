@@ -10,5 +10,13 @@
     <ClCompile Include="Peterson.cpp">
       <Filter>Main</Filter>
     </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Peterson.h">
+      <Filter>Main</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

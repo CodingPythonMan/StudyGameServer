@@ -129,7 +129,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Main.cpp" />
     <ClCompile Include="Peterson.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Peterson.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
