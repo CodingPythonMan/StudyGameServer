@@ -1,15 +1,15 @@
 #include "RingBuffer.h"
 #include <iostream>
-#include <assert.h>
+#include <process.h>
+#include <windows.h>
 
 #define SEED 1902
 char message[82] = "1234567890 abcdefghijklmnopqrstuvwxyz 1234567890 abcdefghijklmnopqrstuvwxyz 12345";
 
-int main()
-{
-	srand(SEED);
-	RingBuffer* ringBuffer = new RingBuffer(500);
+RingBuffer* ringBuffer = new RingBuffer(500);
 
+unsigned int WINAPI EnqueueThread(LPVOID lpParam)
+{
 	int start = 0;
 	int messageSize = (int)strlen(message);
 
@@ -35,6 +35,17 @@ int main()
 			start += size;
 		}
 
+		delete[] dequeueString;
+		delete[] peekString;
+	}
+
+	return 0;
+}
+
+unsigned int WINAPI DequeueThread(LPVOID lpParam)
+{
+	while (1)
+	{
 		ringBuffer->Peek(peekString, size);
 		ringBuffer->Dequeue(dequeueString, size);
 
@@ -42,12 +53,20 @@ int main()
 		{
 			__debugbreak();
 		}
-		
-		printf("%s", dequeueString);
 
-		delete[] dequeueString;
-		delete[] peekString;
+		printf("%s", dequeueString);
 	}
 
-	delete ringBuffer;
+	return 0;
+}
+
+int main()
+{
+	srand(SEED);
+
+	HANDLE Threads[2];
+	Threads[0] = (HANDLE)_beginthreadex(nullptr, 0, EnqueueThread, nullptr, 0, nullptr);
+	Threads[1] = (HANDLE)_beginthreadex(nullptr, 0, DequeueThread, nullptr, 0, nullptr);
+
+	WaitForMultipleObjects(2, Threads, true, INFINITE);
 }
