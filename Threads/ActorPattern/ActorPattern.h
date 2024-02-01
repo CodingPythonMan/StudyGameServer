@@ -23,6 +23,9 @@ struct st_MSG_HEAD
 //#pragma pack(pop)
 
 unsigned int WINAPI Work(LPVOID lpParam);
+unsigned int WINAPI Monitor(LPVOID lpParam);
+
+bool MessageProc(short Type, wstring message);
 
 //-----------------------------------------------
 // 컨텐츠 부, 문자열 리스트
@@ -34,4 +37,6 @@ extern list<wstring>	gList;
 //-----------------------------------------------
 extern RingBuffer		messageQ;
 
-extern SRWLOCK lock;
+extern SRWLOCK			lock;
+extern HANDLE			gEvent;
+extern bool				MonitorTerminate;

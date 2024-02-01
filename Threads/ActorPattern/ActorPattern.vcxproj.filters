@@ -4,11 +4,11 @@
     <Filter Include="Main">
       <UniqueIdentifier>{2e7f43ea-5f0f-4ca3-98fe-b7bc065ce469}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Ring">
-      <UniqueIdentifier>{1274620d-8dde-43de-90c1-5f315b6ab772}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ActorPattern">
       <UniqueIdentifier>{6970fc80-2f82-4641-86fd-9f5f9c54330a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Buffer">
+      <UniqueIdentifier>{1274620d-8dde-43de-90c1-5f315b6ab772}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -16,7 +16,7 @@
       <Filter>Main</Filter>
     </ClCompile>
     <ClCompile Include="RingBuffer.cpp">
-      <Filter>Ring</Filter>
+      <Filter>Buffer</Filter>
     </ClCompile>
     <ClCompile Include="ActorPattern.cpp">
       <Filter>ActorPattern</Filter>
@@ -24,7 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RingBuffer.h">
-      <Filter>Ring</Filter>
+      <Filter>Buffer</Filter>
     </ClInclude>
     <ClInclude Include="ActorPattern.h">
       <Filter>ActorPattern</Filter>

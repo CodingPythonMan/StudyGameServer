@@ -16,23 +16,47 @@ wstring GenerateRanString(short len)
 
 int main()
 {
-	HANDLE WorkerThreads[WORKER_THREAD_NUMBER];
+	HANDLE WorkerThreads[WORKER_THREAD_NUMBER + 1];
 	for (int i = 0; i < WORKER_THREAD_NUMBER; i++)
 	{
 		WorkerThreads[i] = (HANDLE)_beginthreadex(nullptr, 0, Work, nullptr, 0, nullptr);
 	}
+	WorkerThreads[WORKER_THREAD_NUMBER] = (HANDLE)_beginthreadex(nullptr, 0, Monitor, nullptr, 0, nullptr);
 
+	gEvent = CreateEvent(nullptr, false, false, nullptr);
+	if (gEvent == NULL)
+		return 0;
+
+	int QuitNum = 0;
 	while (1)
 	{
-		// L : 컨트롤 Lock / U : 컨트롤 Unlock / G : 서버 종료
 		if (_kbhit())
 		{
 			WCHAR ControlKey = _getwch();
 
-			// 키보드 제어 풀림 상태에서 특정 기능
+			// Q : 스레드 종료
 			if (L'q' == ControlKey || L'Q' == ControlKey)
 			{
 				wprintf(L"Control Mode : Press Q - Quit Send \n");
+				st_MSG_HEAD head;
+				head.shType = dfJOB_QUIT;
+				head.shPayloadLen = 0;
+
+				AcquireSRWLockExclusive(&lock);
+
+				messageQ.Enqueue((char*)&head, sizeof(st_MSG_HEAD));
+
+				ReleaseSRWLockExclusive(&lock);
+				SetEvent(gEvent);
+				QuitNum++;
+
+				if (QuitNum >= WORKER_THREAD_NUMBER)
+				{
+					//MonitorTerminate = true;
+					break;
+				}
+
+				Sleep(50);
 			}
 		}
 
@@ -40,17 +64,28 @@ int main()
 		short len = rand() % RANDOM_MAX_LEN;
 		st_MSG_HEAD head;
 		head.shType = rand() % dfJOB_QUIT;
-		head.shPayloadLen = len * 2;
-		wstring ranString = GenerateRanString(len);
-
+		head.shPayloadLen = 0;
+		wstring ranString;
+		if (head.shType == dfJOB_ADD || head.shType == dfJOB_PRINT)
+		{
+			head.shPayloadLen = len * 2;
+			ranString = GenerateRanString(len);
+		}
+		
 		if (messageQ.GetFreeSize() >= head.shPayloadLen + sizeof(st_MSG_HEAD))
 		{
 			AcquireSRWLockExclusive(&lock);
 
 			messageQ.Enqueue((char*)&head, sizeof(st_MSG_HEAD));
-			messageQ.Enqueue((char*)&ranString[0], head.shPayloadLen);
+
+			if (head.shType == dfJOB_ADD || head.shType == dfJOB_PRINT)
+			{
+				messageQ.Enqueue((char*)&ranString[0], head.shPayloadLen);
+			}
 
 			ReleaseSRWLockExclusive(&lock);
+
+			SetEvent(gEvent);
 		}
 		else
 			__debugbreak();
@@ -59,5 +94,5 @@ int main()
 	}
 
 	// 워커 스레드 종료 대기
-	WaitForMultipleObjects(WORKER_THREAD_NUMBER, WorkerThreads, true, INFINITE);
+	WaitForMultipleObjects(WORKER_THREAD_NUMBER+1, WorkerThreads, true, INFINITE);
 }
