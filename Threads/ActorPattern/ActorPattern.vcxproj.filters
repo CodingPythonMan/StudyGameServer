@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Main">
+      <UniqueIdentifier>{2e7f43ea-5f0f-4ca3-98fe-b7bc065ce469}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Ring">
+      <UniqueIdentifier>{1274620d-8dde-43de-90c1-5f315b6ab772}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ActorPattern">
+      <UniqueIdentifier>{6970fc80-2f82-4641-86fd-9f5f9c54330a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="RingBuffer.cpp">
+      <Filter>Ring</Filter>
+    </ClCompile>
+    <ClCompile Include="ActorPattern.cpp">
+      <Filter>ActorPattern</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="RingBuffer.h">
+      <Filter>Ring</Filter>
+    </ClInclude>
+    <ClInclude Include="ActorPattern.h">
+      <Filter>ActorPattern</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
