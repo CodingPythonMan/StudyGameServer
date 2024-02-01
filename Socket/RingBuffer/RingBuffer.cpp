@@ -46,19 +46,17 @@ int RingBuffer::Enqueue(char* src, int size)
 {
 	if (size > 0)
 	{
-		Rear++;
-
-		if (Rear + size > BufferSize)
+		if (Rear + size + 1 > BufferSize)
 		{
-			int rest = BufferSize + 1 - Rear;
-			memcpy(&Buffer[Rear], src, rest);
+			int rest = BufferSize - Rear;
+			memcpy(&Buffer[Rear+1], src, rest);
 			memcpy(&Buffer[0], src + rest, size - rest);
 			Rear = size - rest - 1;
 		}
 		else
 		{
-			memcpy(&Buffer[Rear], src, size);
-			Rear += size - 1;
+			memcpy(&Buffer[Rear+1], src, size);
+			Rear += size;
 		}
 	}
 	else
@@ -73,19 +71,17 @@ int RingBuffer::Dequeue(char* dest, int size)
 {
 	if (size > 0)
 	{
-		Front++;
-
-		if (Front + size > BufferSize)
+		if (Front + size + 1 > BufferSize)
 		{
-			int rest = BufferSize + 1 - Front;
-			memcpy(dest, &Buffer[Front], rest);
+			int rest = BufferSize - Front;
+			memcpy(dest, &Buffer[Front+1], rest);
 			memcpy(dest + rest, &Buffer[0], size - rest);
 			Front = size - rest - 1;
 		}
 		else
 		{
-			memcpy(dest, &Buffer[Front], size);
-			Front += size - 1;
+			memcpy(dest, &Buffer[Front+1], size);
+			Front += size;
 		}
 	}
 	else

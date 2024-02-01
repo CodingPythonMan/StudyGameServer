@@ -6,7 +6,9 @@
 #define SEED 1902
 char message[82] = "1234567890 abcdefghijklmnopqrstuvwxyz 1234567890 abcdefghijklmnopqrstuvwxyz 12345";
 
-RingBuffer* ringBuffer = new RingBuffer(500);
+RingBuffer* ringBuffer = new RingBuffer(1000);
+
+int size = 40;
 
 unsigned int WINAPI EnqueueThread(LPVOID lpParam)
 {
@@ -14,15 +16,13 @@ unsigned int WINAPI EnqueueThread(LPVOID lpParam)
 	int messageSize = (int)strlen(message);
 
 	while (1)
+	//for(int i=0; i<30000000; i++)
 	{
-		int size = rand() % (messageSize + 1);
-		char* dequeueString = new char[size + 1];
-		char* peekString = new char[size + 1];
-		dequeueString[size] = '\0';
-		peekString[size] = '\0';
+		if (ringBuffer->GetFreeSize() < size)
+			continue;
 
 		if (start + size > messageSize)
-		{
+		{	
 			ringBuffer->Enqueue(message + start, messageSize - start);
 			ringBuffer->Enqueue(message, size - messageSize + start);
 
@@ -34,9 +34,6 @@ unsigned int WINAPI EnqueueThread(LPVOID lpParam)
 
 			start += size;
 		}
-
-		delete[] dequeueString;
-		delete[] peekString;
 	}
 
 	return 0;
@@ -45,16 +42,18 @@ unsigned int WINAPI EnqueueThread(LPVOID lpParam)
 unsigned int WINAPI DequeueThread(LPVOID lpParam)
 {
 	while (1)
+	//for (int i = 0; i < 30000000; i++)
 	{
-		ringBuffer->Peek(peekString, size);
+		if (ringBuffer->GetUseSize() < size)
+			continue;
+
+		char* dequeueString = new char[size+1];
+		dequeueString[size] = '\0';
+
 		ringBuffer->Dequeue(dequeueString, size);
 
-		if (memcmp(peekString, dequeueString, size) != 0)
-		{
-			__debugbreak();
-		}
-
 		printf("%s", dequeueString);
+		delete[] dequeueString;
 	}
 
 	return 0;
