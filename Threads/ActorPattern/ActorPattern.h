@@ -1,8 +1,10 @@
-#include <process.h>
+#pragma once
+
 #include <list>
 #include <string>
-#include <windows.h>
+#include <process.h>
 #include "RingBuffer.h"
+#include "Lock.h"
 using namespace std;
 
 #define WORKER_THREAD_NUMBER 3

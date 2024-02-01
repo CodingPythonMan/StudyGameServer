@@ -42,17 +42,18 @@ int main()
 				head.shType = dfJOB_QUIT;
 				head.shPayloadLen = 0;
 
-				AcquireSRWLockExclusive(&lock);
+				{
+					ExclusiveLock;
 
-				messageQ.Enqueue((char*)&head, sizeof(st_MSG_HEAD));
-
-				ReleaseSRWLockExclusive(&lock);
+					messageQ.Enqueue((char*)&head, sizeof(st_MSG_HEAD));
+				}
+				
 				SetEvent(gEvent);
 				QuitNum++;
 
 				if (QuitNum >= WORKER_THREAD_NUMBER)
 				{
-					//MonitorTerminate = true;
+					MonitorTerminate = true;
 					break;
 				}
 

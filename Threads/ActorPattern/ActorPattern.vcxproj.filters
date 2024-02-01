@@ -7,7 +7,7 @@
     <Filter Include="ActorPattern">
       <UniqueIdentifier>{6970fc80-2f82-4641-86fd-9f5f9c54330a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Buffer">
+    <Filter Include="Util">
       <UniqueIdentifier>{1274620d-8dde-43de-90c1-5f315b6ab772}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -16,18 +16,24 @@
       <Filter>Main</Filter>
     </ClCompile>
     <ClCompile Include="RingBuffer.cpp">
-      <Filter>Buffer</Filter>
+      <Filter>Util</Filter>
     </ClCompile>
     <ClCompile Include="ActorPattern.cpp">
       <Filter>ActorPattern</Filter>
     </ClCompile>
+    <ClCompile Include="Lock.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RingBuffer.h">
-      <Filter>Buffer</Filter>
+      <Filter>Util</Filter>
     </ClInclude>
     <ClInclude Include="ActorPattern.h">
       <Filter>ActorPattern</Filter>
+    </ClInclude>
+    <ClInclude Include="Lock.h">
+      <Filter>Util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

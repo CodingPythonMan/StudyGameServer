@@ -128,11 +128,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ActorPattern.cpp" />
+    <ClCompile Include="Lock.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="RingBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ActorPattern.h" />
+    <ClInclude Include="Lock.h" />
     <ClInclude Include="RingBuffer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

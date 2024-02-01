@@ -21,10 +21,10 @@ unsigned int WINAPI Work(LPVOID lpParam)
 		WaitForSingleObject(gEvent, INFINITE);
 
 		// Dequeue 진행
-		AcquireSRWLockExclusive(&lock);
+		ExclusiveLock;
 		do
 		{
-			if (messageQ.GetUseSize() <= sizeof(st_MSG_HEAD))
+			if (messageQ.GetUseSize() < sizeof(st_MSG_HEAD))
 				break;
 
 			st_MSG_HEAD head;
@@ -41,8 +41,7 @@ unsigned int WINAPI Work(LPVOID lpParam)
 			Terminate = MessageProc(head.shType, realMessage);
 
 			delete[] message;
-		} while (false);
-		ReleaseSRWLockExclusive(&lock);
+		} while (messageQ.GetUseSize() >= sizeof(st_MSG_HEAD));
 	}
 	
 	return 0;
