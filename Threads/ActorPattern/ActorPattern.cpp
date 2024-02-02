@@ -2,12 +2,13 @@
 #include <algorithm>
 #include <iostream>
 
-list<wstring>	gList;
-RingBuffer		messageQ;
+list<wstring>			gList;
+RingBuffer				messageQ;
 
-SRWLOCK			lock;
-HANDLE			gEvent;
-bool			MonitorTerminate;
+SRWLOCK					lock;
+HANDLE					gEvent;
+bool					MonitorTerminate;
+map<int, int>	ThreadMap;
 
 long Job[dfJOB_QUIT + 1] = {0};
 
@@ -15,10 +16,14 @@ unsigned int WINAPI Work(LPVOID lpParam)
 {
 	// Enqueue 할 때까지 기다린다.
 	bool Terminate = false;
+	int ThreadID = GetCurrentThreadId();
+	ThreadMap.insert({ ThreadID, 0 });
 
 	while (Terminate == false)
 	{
 		WaitForSingleObject(gEvent, INFINITE);
+
+		ThreadMap[ThreadID]++;
 
 		// Dequeue 진행
 		ExclusiveLock;
@@ -49,13 +54,24 @@ unsigned int WINAPI Work(LPVOID lpParam)
 
 unsigned int WINAPI Monitor(LPVOID lpParam)
 {
+	int total = 0;
+
 	while (MonitorTerminate == false)
-	{
+	{	
 		wprintf(L"Message Job Queue Use : %d\n", messageQ.GetUseSize());
 		for (int i = 0; i < dfJOB_QUIT; i++)
+		{
 			wprintf(L"JobDoing %d Count : %d\n", i, Job[i]);
+			total += Job[i];
+		}
+			
+		for(auto iter = ThreadMap.begin(); iter != ThreadMap.end(); ++iter)
+			wprintf(L"Thread ID %d Count : %d\n", iter->first, iter->second);
+
+		wprintf(L"TPS Count : %d\n", total);
 
 		Sleep(1000);
+		total = 0;
 	}
 
 	return 0;
