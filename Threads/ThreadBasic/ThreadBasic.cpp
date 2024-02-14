@@ -5,21 +5,31 @@ using namespace std;
 
 CRITICAL_SECTION cs;
 
-unsigned int OverlapCriticalSection001(LPVOID lpParam)
+void LockPlayer()
 {
     EnterCriticalSection(&cs);
+}
 
+unsigned int OverlapCriticalSection001(LPVOID lpParam)
+{
+    for (int i = 0; i < 3; i++)
+    {
+        LockPlayer();
+    }
 
-    //LeaveCriticalSection(&cs);
+    LeaveCriticalSection(&cs);
+    LeaveCriticalSection(&cs);
+    LeaveCriticalSection(&cs);
+    //LeaveCriticalSection(&cs); // Leave 자체는 여러번해도 된다.
 
     return 0;
 }
 
 unsigned int OverlapCriticalSection002(LPVOID lpParam)
 {
-    EnterCriticalSection(&cs);
+    Sleep(1000);
+    LockPlayer();
 
-    //LeaveCriticalSection(&cs);
 	return 0;
 }
 
