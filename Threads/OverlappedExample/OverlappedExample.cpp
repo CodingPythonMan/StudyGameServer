@@ -218,3 +218,52 @@ unsigned int __stdcall WorkerThread(LPVOID arg)
 
 	return 0;
 }
+
+BOOL AddSocketInfo(SOCKET sock)
+{
+	EnterCriticalSection(&cs);
+	if (TotalSockets >= WSA_MAXIMUM_WAIT_EVENTS)
+		return FALSE;
+
+	SOCKETINFO* ptr = new SOCKETINFO;
+	if (ptr == nullptr)
+		return FALSE;
+
+	WSAEVENT hEvent = WSACreateEvent();
+	if (hEvent == WSA_INVALID_EVENT)
+		return FALSE;
+
+	memset(&ptr->overlapped, 0, sizeof(ptr->overlapped));
+	ptr->overlapped.hEvent = hEvent;
+	ptr->sock = sock;
+	ptr->recvbytes = ptr->sendbytes = 0;
+	ptr->wsabuf.buf = ptr->buf;
+	ptr->wsabuf.len = BUFSIZE;
+	SocketInfoArray[TotalSockets] = ptr;
+	EventArray[TotalSockets] = hEvent;
+	TotalSockets++;
+
+	LeaveCriticalSection(&cs);
+
+	return TRUE;
+}
+
+void RemoveSocketInfo(int index)
+{
+	EnterCriticalSection(&cs);
+
+	SOCKETINFO* ptr = SocketInfoArray[index];
+	closesocket(ptr->sock);
+	delete ptr;
+	WSACloseEvent(EventArray[index]);
+
+	if (index != (TotalSockets - 1))
+	{
+		SocketInfoArray[index] = SocketInfoArray[TotalSockets - 1];
+		EventArray[index] = EventArray[TotalSockets - 1];
+	}
+
+	TotalSockets--;
+
+	LeaveCriticalSection(&cs);
+}
