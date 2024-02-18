@@ -3,6 +3,7 @@
 #include <list>
 #include <string>
 #include <process.h>
+#include <map>
 #include "RingBuffer.h"
 #include "Lock.h"
 using namespace std;
