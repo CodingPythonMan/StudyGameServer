@@ -52,8 +52,15 @@ unsigned int WINAPI Monitor(LPVOID lpParam)
 	while (MonitorTerminate == false)
 	{
 		wprintf(L"Message Job Queue Use : %d\n", messageQ.GetUseSize());
+		int total = 0;
 		for (int i = 0; i < dfJOB_QUIT; i++)
+		{
+			total += Job[i];
 			wprintf(L"JobDoing %d Count : %d\n", i, Job[i]);
+			Job[i] = 0;
+		}
+		
+		wprintf(L"TPS : %d\n", total);
 
 		Sleep(1000);
 	}
