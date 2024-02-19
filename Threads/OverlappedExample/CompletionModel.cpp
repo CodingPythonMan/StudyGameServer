@@ -64,7 +64,7 @@ int IocpMain()
 			break;
 
 		InetNtop(AF_INET, &(clientAddr.sin_addr), IP, 16);
-		wprintf(L"[TCP 서버] 클라이언트 접속 : IP 주소=%s, 포트 번호=%d\n",
+		wprintf(L"[TCP Server] Client Access : IP Address=%s, Port=%d\n",
 			IP, ntohs(clientAddr.sin_port));
 
 		// 소켓과 입출력 완료 포트 연결
@@ -133,7 +133,7 @@ unsigned int WINAPI WorkerThread003(LPVOID arg)
 			}
 			closesocket(ptr->sock);
 			InetNtop(AF_INET, &(clientAddr.sin_addr), IP, 16);
-			wprintf(L"[TCP 서버] 클라이언트 종료 : IP 주소=%s, 포트 번호=%d\n",
+			wprintf(L"[TCP Server] Client Terminate : IP Address=%s, Port=%d\n",
 				IP, ntohs(clientAddr.sin_port));
 			delete ptr;
 			continue;
