@@ -4,10 +4,33 @@
     <Filter Include="Main">
       <UniqueIdentifier>{4b98c29a-1616-421d-b1e2-9fa8d82dc242}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Overlap">
+      <UniqueIdentifier>{24897547-9c06-4c8e-ad00-f9c5346a802c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="OverlappedExample.cpp">
+    <ClCompile Include="Main.cpp">
       <Filter>Main</Filter>
     </ClCompile>
+    <ClCompile Include="OverlappedExample.cpp">
+      <Filter>Overlap</Filter>
+    </ClCompile>
+    <ClCompile Include="OverlappedExample002.cpp">
+      <Filter>Overlap</Filter>
+    </ClCompile>
+    <ClCompile Include="CompletionModel.cpp">
+      <Filter>Overlap</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="OverlappedExample.h">
+      <Filter>Overlap</Filter>
+    </ClInclude>
+    <ClInclude Include="OverlappedExample002.h">
+      <Filter>Overlap</Filter>
+    </ClInclude>
+    <ClInclude Include="CompletionModel.h">
+      <Filter>Overlap</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

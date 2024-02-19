@@ -127,7 +127,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CompletionModel.cpp" />
+    <ClCompile Include="Main.cpp" />
     <ClCompile Include="OverlappedExample.cpp" />
+    <ClCompile Include="OverlappedExample002.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CompletionModel.h" />
+    <ClInclude Include="OverlappedExample.h" />
+    <ClInclude Include="OverlappedExample002.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

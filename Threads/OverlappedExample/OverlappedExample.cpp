@@ -1,35 +1,11 @@
-#pragma comment(lib, "ws2_32")
-#include <WinSock2.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <process.h>
-
-#define SERVERPORT 9000
-#define BUFSIZE 512
-
-// 소켓 정보 저장을 위한 구조체와 변수
-struct SOCKETINFO {
-	WSAOVERLAPPED overlapped;
-	SOCKET sock;
-	char buf[BUFSIZE + 1];
-	int recvbytes;
-	int sendbytes;
-	WSABUF wsabuf;
-};
+#include "OverlappedExample.h"
 
 int TotalSockets = 0;
 SOCKETINFO* SocketInfoArray[WSA_MAXIMUM_WAIT_EVENTS];
 WSAEVENT EventArray[WSA_MAXIMUM_WAIT_EVENTS];
 CRITICAL_SECTION cs;
 
-// 비동기 입출력 처리 함수
-unsigned int WINAPI WorkerThread(LPVOID arg);
-
-// 소켓 관리 함수
-BOOL AddSocketInfo(SOCKET sock);
-void RemoveSocketInfo(int index);
-
-int main()
+int OverlapMain()
 {
 	int retval;
 	InitializeCriticalSection(&cs);
@@ -76,6 +52,7 @@ int main()
 	SOCKADDR_IN clientAddr;
 	int addrLen;
 	DWORD recvbytes, flags;
+	WCHAR IP[16];
 
 	while (1)
 	{
@@ -85,15 +62,17 @@ int main()
 		if (clientSock == INVALID_SOCKET)
 			break;
 
-		printf("\n[TCP 서버] 클라이언트 접속 : IP 주소=%s, 포트 번호=%d\n",
-			inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
+		InetNtop(AF_INET, &(clientAddr.sin_addr), IP, 16);
+		wprintf(L"\n[TCP 서버] 클라이언트 접속 : IP 주소=%s, 포트 번호=%d\n",
+			IP, ntohs(clientAddr.sin_port));
 
 		// 소켓 정보 추가
 		if (AddSocketInfo(clientSock) == FALSE)
 		{
 			closesocket(clientSock);
-			printf("[TCP 서버] 클라이언트 종료 : IP 주소=%s, 포트 번호=%d\n",
-				inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
+			InetNtop(AF_INET, &(clientAddr.sin_addr), IP, 16);
+			wprintf(L"[TCP 서버] 클라이언트 종료 : IP 주소=%s, 포트 번호=%d\n",
+				IP, ntohs(clientAddr.sin_port));
 			continue;
 		}
 
@@ -125,6 +104,7 @@ int main()
 unsigned int __stdcall WorkerThread(LPVOID arg)
 {
 	int retval;
+	WCHAR IP[16];
 
 	while (1)
 	{
@@ -154,8 +134,9 @@ unsigned int __stdcall WorkerThread(LPVOID arg)
 		if (retval == FALSE || Transferred == 0)
 		{
 			RemoveSocketInfo(index);
-			printf("[TCP 서버] 클라이언트 종료 : IP 주소=%s, 포트 번호=%d\n",
-				inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
+			InetNtop(AF_INET, &(clientAddr.sin_addr), IP, 16);
+			wprintf(L"[TCP 서버] 클라이언트 종료 : IP 주소=%s, 포트 번호=%d\n",
+				IP, ntohs(clientAddr.sin_port));
 			
 			continue;
 		}
@@ -167,7 +148,8 @@ unsigned int __stdcall WorkerThread(LPVOID arg)
 			ptr->sendbytes = 0;
 			// 받은 데이터 출력
 			ptr->buf[ptr->recvbytes] = '\0';
-			printf("[TCP/%s:%d] %s\n", inet_ntoa(clientAddr.sin_addr),
+			InetNtop(AF_INET, &(clientAddr.sin_addr), IP, 16);
+			wprintf(L"[TCP/%s:%d] %s\n", IP,
 				ntohs(clientAddr.sin_port), ptr->buf);
 		}
 		else
