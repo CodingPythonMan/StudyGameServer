@@ -2,6 +2,7 @@
 #include <conio.h>
 
 #define RANDOM_MAX_LEN 30
+#define WAIT 5
 
 wstring GenerateRanString(short len)
 {
@@ -57,7 +58,7 @@ int main()
 					break;
 				}
 
-				Sleep(50);
+				Sleep(WAIT);
 			}
 		}
 
@@ -91,7 +92,7 @@ int main()
 		else
 			__debugbreak();
 
-		Sleep(50);
+		Sleep(WAIT);
 	}
 
 	// 워커 스레드 종료 대기
