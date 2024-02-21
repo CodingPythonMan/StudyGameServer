@@ -1,7 +1,7 @@
 #pragma comment(lib, "ws2_32")
 #include <WS2tcpip.h>
 #include <stdlib.h>
-#include <stdio.h>
+#include <iostream>
 #include <process.h>
 
 #define SERVERPORT 9000

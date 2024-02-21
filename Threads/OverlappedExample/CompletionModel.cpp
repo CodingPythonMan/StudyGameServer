@@ -43,6 +43,25 @@ int IocpMain()
 	if (retval == SOCKET_ERROR)
 		return 1;
 
+	// listen 전에 송신버퍼 0으로 설정
+	/*
+	int optval = 0;
+	setsockopt(listenSock, SOL_SOCKET, SO_SNDBUF, (char*)&optval, sizeof(optval));
+
+	int getoptval = 100;
+	int optlen = sizeof(getoptval);
+	int result = getsockopt(listenSock, SOL_SOCKET, SO_SNDBUF, (char*)&getoptval, &optlen);
+	if (result == SOCKET_ERROR)
+	{
+		result = WSAGetLastError();
+
+		std::cout << "ErrorCode : " << result;
+	}
+	else
+	{
+		std::cout << "Result : " << result << " optval : " << getoptval;
+	}*/
+	
 	// listen()
 	retval = listen(listenSock, SOMAXCONN);
 	if (retval == SOCKET_ERROR)
