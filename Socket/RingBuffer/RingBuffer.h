@@ -46,6 +46,9 @@ private:
 	// 버퍼의 RearPos 포인터 얻음.
 	char* GetRearBufferPtr();
 
+	// 버퍼의 처음포인터 얻음.
+	char* GetStartBufferPtr();
+
 private:
 	int Front;
 	int Rear;

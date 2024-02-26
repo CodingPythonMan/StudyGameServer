@@ -53,7 +53,7 @@ int RingBuffer::Enqueue(char* src, int size)
 			int rest = BufferSize - Rear;
 			memcpy(&Buffer[Rear + 1], src, rest);
 			memcpy(&Buffer[0], src + rest, size - rest);
-			Rear = size - rest - 1;
+			Rear += size - BufferSize - 1;
 		}
 		else
 		{
@@ -80,7 +80,7 @@ int RingBuffer::Dequeue(char* dest, int size)
 			int rest = BufferSize - Front;
 			memcpy(dest, &Buffer[Front + 1], rest);
 			memcpy(dest + rest, &Buffer[0], size - rest);
-			Front = size - rest - 1;
+			Front += size - BufferSize - 1;
 		}
 		else
 		{
@@ -100,7 +100,7 @@ int RingBuffer::Peek(char* dest, int size)
 {
 	if (size > 0)
 	{
-		if (Front + 1 + size > BufferSize)
+		if (Front + size > BufferSize)
 		{
 			int rest = BufferSize - Front;
 			memcpy(dest, &Buffer[Front + 1], rest);
@@ -156,9 +156,9 @@ int RingBuffer::MoveRear(int size)
 {
 	if (size > 0)
 	{
-		if (Rear + 1 + size > BufferSize)
+		if (Rear + size > BufferSize)
 		{
-			Rear = Rear + size - BufferSize - 1;
+			Rear += + size - BufferSize - 1;
 		}
 		else
 		{
@@ -173,9 +173,9 @@ int RingBuffer::MoveFront(int size)
 {
 	if (size > 0)
 	{
-		if (Front + 1 + size > BufferSize)
+		if (Front + size > BufferSize)
 		{
-			Front = Front + size - BufferSize - 1;
+			Front += size - BufferSize - 1;
 		}
 		else
 		{
@@ -204,4 +204,9 @@ char* RingBuffer::GetRearBufferPtr()
 		IncreaseRear = Rear + 1;
 
 	return &Buffer[IncreaseRear];
+}
+
+char* RingBuffer::GetStartBufferPtr()
+{
+	return Buffer;
 }
