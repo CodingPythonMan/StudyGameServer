@@ -1,11 +1,12 @@
-//#include "OverlappedExample.h"
+#include "OverlappedExample.h"
 //#include "OverlappedExample002.h"
-#include "CompletionModel.h"
+//#include "CompletionModel.h"
 
 int main()
 {
+	OverlapMain();
 	//OverlapMain002();
-	IocpMain();
+	//IocpMain();
 
 	return 0;
 }

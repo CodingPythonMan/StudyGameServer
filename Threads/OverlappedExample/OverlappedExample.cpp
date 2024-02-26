@@ -63,7 +63,7 @@ int OverlapMain()
 			break;
 
 		InetNtop(AF_INET, &(clientAddr.sin_addr), IP, 16);
-		wprintf(L"\n[TCP 서버] 클라이언트 접속 : IP 주소=%s, 포트 번호=%d\n",
+		wprintf(L"\n[TCP Server] Client Connect : IP Address=%s, Port=%d\n",
 			IP, ntohs(clientAddr.sin_port));
 
 		// 소켓 정보 추가
@@ -71,7 +71,7 @@ int OverlapMain()
 		{
 			closesocket(clientSock);
 			InetNtop(AF_INET, &(clientAddr.sin_addr), IP, 16);
-			wprintf(L"[TCP 서버] 클라이언트 종료 : IP 주소=%s, 포트 번호=%d\n",
+			wprintf(L"[TCP Server] Client Terminate : IP Address=%s, Port=%d\n",
 				IP, ntohs(clientAddr.sin_port));
 			continue;
 		}
@@ -135,7 +135,7 @@ unsigned int __stdcall WorkerThread(LPVOID arg)
 		{
 			RemoveSocketInfo(index);
 			InetNtop(AF_INET, &(clientAddr.sin_addr), IP, 16);
-			wprintf(L"[TCP 서버] 클라이언트 종료 : IP 주소=%s, 포트 번호=%d\n",
+			wprintf(L"[TCP Server] Client Terminate : IP Address=%s, Port=%d\n",
 				IP, ntohs(clientAddr.sin_port));
 			
 			continue;
@@ -149,8 +149,8 @@ unsigned int __stdcall WorkerThread(LPVOID arg)
 			// 받은 데이터 출력
 			ptr->buf[ptr->recvbytes] = '\0';
 			InetNtop(AF_INET, &(clientAddr.sin_addr), IP, 16);
-			wprintf(L"[TCP/%s:%d] %s\n", IP,
-				ntohs(clientAddr.sin_port), ptr->buf);
+			wprintf(L"[TCP/%s:%d] ", IP, ntohs(clientAddr.sin_port));
+			printf("%s\n", ptr->buf);
 		}
 		else
 		{

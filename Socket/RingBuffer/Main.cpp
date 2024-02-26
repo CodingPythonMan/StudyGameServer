@@ -4,36 +4,42 @@
 #include <windows.h>
 
 #define SEED 1902
-char message[82] = "1234567890 abcdefghijklmnopqrstuvwxyz 1234567890 abcdefghijklmnopqrstuvwxyz 12345";
+#define MessageSize 82
 
-RingBuffer* ringBuffer = new RingBuffer(1000);
+char message[MessageSize] = "1234567890 abcdefghijklmnopqrstuvwxyz 1234567890 abcdefghijklmnopqrstuvwxyz 12345";
 
-int size = 40;
+RingBuffer* ringBuffer = new RingBuffer(100);
 
 unsigned int WINAPI EnqueueThread(LPVOID lpParam)
 {
 	int start = 0;
-	int messageSize = (int)strlen(message);
+	int messageSize = MessageSize;
 
 	while (1)
-	//for(int i=0; i<30000000; i++)
 	{
-		if (ringBuffer->GetFreeSize() < size)
+		int FreeSize = ringBuffer->GetFreeSize();
+
+		if (FreeSize <= 0)
 			continue;
 
-		if (start + size > messageSize)
-		{	
-			ringBuffer->Enqueue(message + start, messageSize - start);
-			ringBuffer->Enqueue(message, size - messageSize + start);
+		int size = rand() % (MessageSize - start);
 
-			start = start + size - messageSize;
-		}
-		else
-		{
-			ringBuffer->Enqueue(message + start, size);
+		if (size <= 0)
+			size = MessageSize - start - 1;
 
-			start += size;
-		}
+		// 1. FreeSize 보다 크게 잡히면 안됨.
+		if (FreeSize < size)
+			size = ringBuffer->GetFreeSize();
+		
+		// 2. message 보다 크게 size 가 잡히면 안됨.		
+		if (start + size >= MessageSize)
+			size = MessageSize - start - 1;
+		
+		ringBuffer->Enqueue(message + start, size);
+
+		start += size;
+
+		start %= (MessageSize - 1);
 	}
 
 	return 0;
@@ -42,15 +48,16 @@ unsigned int WINAPI EnqueueThread(LPVOID lpParam)
 unsigned int WINAPI DequeueThread(LPVOID lpParam)
 {
 	while (1)
-	//for (int i = 0; i < 30000000; i++)
 	{
-		if (ringBuffer->GetUseSize() < size)
+		int useSize = ringBuffer->GetUseSize();
+
+		if (useSize <= 0)
 			continue;
 
-		char* dequeueString = new char[size+1];
-		dequeueString[size] = '\0';
+		char* dequeueString = new char[useSize + 1];
+		dequeueString[useSize] = '\0';
 
-		ringBuffer->Dequeue(dequeueString, size);
+		ringBuffer->Dequeue(dequeueString, useSize);
 
 		printf("%s", dequeueString);
 		delete[] dequeueString;
