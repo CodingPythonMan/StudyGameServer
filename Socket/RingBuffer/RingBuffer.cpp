@@ -158,7 +158,7 @@ int RingBuffer::MoveRear(int size)
 	{
 		if (Rear + size > BufferSize)
 		{
-			Rear += + size - BufferSize - 1;
+			Rear += (size - BufferSize - 1);
 		}
 		else
 		{
@@ -175,7 +175,7 @@ int RingBuffer::MoveFront(int size)
 	{
 		if (Front + size > BufferSize)
 		{
-			Front += size - BufferSize - 1;
+			Front += (size - BufferSize - 1);
 		}
 		else
 		{
