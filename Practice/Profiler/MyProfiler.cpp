@@ -138,11 +138,11 @@ void ProfileDataOutText(const WCHAR* szFileName)
 					max = ProfileInfos[i]._max[j];
 			}
 
-			average = (double)total / (double)Freq.QuadPart / (double)(call - minusCall);
-			double minD = (double)min / (double)(Freq.QuadPart);
-			double maxD = (double)max / (double)(Freq.QuadPart);
+			average = (double)total / (double)Freq.QuadPart / (double)(call - minusCall) * 1000;
+			double minD = (double)min / (double)(Freq.QuadPart) * 1000;
+			double maxD = (double)max / (double)(Freq.QuadPart) * 1000;
 
-			fwprintf(file, L" %12s |   %f§Á |   %f§Á |   %f§Á |    %lld \n", ProfileInfos[i]._name, average, minD, maxD, call);
+			fwprintf(file, L" %12s |   %fms |   %fms |   %fms |    %lld \n", ProfileInfos[i]._name, average, minD, maxD, call);
 		}
 	}
 

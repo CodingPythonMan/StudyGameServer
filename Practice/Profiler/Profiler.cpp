@@ -1,6 +1,11 @@
 ﻿#include <iostream>
 #include "MyProfiler.h"
 
+void SleepFunc()
+{
+    Sleep(20);
+}
+
 int TotalSum(int a)
 {
     int total = 0;
@@ -21,5 +26,12 @@ int main()
 		ProfileEnd(L"TotalSum");
     }
 
-    ProfileDataOutText(L"WhatIsThis.txt");
+    for (int i = 0; i < 5; i++)
+    {
+		ProfileBegin(L"SleepFunc");
+        SleepFunc();
+		ProfileEnd(L"SleepFunc");
+    }
+    
+    ProfileDataOutText(L"Profiler.txt");
 }
