@@ -16,7 +16,7 @@ unsigned int WINAPI Work(LPVOID lpParam)
 	// Enqueue 할 때까지 기다린다.
 	bool Terminate = false;
 
-	while (Terminate == false)
+	while (Terminate == false) 
 	{
 		WaitForSingleObject(gEvent, INFINITE);
 
@@ -33,7 +33,7 @@ unsigned int WINAPI Work(LPVOID lpParam)
 			short size = head.shPayloadLen + sizeof(st_MSG_HEAD);
 			if (messageQ.GetUseSize() < size)
 				break;
-		
+			
 			char* message = new char[size];
 			messageQ.Dequeue(message, size);
 			wstring realMessage(message + sizeof(st_MSG_HEAD), message + size);

@@ -8,38 +8,53 @@
 
 char message[MessageSize] = "1234567890 abcdefghijklmnopqrstuvwxyz 1234567890 abcdefghijklmnopqrstuvwxyz 12345";
 
-RingBuffer* ringBuffer = new RingBuffer(100);
+RingBuffer* ringBuffer = new RingBuffer(10000);
 
 unsigned int WINAPI EnqueueThread(LPVOID lpParam)
 {
 	int start = 0;
-	int messageSize = MessageSize;
 
 	while (1)
 	{
-		int FreeSize = ringBuffer->GetFreeSize();
+		int size = rand() % (MessageSize + 1);
 
-		if (FreeSize <= 0)
-			continue;
-
-		int size = rand() % (MessageSize - start);
-
-		if (size <= 0)
-			size = MessageSize - start - 1;
-
-		// 1. FreeSize 보다 크게 잡히면 안됨.
-		if (FreeSize < size)
-			size = ringBuffer->GetFreeSize();
-		
-		// 2. message 보다 크게 size 가 잡히면 안됨.		
 		if (start + size >= MessageSize)
-			size = MessageSize - start - 1;
-		
-		ringBuffer->Enqueue(message + start, size);
+		{
+			if (ringBuffer->GetFreeSize() >= MessageSize - start)
+			{
+				ringBuffer->Enqueue(message + start, MessageSize - start);
+			}
+			else
+			{
+				__debugbreak();
+			}
 
-		start += size;
+			if (ringBuffer->GetFreeSize() >= size - MessageSize + start)
+			{
+				ringBuffer->Enqueue(message, size - MessageSize + start);
+			}
+			else
+			{
+				__debugbreak();
+			}
+			
+			start += (size - MessageSize);
+		}
+		else
+		{
+			if (ringBuffer->GetFreeSize() >= size)
+			{
+				ringBuffer->Enqueue(message + start, size);
+			}
+			else
+			{
+				__debugbreak();
+			}
+			
+			start += size;
+		}
 
-		start %= (MessageSize - 1);
+		Sleep(200);
 	}
 
 	return 0;
@@ -50,17 +65,19 @@ unsigned int WINAPI DequeueThread(LPVOID lpParam)
 	while (1)
 	{
 		int useSize = ringBuffer->GetUseSize();
+			
+		if (useSize > 0)
+		{
+			char* dequeueString = new char[useSize + 1];
+			dequeueString[useSize] = '\0';
 
-		if (useSize <= 0)
-			continue;
+			ringBuffer->Dequeue(dequeueString, useSize);
 
-		char* dequeueString = new char[useSize + 1];
-		dequeueString[useSize] = '\0';
+			printf("%s", dequeueString);
+			delete[] dequeueString;
+		}
 
-		ringBuffer->Dequeue(dequeueString, useSize);
-
-		printf("%s", dequeueString);
-		delete[] dequeueString;
+		Sleep(20);
 	}
 
 	return 0;
