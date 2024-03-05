@@ -4,57 +4,41 @@
 #include <windows.h>
 
 #define SEED 1902
-#define MessageSize 82
 
-char message[MessageSize] = "1234567890 abcdefghijklmnopqrstuvwxyz 1234567890 abcdefghijklmnopqrstuvwxyz 12345";
+#define MessageMaxSize 200
+#define MessageMinSize 5
+#define MessageSize 81
+
+char message[MessageSize + 1] = "1234567890 abcdefghijklmnopqrstuvwxyz 1234567890 abcdefghijklmnopqrstuvwxyz 12345";
 
 RingBuffer* ringBuffer = new RingBuffer(10000);
 
 unsigned int WINAPI EnqueueThread(LPVOID lpParam)
 {
 	int start = 0;
-
+	
 	while (1)
 	{
 		int size = rand() % (MessageSize + 1);
 
-		if (start + size >= MessageSize)
-		{
-			if (ringBuffer->GetFreeSize() >= MessageSize - start)
-			{
-				ringBuffer->Enqueue(message + start, MessageSize - start);
-			}
-			else
-			{
-				__debugbreak();
-			}
+		if (ringBuffer->GetFreeSize() < size)
+			__debugbreak();
 
-			if (ringBuffer->GetFreeSize() >= size - MessageSize + start)
-			{
-				ringBuffer->Enqueue(message, size - MessageSize + start);
-			}
-			else
-			{
-				__debugbreak();
-			}
-			
-			start += (size - MessageSize);
+		if (start + size > MessageSize)
+		{
+			ringBuffer->Enqueue(message + start, MessageSize - start);
+			ringBuffer->Enqueue(message, size - MessageSize + start);
+
+			start += size - MessageSize;
 		}
 		else
 		{
-			if (ringBuffer->GetFreeSize() >= size)
-			{
-				ringBuffer->Enqueue(message + start, size);
-			}
-			else
-			{
-				__debugbreak();
-			}
-			
+			ringBuffer->Enqueue(message + start, size);
+
 			start += size;
 		}
 
-		Sleep(200);
+		Sleep(20);
 	}
 
 	return 0;
