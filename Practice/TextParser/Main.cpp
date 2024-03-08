@@ -10,4 +10,5 @@ int main()
 	parser->GetValueInt("ServerID", &parser->ServerID);
 	parser->GetValueStr("Path", &parser->Path);
 	parser->GetValueStr("FileName", &parser->FileName);
+	parser->GetValueWStr("IP", &parser->IP);
 }

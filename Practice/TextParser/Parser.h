@@ -1,4 +1,5 @@
 #pragma once
+#include <windows.h>
 
 class Parser
 {
@@ -19,9 +20,11 @@ public:
 	// Get 하는 함수들
 	bool GetValueInt(const char* valueName, int* column);
 	bool GetValueStr(const char* valueName, char** column);
+	bool GetValueWStr(const char* valueName, WCHAR** column);
 
 	int Version;
 	int ServerID;
 	char* Path;
 	char* FileName;
+	WCHAR* IP;
 };
