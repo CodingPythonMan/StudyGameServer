@@ -116,6 +116,14 @@ Packet& Packet::operator<<(long value)
 	return *this;
 }
 
+Packet& Packet::operator<<(unsigned long value)
+{
+	memcpy(&Buffer[WritePos], &value, sizeof(unsigned long));
+	WritePos += sizeof(unsigned long);
+
+	return *this;
+}
+
 Packet& Packet::operator<<(float value)
 {
 	memcpy(&Buffer[WritePos], &value, sizeof(float));
@@ -128,6 +136,14 @@ Packet& Packet::operator<<(__int64 value)
 {
 	memcpy(&Buffer[WritePos], &value, sizeof(__int64));
 	WritePos += sizeof(__int64);
+
+	return *this;
+}
+
+Packet& Packet::operator<<(unsigned __int64& value)
+{
+	memcpy(&Buffer[WritePos], &value, sizeof(unsigned __int64));
+	WritePos += sizeof(unsigned __int64);
 
 	return *this;
 }
@@ -188,6 +204,22 @@ Packet& Packet::operator>>(unsigned int& value)
 	return *this;
 }
 
+Packet& Packet::operator>>(long& value)
+{
+	value = *((long*)(Buffer + ReadPos));
+	ReadPos += sizeof(long);
+
+	return *this;
+}
+
+Packet& Packet::operator>>(unsigned long& value)
+{
+	value = *((unsigned long*)(Buffer + ReadPos));
+	ReadPos += sizeof(unsigned long);
+
+	return *this;
+}
+
 Packet& Packet::operator>>(float& value)
 {
 	value = *((float*)(Buffer + ReadPos));
@@ -200,6 +232,14 @@ Packet& Packet::operator>>(__int64& value)
 {
 	value = *((__int64*)(Buffer + ReadPos));
 	ReadPos += sizeof(__int64);
+
+	return *this;
+}
+
+Packet& Packet::operator>>(unsigned __int64& value)
+{
+	value = *((unsigned __int64*)(Buffer + ReadPos));
+	ReadPos += sizeof(unsigned __int64);
 
 	return *this;
 }
