@@ -1,26 +1,36 @@
 #include "MyProfiler.h"
 
-LARGE_INTEGER End;
-LARGE_INTEGER Freq;
-
-#define MAX_PROFILE 20
-
-ProfileInfo ProfileInfos[MAX_PROFILE];
-
-void ProfileInit()
+Profiler::Profiler()
 {
 	setlocale(LC_ALL, "");
 	QueryPerformanceFrequency(&Freq);
 
-	for (int i = 0; i < MAX_PROFILE; i++)
+	TLSIndex = TlsAlloc();
+	if (TLSIndex == TLS_OUT_OF_INDEXES)
 	{
-		for (int j = 0; j < MIN_COUNT; j++)
-			ProfileInfos[i]._min[j] = LLONG_MAX;
+		printf("TLS Alloc Error!\n");
 	}
 }
 
-void ProfileBegin(const WCHAR* szName)
+Profiler::~Profiler()
 {
+}
+
+void Profiler::ProfileBegin(const WCHAR* szName)
+{
+	ProfileInfo* ProfileInfos = (ProfileInfo*)TlsGetValue(TLSIndex);
+	if (ProfileInfos == nullptr)
+	{
+		ProfileInfos = new ProfileInfo[MAX_PROFILE];
+		TlsSetValue(TLSIndex, (LPVOID)ProfileInfos);
+
+		for (int i = 0; i < MAX_PROFILE; i++)
+		{
+			for (int j = 0; j < PROFILE_MIN_COUNT; j++)
+				ProfileInfos[i]._min[j] = LLONG_MAX;
+		}
+	}
+
 	bool exist = false;
 	for (int i = 0; i < MAX_PROFILE; i++)
 	{
@@ -49,12 +59,12 @@ void ProfileBegin(const WCHAR* szName)
 	}
 }
 
-void ProfileEnd(const WCHAR* szName)
+void Profiler::ProfileEnd(const WCHAR* szName)
 {
-	QueryPerformanceCounter(&End);
-	
+	ProfileInfo* ProfileInfos = (ProfileInfo*)TlsGetValue(TLSIndex);
+
 	for (int i = 0; i < MAX_PROFILE; i++)
-	{ 
+	{
 		if (ProfileInfos[i]._call > 0 && wcscmp(szName, ProfileInfos[i]._name) == 0)
 		{
 			ProfileCallFunc(i, szName);
@@ -63,46 +73,25 @@ void ProfileEnd(const WCHAR* szName)
 	}
 }
 
-void ProfileCallFunc(int index, const WCHAR* szName)
+void Profiler::ProfileDataOutText(const WCHAR* szFileName)
 {
-	__int64 delta = End.QuadPart - ProfileInfos[index]._startTime.QuadPart;
-
-	// Min 비교
-	for (int i = 0; i < MIN_COUNT; i++)
-	{
-		if (ProfileInfos[index]._min[i] > delta)
-		{
-			ProfileInfos[index]._min[i] = delta;
-			break;
-		}
-	}
-
-	// Max 비교
-	for (int i = 0; i < MAX_COUNT; i++)
-	{
-		if (ProfileInfos[index]._max[i] < delta)
-		{
-			ProfileInfos[index]._max[i] = delta;
-			break;
-		}
-	}
-
-	// Total Time 계산
-	ProfileInfos[index]._totalTime += delta;
-}
-
-void ProfileDataOutText(const WCHAR* szFileName)
-{
+	ProfileInfo* ProfileInfos = (ProfileInfo*)TlsGetValue(TLSIndex);
 
 	FILE* file = nullptr;
-	_wfopen_s(&file, szFileName, L"w");
+	_wfopen_s(&file, szFileName, L"a+");
 
 	if (file == nullptr)
 		return;
 
-	fwprintf(file, L"-------------------------------------------------------------------------------\n\n");
-	fwprintf(file, L"           Name  |     Average  |        Min   |        Max   |      Call |\n");
-	fwprintf(file, L"-------------------------------------------------------------------------------\n");
+	const WCHAR* NameStr = L"Name";
+	const WCHAR* AverageStr = L"Average";
+	const WCHAR* MinStr = L"Min";
+	const WCHAR* MaxStr = L"Max";
+	const WCHAR* CallStr = L"Call";
+
+	fwprintf(file, L"-----------------------------------------------------------------------------------\n");
+	fwprintf(file, L"%20s  |%14s  |%14s |%14s |%14s |\n", NameStr, AverageStr, MinStr, MaxStr, CallStr);
+	fwprintf(file, L"-----------------------------------------------------------------------------------\n");
 
 	for (int i = 0; i < MAX_PROFILE; i++)
 	{
@@ -117,7 +106,7 @@ void ProfileDataOutText(const WCHAR* szFileName)
 			__int64 min = ProfileInfos[i]._min[0];
 
 			int minusCall = 0;
-			for (int j = 0; j < MIN_COUNT; j++)
+			for (int j = 0; j < PROFILE_MIN_COUNT; j++)
 			{
 				if (ProfileInfos[i]._min[j] < LLONG_MAX)
 				{
@@ -129,7 +118,7 @@ void ProfileDataOutText(const WCHAR* szFileName)
 					min = ProfileInfos[i]._min[j];
 			}
 
-			for (int j = 0; j < MAX_COUNT; j++)
+			for (int j = 0; j < PROFILE_MAX_COUNT; j++)
 			{
 				total -= ProfileInfos[i]._max[j];
 				minusCall++;
@@ -138,33 +127,68 @@ void ProfileDataOutText(const WCHAR* szFileName)
 					max = ProfileInfos[i]._max[j];
 			}
 
-			average = (double)total / (double)Freq.QuadPart / (double)(call - minusCall) * 1000;
-			double minD = (double)min / (double)(Freq.QuadPart) * 1000;
-			double maxD = (double)max / (double)(Freq.QuadPart) * 1000;
+			average = (double)total / (double)Freq.QuadPart / (double)(call - minusCall) * 1000000;
+			double minD = (double)min / (double)(Freq.QuadPart) * 1000000;
+			double maxD = (double)max / (double)(Freq.QuadPart) * 1000000;
 
-			fwprintf(file, L" %12s |   %fms |   %fms |   %fms |    %lld \n", ProfileInfos[i]._name, average, minD, maxD, call);
+			fwprintf(file, L" %20s |   %10.4fμs |   %10.4fμs |   %10.4fμs |    %lld | \n", ProfileInfos[i]._name, average, minD, maxD, call);
 		}
 	}
 
-	fwprintf(file, L"\n\n-------------------------------------------------------------------------------\n");
+	fwprintf(file, L"-------------------------------------------------------------------------------\n");
 
 	fclose(file);
 }
 
-void ProfileReset(void)
+void Profiler::ProfileReset(void)
 {
+	ProfileInfo* ProfileInfos = (ProfileInfo*)TlsGetValue(TLSIndex);
+
 	for (int i = 0; i < MAX_PROFILE; i++)
 	{
 		ProfileInfos[i]._call = 0;
 		ProfileInfos[i]._totalTime = 0;
-		for (int j = 0; j < MIN_COUNT; j++)
+		for (int j = 0; j < PROFILE_MIN_COUNT; j++)
 		{
 			ProfileInfos[i]._min[j] = LLONG_MAX;
 		}
 
-		for (int j = 0; j < MAX_COUNT; j++)
+		for (int j = 0; j < PROFILE_MAX_COUNT; j++)
 		{
 			ProfileInfos[i]._max[j] = 0;
 		}
 	}
+}
+
+void Profiler::ProfileCallFunc(int index, const WCHAR* szName)
+{
+	ProfileInfo* ProfileInfos = (ProfileInfo*)TlsGetValue(TLSIndex);
+
+	LARGE_INTEGER End;
+	QueryPerformanceCounter(&End);
+
+	__int64 delta = End.QuadPart - ProfileInfos[index]._startTime.QuadPart;
+
+	// Min 비교
+	for (int i = 0; i < PROFILE_MIN_COUNT; i++)
+	{
+		if (ProfileInfos[index]._min[i] > delta)
+		{
+			ProfileInfos[index]._min[i] = delta;
+			break;
+		}
+	}
+
+	// Max 비교
+	for (int i = 0; i < PROFILE_MAX_COUNT; i++)
+	{
+		if (ProfileInfos[index]._max[i] < delta)
+		{
+			ProfileInfos[index]._max[i] = delta;
+			break;
+		}
+	}
+
+	// Total Time 계산
+	ProfileInfos[index]._totalTime += delta;
 }
