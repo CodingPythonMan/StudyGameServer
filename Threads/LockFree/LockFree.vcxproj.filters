@@ -10,4 +10,9 @@
       <Filter>LockFree</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="LockFree.h">
+      <Filter>LockFree</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
