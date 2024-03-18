@@ -2,12 +2,13 @@
 #include <windows.h>
 
 template<typename T>
-class LockFree
+class LockFreeStack
 {
 	struct Node {
 		Node* Next;
 		T Data;
-		//int arr[100000000] = { 0 };
+		int New;
+		int Delete;
 	};
 
 public:
@@ -23,6 +24,8 @@ public:
 			newNode->Next = lastTop;
 		} 
 		while (InterlockedCompareExchange64((LONG64*)&_top, (LONG64)newNode, (LONG64)lastTop) != (LONG64)lastTop);
+
+		InterlockedIncrement((long*)(&newNode->New));
 	}
 
 	void Pop(void)
@@ -35,6 +38,8 @@ public:
 			newTop = _top->Next;
 		}
 		while (InterlockedCompareExchange64((LONG64*)&_top, (LONG64)newTop, (LONG64)lastTop) != (LONG64)lastTop);
+
+		InterlockedIncrement((long*)(&lastTop->Delete));
 
 		delete lastTop;
 	}

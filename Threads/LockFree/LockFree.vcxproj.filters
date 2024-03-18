@@ -11,7 +11,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="LockFree.h">
+    <ClInclude Include="LockFreeStack.h">
       <Filter>LockFree</Filter>
     </ClInclude>
   </ItemGroup>

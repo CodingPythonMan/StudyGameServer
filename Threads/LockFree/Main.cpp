@@ -1,18 +1,18 @@
-#include "LockFree.h"
+#include "LockFreeStack.h"
 #include <process.h>
 #include <windows.h>
 
-LockFree<int> lockFree;
+LockFreeStack<int> lockFreeStack;
 
 unsigned int WorkerThread(LPVOID lpParam)
 {
 	while (1)
 	{
-		for (int i=0; i<1000; i++)
-			lockFree.Push(i);
+		for (int i=0; i<1000000; i++)
+			lockFreeStack.Push(i);
 
-		for (int i=0; i<1000; i++)
-			lockFree.Pop();
+		for (int i=0; i<1000000; i++)
+			lockFreeStack.Pop();
 	}
 
 	return 0;
