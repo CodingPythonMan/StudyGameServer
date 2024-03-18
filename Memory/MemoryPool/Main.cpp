@@ -1,104 +1,38 @@
-#include <iostream>
-#include "MemoryPool.h"
-#include "Player.h"
-#include <Windows.h>
+#include "MemoryPoolTest.h"
+#include <process.h>
 
-#pragma comment(lib, "winmm.lib")
+struct Data {
+	int index;
+	int data;
+};
 
-MemoryPool<Player> PlayerPool(3, true);
+MemoryPool<Data> dataPool;
 
-void Test1()
+unsigned int WINAPI WorkerThread(LPVOID lpParam)
 {
-	Player* p1 = PlayerPool.Alloc();
-	PlayerPool.Free(p1);
+	Data* datas[1000];
 
-	Player* p2 = PlayerPool.Alloc();
-	Player* p3 = PlayerPool.Alloc();
-	Player* p4 = PlayerPool.Alloc();
-	PlayerPool.Free(p3);
-	PlayerPool.Free(p4);
-	PlayerPool.Free(p2);
-}
-
-void Test2()
-{
-	Player* p1 = new Player;
-	delete p1;
-
-	Player* p2 = new Player;
-	Player* p3 = new Player;
-	Player* p4 = new Player;
-	delete p3;
-	delete p4;
-	delete p2;
-}
-
-void Performance()
-{
-	timeBeginPeriod(1);
-	unsigned int currentTime = timeGetTime();
-	int CallCount = 0;
-	while (timeGetTime() - currentTime < 1000)
+	while (1)
 	{
-		Test1();
-		CallCount++;
+		for(int i=0; i<1000; i++)
+			datas[i] = dataPool.Alloc();
+
+		for (int i = 0; i < 1000; i++)
+			dataPool.Free(datas[i]);
 	}
-	printf("[MemoryPool Test] : %d\n", CallCount);
 
-	currentTime = timeGetTime();
-	CallCount = 0;
-	while (timeGetTime() - currentTime < 1000)
-	{
-		Test2();
-		CallCount++;
-	}
-	printf("[Heap Test] : %d\n", CallCount);
-}
-
-void BasicTest()
-{
-	printf("Player Size : %d\n", (int)sizeof(Player));
-
-	Player* p1 = PlayerPool.Alloc();
-	p1->Move(3, 5);
-	p1->MakeName("HHHaaa");
-
-	Player* p3 = PlayerPool.Alloc();
-	PlayerPool.Free(p3);
-	p3 = PlayerPool.Alloc();
-	PlayerPool.Free(p3);
-	p3 = PlayerPool.Alloc();
-	PlayerPool.Free(p3);
-	p3 = PlayerPool.Alloc();
-	p3->Move(3, 5);
-	p3->MakeName("HHHaaa");
-	PlayerPool.Free(p3);
-	p3 = PlayerPool.Alloc();
-	PlayerPool.Free(p3);
-	p3 = PlayerPool.Alloc();
-	PlayerPool.Free(p3);
-
-	Player* p2 = PlayerPool.Alloc();
-	Player* p4 = PlayerPool.Alloc();
-	Player* p5 = PlayerPool.Alloc();
-	Player* p6 = PlayerPool.Alloc();
-	p2->Move(3, 5);
-	p2->MakeName("HHHaaa");
-	p1->Move(3, 5);
-	p1->MakeName("HHHaaa");
-
-	p5->Move(3, 5);
-	p6->MakeName("HHHaaa");
-	p4->MakeName("HHHaaa");
-
-	PlayerPool.Free(p2);
-	PlayerPool.Free(p1);
-	PlayerPool.Free(p4);
-	PlayerPool.Free(p5);
-	PlayerPool.Free(p6);
+	return 0;
 }
 
 int main()
 {
-	Performance();
+	//Performance();
+
+	HANDLE Threads[5];
+	for (int i = 0; i < 5; i++)
+	{
+		Threads[i] = (HANDLE)_beginthreadex(nullptr, 0, WorkerThread, nullptr, 0, nullptr);
+	}
+
+	WaitForMultipleObjects(5, Threads, true, INFINITE);
 }

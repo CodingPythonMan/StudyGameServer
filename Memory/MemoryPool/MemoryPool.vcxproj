@@ -128,11 +128,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MemoryPoolTest.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="RawMemoryPool.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MemoryPool.h" />
+    <ClInclude Include="MemoryPoolTest.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="RawMemoryPool.h" />
   </ItemGroup>

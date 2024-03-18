@@ -21,6 +21,9 @@
     <ClCompile Include="RawMemoryPool.cpp">
       <Filter>MemoryPool</Filter>
     </ClCompile>
+    <ClCompile Include="MemoryPoolTest.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MemoryPool.h">
@@ -31,6 +34,9 @@
     </ClInclude>
     <ClInclude Include="RawMemoryPool.h">
       <Filter>MemoryPool</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPoolTest.h">
+      <Filter>Main</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
