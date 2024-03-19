@@ -18,9 +18,6 @@
     <ClCompile Include="Player.cpp">
       <Filter>Example</Filter>
     </ClCompile>
-    <ClCompile Include="RawMemoryPool.cpp">
-      <Filter>MemoryPool</Filter>
-    </ClCompile>
     <ClCompile Include="MemoryPoolTest.cpp">
       <Filter>Main</Filter>
     </ClCompile>
@@ -31,9 +28,6 @@
     </ClInclude>
     <ClInclude Include="Player.h">
       <Filter>Example</Filter>
-    </ClInclude>
-    <ClInclude Include="RawMemoryPool.h">
-      <Filter>MemoryPool</Filter>
     </ClInclude>
     <ClInclude Include="MemoryPoolTest.h">
       <Filter>Main</Filter>

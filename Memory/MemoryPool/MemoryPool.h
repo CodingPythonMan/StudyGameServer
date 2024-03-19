@@ -134,6 +134,47 @@ inline T* MemoryPool<T>::Alloc(void)
 		_FreeNode = _FreeNode->Next;
 		_Capacity--;
 	}
+
+	T* ptr;
+	Node* newFree;
+	Node* lastFree;
+
+	if (_Capacity <= 0)
+	{
+		newFree = (Node*)malloc(sizeof(Node));
+#ifdef _DEBUG
+		if (_FreeNode == nullptr)
+			return nullptr;
+
+		_FreeNode->First = this;
+		_FreeNode->Last = this;
+#endif
+		ptr = &_FreeNode->Data;
+		new(ptr) T;
+
+		return ptr;
+	}
+	else
+	{
+		ptr = &_FreeNode->Data;
+		// Placement New 활성화라면 Alloc 에서 생성자 호출.
+		if (_PlacementNew == true)
+		{
+			new(ptr) T;
+		}
+		_FreeNode = _FreeNode->Next;
+		_Capacity--;
+	}
+
+
+	do
+	{
+		lastFree = _FreeNode;
+		newFree = _FreeNode->Next;
+		ptr = &_FreeNode->Data;
+
+	} 
+	while (InterlockedCompareExchange((LONG64*)&_FreeNode, (LONG64*)newFree, (LONG64*)lastFree) != (LONG64)lastFree);
 	
 	_UseCount++;
 
