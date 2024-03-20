@@ -32,5 +32,8 @@
     <ClInclude Include="MemoryPoolTest.h">
       <Filter>Main</Filter>
     </ClInclude>
+    <ClInclude Include="ThreadUnsafeMemoryPool.h">
+      <Filter>MemoryPool</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

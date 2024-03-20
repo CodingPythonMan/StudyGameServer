@@ -10,14 +10,14 @@ MemoryPool<Data> dataPool;
 
 unsigned int WINAPI WorkerThread(LPVOID lpParam)
 {
-	Data* datas[1000];
+	Data** datas = new Data*[100000];
 
 	while (1)
 	{
-		for(int i=0; i<1000; i++)
+		for(int i=0; i<100000; i++)
 			datas[i] = dataPool.Alloc();
 
-		for (int i = 0; i < 1000; i++)
+		for (int i = 0; i < 100000; i++)
 			dataPool.Free(datas[i]);
 	}
 
@@ -27,6 +27,7 @@ unsigned int WINAPI WorkerThread(LPVOID lpParam)
 int main()
 {
 	//Performance();
+	//BasicTest();
 
 	HANDLE Threads[5];
 	for (int i = 0; i < 5; i++)

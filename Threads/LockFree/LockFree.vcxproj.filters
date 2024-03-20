@@ -9,9 +9,15 @@
     <ClCompile Include="Main.cpp">
       <Filter>LockFree</Filter>
     </ClCompile>
+    <ClCompile Include="MyList.h">
+      <Filter>LockFree</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LockFreeStack.h">
+      <Filter>LockFree</Filter>
+    </ClInclude>
+    <ClInclude Include="History.h">
       <Filter>LockFree</Filter>
     </ClInclude>
   </ItemGroup>

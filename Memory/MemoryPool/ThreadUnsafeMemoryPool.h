@@ -1,7 +1,5 @@
-#include <windows.h>
-
 template <class T>
-class MemoryPool
+class ThreadUnsafeMemoryPool
 {
 public:
 #ifdef _DEBUG
@@ -27,8 +25,8 @@ public:
 	//				(bool) Alloc 시 생성자 / Free 시 파괴자 호출 여부
 	// Return:
 	//////////////////////////////////////////////////////////////////////////
-	MemoryPool(int BlockNum = 0, bool PlacementNew = false);
-	virtual	~MemoryPool();
+	ThreadUnsafeMemoryPool(int BlockNum = 0, bool PlacementNew = false);
+	virtual	~ThreadUnsafeMemoryPool();
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -73,7 +71,7 @@ private:
 };
 
 template<class T>
-inline MemoryPool<T>::MemoryPool(int BlockNum, bool PlacementNew)
+inline ThreadUnsafeMemoryPool<T>::ThreadUnsafeMemoryPool(int BlockNum, bool PlacementNew)
 {
 	_FreeNode = nullptr;
 	_Capacity = BlockNum;
@@ -102,22 +100,19 @@ inline MemoryPool<T>::MemoryPool(int BlockNum, bool PlacementNew)
 }
 
 template<class T>
-inline MemoryPool<T>::~MemoryPool()
+inline ThreadUnsafeMemoryPool<T>::~ThreadUnsafeMemoryPool()
 {
-	
+
 }
 
 template<class T>
-inline T* MemoryPool<T>::Alloc(void)
+inline T* ThreadUnsafeMemoryPool<T>::Alloc(void)
 {
 	T* ptr;
 
-	Node* newFree = nullptr;
-	Node* lastFree;
-	
 	if (_Capacity <= 0)
 	{
-		newFree = (Node*)malloc(sizeof(Node));
+		_FreeNode = (Node*)malloc(sizeof(Node));
 #ifdef _DEBUG
 		if (_FreeNode == nullptr)
 			return nullptr;
@@ -125,46 +120,28 @@ inline T* MemoryPool<T>::Alloc(void)
 		_FreeNode->First = this;
 		_FreeNode->Last = this;
 #endif
-		ptr = &newFree->Data;
+		ptr = &_FreeNode->Data;
 		new(ptr) T;
-
-		do
+	}
+	else
+	{
+		ptr = &_FreeNode->Data;
+		// Placement New 활성화라면 Alloc 에서 생성자 호출.
+		if (_PlacementNew == true)
 		{
-			lastFree = _FreeNode;
-			newFree->Next = lastFree;
-		} while (InterlockedCompareExchange64((LONG64*)&_FreeNode, (LONG64)newFree, (LONG64)lastFree) != (LONG64)lastFree);
-
-		//InterlockedIncrement((long*)&_UseCount);
-
-		return ptr;
+			new(ptr) T;
+		}
+		_FreeNode = _FreeNode->Next;
+		_Capacity--;
 	}
 
-	ptr = &_FreeNode->Data;
-	// Placement New 활성화라면 Alloc 에서 생성자 호출.
-	if (_PlacementNew == true)
-	{
-		new(ptr) T;
-	}
-
-	do
-	{
-		lastFree = _FreeNode;
-
-		if (_FreeNode == nullptr)
-			continue;
-
-		newFree = _FreeNode->Next;
-	} 
-	while (InterlockedCompareExchange64((LONG64*)&_FreeNode, (LONG64)newFree, (LONG64)lastFree) != (LONG64)lastFree);
-
-	//InterlockedIncrement((long*)&_UseCount);
-	//InterlockedDecrement((long*)&_Capacity);
+	_UseCount++;
 
 	return ptr;
 }
 
 template<class T>
-inline bool MemoryPool<T>::Free(T* pData)
+inline bool ThreadUnsafeMemoryPool<T>::Free(T* pData)
 {
 #ifdef _DEBUG
 	if (pData == nullptr)
@@ -184,20 +161,11 @@ inline bool MemoryPool<T>::Free(T* pData)
 	ptr->Next = _FreeNode;
 	_FreeNode = ptr;
 #else
-
-	Node* newFree = reinterpret_cast<Node*>(pData);
-	Node* lastFree;
-
-	do 
-	{
-		lastFree = _FreeNode;
-		newFree->Next = lastFree;
-	} 
-	while (InterlockedCompareExchange64((LONG64*)&_FreeNode, (LONG64)newFree, (LONG64)lastFree) != (LONG64)lastFree);
-
+	reinterpret_cast<Node*>(pData)->Next = _FreeNode;
+	_FreeNode = reinterpret_cast<Node*>(pData);
 #endif
-	//InterlockedDecrement((long*)&_UseCount);
-	//InterlockedIncrement((long*)&_Capacity);
+	_UseCount--;
+	_Capacity++;
 
 	return true;
 }

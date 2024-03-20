@@ -137,6 +137,7 @@
     <ClInclude Include="MemoryPool.h" />
     <ClInclude Include="MemoryPoolTest.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="ThreadUnsafeMemoryPool.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
