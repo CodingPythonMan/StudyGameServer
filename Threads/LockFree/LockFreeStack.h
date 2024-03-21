@@ -1,6 +1,15 @@
 #pragma once
-#include "History.h"
+#include <windows.h>
+#include <stdio.h>
 #include "MyList.h"
+
+#include <excpt.h>
+
+struct History {
+	int Action;
+	LONG64 newNode;
+	LONG64 lastNode;
+};
 
 template<typename T>
 class LockFreeStack
@@ -20,11 +29,11 @@ public:
 
 	void Push(T& data)
 	{
-		MyList<History>* myList = (MyList*)TlsGetValue(TLSIndex);
+		MyList<History>* myList = (MyList<History>*)TlsGetValue(TLSIndex);
 		if (myList == nullptr)
 		{
 			myList = new MyList<History>();
-			TlsGetValue(TLSIndex, (LPVOID)myList);
+			TlsSetValue(TLSIndex, (LPVOID)myList);
 		}
 
 		Node* newNode = new Node();
@@ -37,30 +46,61 @@ public:
 			newNode->Next = lastTop;
 		} 
 		while (InterlockedCompareExchange64((LONG64*)&_top, (LONG64)newNode, (LONG64)lastTop) != (LONG64)lastTop);
+	
+		History history;
+		history.Action = 0;
+		history.newNode = (LONG64)newNode;
+		history.lastNode = (LONG64)lastTop;
+		myList->push_back(history);
 	}
 
 	void Pop(void)
 	{
-		Node* lastTop;
-		Node* newTop = nullptr;
-		do
+		MyList<History>* myList;
+		History history;
+
+		__try
 		{
-			lastTop = _top;
+			myList = (MyList<History>*)TlsGetValue(TLSIndex);
+			if (myList == nullptr)
+			{
+				myList = new MyList<History>();
+				TlsSetValue(TLSIndex, (LPVOID)myList);
+			}
 
-			if (_top == nullptr)
-				continue;
+			Node* lastTop;
+			Node* newTop = nullptr;
+			do
+			{
+				lastTop = _top;
 
-			newTop = _top->Next;
+				if (_top == nullptr)
+					continue;
+
+				newTop = _top->Next;
+			} while (InterlockedCompareExchange64((LONG64*)&_top, (LONG64)newTop, (LONG64)lastTop) != (LONG64)lastTop);
+
+			history.Action = 1;
+			history.newNode = (LONG64)newTop;
+			history.lastNode = (LONG64)lastTop;
+			myList->push_back(history);
+
+			//delete lastTop;
+			Delete(lastTop);
 		}
-		while (InterlockedCompareExchange64((LONG64*)&_top, (LONG64)newTop, (LONG64)lastTop) != (LONG64)lastTop);
-
-		__try {
-
+		__except (EXCEPTION_EXECUTE_HANDLER)
+		{
+			unsigned int gc = GetCurrentThreadId();
+			while (myList->empty() == false)
+			{
+				printf("Thread ID : %d, Action : %d, newNode : %lld, lastNode : %lld\n", gc, history.Action, history.newNode, history.lastNode);
+			}
 		}
-		__finally {
+	}
 
-		}
-		delete lastTop;
+	void Delete(Node* node)
+	{
+		delete node;
 	}
 
 private:

@@ -17,8 +17,5 @@
     <ClInclude Include="LockFreeStack.h">
       <Filter>LockFree</Filter>
     </ClInclude>
-    <ClInclude Include="History.h">
-      <Filter>LockFree</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

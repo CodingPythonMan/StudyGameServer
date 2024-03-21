@@ -132,7 +132,8 @@ inline T* MemoryPool<T>::Alloc(void)
 		{
 			lastFree = _FreeNode;
 			newFree->Next = lastFree;
-		} while (InterlockedCompareExchange64((LONG64*)&_FreeNode, (LONG64)newFree, (LONG64)lastFree) != (LONG64)lastFree);
+		} 
+		while (InterlockedCompareExchange64((LONG64*)&_FreeNode, (LONG64)newFree, (LONG64)lastFree) != (LONG64)lastFree);
 
 		//InterlockedIncrement((long*)&_UseCount);
 

@@ -23,7 +23,6 @@
     <ClCompile Include="MyList.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="History.h" />
     <ClInclude Include="LockFreeStack.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
