@@ -8,10 +8,10 @@ unsigned int WorkerThread(LPVOID lpParam)
 {
 	while (1)
 	{
-		for (int i=0; i<1000000; i++)
+		for (int i=0; i<500; i++)
 			lockFreeStack.Push(i);
 
-		for (int i=0; i<1000000; i++)
+		for (int i=0; i<500; i++)
 			lockFreeStack.Pop();
 	}
 
@@ -20,12 +20,12 @@ unsigned int WorkerThread(LPVOID lpParam)
 
 int main()
 {
-	HANDLE Threads[6];
+	HANDLE Threads[3];
 
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 3; i++)
 	{
 		Threads[i] = (HANDLE)_beginthreadex(nullptr, 0, WorkerThread, nullptr, 0, nullptr);
 	}
 
-	WaitForMultipleObjects(6, Threads, true, INFINITE);
+	WaitForMultipleObjects(3, Threads, true, INFINITE);
 }

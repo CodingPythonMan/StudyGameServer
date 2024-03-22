@@ -56,51 +56,33 @@ public:
 
 	void Pop(void)
 	{
-		MyList<History>* myList;
+		MyList<History>* myList = (MyList<History>*)TlsGetValue(TLSIndex);
 		History history;
 
-		__try
+		if (myList == nullptr)
 		{
-			myList = (MyList<History>*)TlsGetValue(TLSIndex);
-			if (myList == nullptr)
-			{
-				myList = new MyList<History>();
-				TlsSetValue(TLSIndex, (LPVOID)myList);
-			}
-
-			Node* lastTop;
-			Node* newTop = nullptr;
-			do
-			{
-				lastTop = _top;
-
-				if (_top == nullptr)
-					continue;
-
-				newTop = _top->Next;
-			} while (InterlockedCompareExchange64((LONG64*)&_top, (LONG64)newTop, (LONG64)lastTop) != (LONG64)lastTop);
-
-			history.Action = 1;
-			history.newNode = (LONG64)newTop;
-			history.lastNode = (LONG64)lastTop;
-			myList->push_back(history);
-
-			//delete lastTop;
-			Delete(lastTop);
+			myList = new MyList<History>();
+			TlsSetValue(TLSIndex, (LPVOID)myList);
 		}
-		__except (EXCEPTION_EXECUTE_HANDLER)
+
+		Node* lastTop;
+		Node* newTop = nullptr;
+		do
 		{
-			unsigned int gc = GetCurrentThreadId();
-			while (myList->empty() == false)
-			{
-				printf("Thread ID : %d, Action : %d, newNode : %lld, lastNode : %lld\n", gc, history.Action, history.newNode, history.lastNode);
-			}
-		}
-	}
+			lastTop = _top;
 
-	void Delete(Node* node)
-	{
-		delete node;
+			if (_top == nullptr)
+				continue;
+
+			newTop = _top->Next;
+		} while (InterlockedCompareExchange64((LONG64*)&_top, (LONG64)newTop, (LONG64)lastTop) != (LONG64)lastTop);
+
+		history.Action = 1;
+		history.newNode = (LONG64)newTop;
+		history.lastNode = (LONG64)lastTop;
+		myList->push_back(history);
+
+		delete lastTop;
 	}
 
 private:

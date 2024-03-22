@@ -118,10 +118,11 @@ inline T* MemoryPool<T>::Alloc(void)
 	if (_Capacity <= 0)
 	{
 		newFree = (Node*)malloc(sizeof(Node));
-#ifdef _DEBUG
-		if (_FreeNode == nullptr)
+
+		if (newFree == nullptr)
 			return nullptr;
 
+#ifdef _DEBUG
 		_FreeNode->First = this;
 		_FreeNode->Last = this;
 #endif
