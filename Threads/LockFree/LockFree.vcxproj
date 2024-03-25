@@ -21,9 +21,13 @@
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MyList.h" />
+    <ClCompile Include="Test.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="LockFreeQueue.h" />
     <ClInclude Include="LockFreeStack.h" />
+    <ClInclude Include="MemoryPool.h" />
+    <ClInclude Include="Test.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -2,8 +2,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include "MyList.h"
-
-#include <excpt.h>
+#include "MemoryPool.h"
 
 struct History {
 	int Action;
@@ -24,6 +23,7 @@ class LockFreeStack
 public:
 	LockFreeStack()
 	{
+		_top = nullptr;
 		TLSIndex = TlsAlloc();
 	}
 
@@ -36,7 +36,8 @@ public:
 			TlsSetValue(TLSIndex, (LPVOID)myList);
 		}
 
-		Node* newNode = new Node();
+		//Node* newNode = new Node();
+		Node* newNode = _nodePool.Alloc();
 		newNode->Data = data;
 
 		Node* lastTop;
@@ -52,6 +53,8 @@ public:
 		history.newNode = (LONG64)newNode;
 		history.lastNode = (LONG64)lastTop;
 		myList->push_back(history);
+
+		InterlockedIncrement((long*)&_size);
 	}
 
 	void Pop(void)
@@ -82,12 +85,23 @@ public:
 		history.lastNode = (LONG64)lastTop;
 		myList->push_back(history);
 
-		delete lastTop;
+		_nodePool.Free(lastTop);
+		//delete lastTop;
+
+		InterlockedDecrement((long*)&_size);
+	}
+
+	int GetSize()
+	{
+		return _size;
 	}
 
 private:
 	Node* _top;
 
 	int TLSIndex;
+	MemoryPool<Node> _nodePool;
+
+	int _size;
 };
 

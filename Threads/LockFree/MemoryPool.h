@@ -1,5 +1,6 @@
 #pragma once
 #include <windows.h>
+#include <new>
 
 template <class T>
 class MemoryPool
@@ -105,7 +106,7 @@ inline MemoryPool<T>::MemoryPool(int BlockNum, bool PlacementNew)
 template<class T>
 inline MemoryPool<T>::~MemoryPool()
 {
-	
+
 }
 
 template<class T>
@@ -115,7 +116,7 @@ inline T* MemoryPool<T>::Alloc(void)
 
 	Node* newFree = nullptr;
 	Node* lastFree;
-	
+
 	if (_Capacity <= 0)
 	{
 		newFree = (Node*)malloc(sizeof(Node));
@@ -134,8 +135,7 @@ inline T* MemoryPool<T>::Alloc(void)
 		{
 			lastFree = _FreeNode;
 			newFree->Next = lastFree;
-		} 
-		while (InterlockedCompareExchange64((LONG64*)&_FreeNode, (LONG64)newFree, (LONG64)lastFree) != (LONG64)lastFree);
+		} while (InterlockedCompareExchange64((LONG64*)&_FreeNode, (LONG64)newFree, (LONG64)lastFree) != (LONG64)lastFree);
 
 		InterlockedIncrement((long*)&_UseCount);
 
@@ -157,8 +157,7 @@ inline T* MemoryPool<T>::Alloc(void)
 			continue;
 
 		newFree = _FreeNode->Next;
-	} 
-	while (InterlockedCompareExchange64((LONG64*)&_FreeNode, (LONG64)newFree, (LONG64)lastFree) != (LONG64)lastFree);
+	} while (InterlockedCompareExchange64((LONG64*)&_FreeNode, (LONG64)newFree, (LONG64)lastFree) != (LONG64)lastFree);
 
 	InterlockedIncrement((long*)&_UseCount);
 	InterlockedDecrement((long*)&_Capacity);
@@ -191,12 +190,11 @@ inline bool MemoryPool<T>::Free(T* pData)
 	Node* newFree = reinterpret_cast<Node*>(pData);
 	Node* lastFree;
 
-	do 
+	do
 	{
 		lastFree = _FreeNode;
 		newFree->Next = lastFree;
-	} 
-	while (InterlockedCompareExchange64((LONG64*)&_FreeNode, (LONG64)newFree, (LONG64)lastFree) != (LONG64)lastFree);
+	} while (InterlockedCompareExchange64((LONG64*)&_FreeNode, (LONG64)newFree, (LONG64)lastFree) != (LONG64)lastFree);
 
 #endif
 	InterlockedDecrement((long*)&_UseCount);
