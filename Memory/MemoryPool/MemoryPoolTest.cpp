@@ -55,28 +55,46 @@ void BasicTest()
 	printf("Player Size : %d\n", (int)sizeof(Player));
 
 	Player* p1 = PlayerPool.Alloc();
+	printf("첫번째 Alloc 주소 : 0x%p\n", p1);
+
 	p1->Move(3, 5);
 	p1->MakeName("HHHaaa");
 
 	Player* p3 = PlayerPool.Alloc();
+	printf("두번째 Alloc 주소 : 0x%p\n", p3);
 	PlayerPool.Free(p3);
+	printf("두번째 Free 주소 : 0x%p\n", p3);
 	p3 = PlayerPool.Alloc();
+	printf("두번째 Alloc 주소 : 0x%p\n", p3);
 	PlayerPool.Free(p3);
+	printf("두번째 Free 주소 : 0x%p\n", p3);
 	p3 = PlayerPool.Alloc();
+	printf("두번째 Alloc 주소 : 0x%p\n", p3);
 	PlayerPool.Free(p3);
+	printf("두번째 Free 주소 : 0x%p\n", p3);
 	p3 = PlayerPool.Alloc();
+	printf("두번째 Alloc 주소 : 0x%p\n", p3);
 	p3->Move(3, 5);
 	p3->MakeName("HHHaaa");
 	PlayerPool.Free(p3);
+	printf("두번째 Free 주소 : 0x%p\n", p3);
 	p3 = PlayerPool.Alloc();
+	printf("두번째 Alloc 주소 : 0x%p\n", p3);
 	PlayerPool.Free(p3);
+	printf("두번째 Free 주소 : 0x%p\n", p3);
 	p3 = PlayerPool.Alloc();
+	printf("두번째 Alloc 주소 : 0x%p\n", p3);
 	PlayerPool.Free(p3);
+	printf("두번째 Free 주소 : 0x%p\n", p3);
 
 	Player* p2 = PlayerPool.Alloc();
+	printf("두번째 Alloc 주소 : 0x%p\n", p2);
 	Player* p4 = PlayerPool.Alloc();
+	printf("세번째 Alloc 주소 : 0x%p\n", p4);
 	Player* p5 = PlayerPool.Alloc();
+	printf("네번째 Alloc 주소 : 0x%p\n", p5);
 	Player* p6 = PlayerPool.Alloc();
+	printf("다섯번째 Alloc 주소 : 0x%p\n", p6);
 	p2->Move(3, 5);
 	p2->MakeName("HHHaaa");
 	p1->Move(3, 5);
@@ -87,8 +105,13 @@ void BasicTest()
 	p4->MakeName("HHHaaa");
 
 	PlayerPool.Free(p2);
+	printf("두번째 Free 주소 : 0x%p\n", p2);
 	PlayerPool.Free(p1);
+	printf("첫번째 Free 주소 : 0x%p\n", p1);
 	PlayerPool.Free(p4);
+	printf("세번째 Free 주소 : 0x%p\n", p4);
 	PlayerPool.Free(p5);
+	printf("네번째 Free 주소 : 0x%p\n", p5);
 	PlayerPool.Free(p6);
+	printf("다섯번째 Free 주소 : 0x%p\n", p6);
 }

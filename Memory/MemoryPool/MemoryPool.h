@@ -84,10 +84,11 @@ inline MemoryPool<T>::MemoryPool(int BlockNum, bool PlacementNew)
 	for (int i = 0; i < _Capacity; i++)
 	{
 		Node* node = (Node*)malloc(sizeof(Node));
-#ifdef _DEBUG
+
 		if (node == nullptr)
 			return;
 
+#ifdef _DEBUG
 		node->First = this;
 		node->Last = this;
 #endif
