@@ -1,11 +1,10 @@
 #pragma once
 #include <windows.h>
 #include <stdio.h>
-#include "MyList.h"
 #include "MemoryPool.h"
 
 struct History {
-	int Action;
+	unsigned int Action;
 	LONG64 newNode;
 	LONG64 lastNode;
 };
@@ -16,8 +15,6 @@ class LockFreeStack
 	struct Node {
 		Node* Next;
 		T Data;
-		int New;
-		int Delete;
 	};
 
 public:
@@ -25,19 +22,31 @@ public:
 	{
 		_top = nullptr;
 		TLSIndex = TlsAlloc();
+		if (TLSIndex == TLS_OUT_OF_INDEXES)
+			__debugbreak();
+
+		TLSArray = TlsAlloc();
+		if (TLSArray == TLS_OUT_OF_INDEXES)
+			__debugbreak();
+
+		_size = 0;
 	}
 
 	void Push(T& data)
 	{
-		MyList<History>* myList = (MyList<History>*)TlsGetValue(TLSIndex);
-		if (myList == nullptr)
+		History* myArray = (History*)TlsGetValue(TLSArray);
+		unsigned int* myIndex = (unsigned int*)TlsGetValue(TLSIndex);
+		if (myArray == nullptr)
 		{
-			myList = new MyList<History>();
-			TlsSetValue(TLSIndex, (LPVOID)myList);
+			myArray = new History[3000];
+			myIndex = new unsigned int;
+			*myIndex = 0;
+			TlsSetValue(TLSArray, (LPVOID)myArray);
+			TlsSetValue(TLSIndex, (LPVOID)myIndex);
 		}
 
-		//Node* newNode = new Node();
-		Node* newNode = _nodePool.Alloc();
+		Node* newNode = new Node();
+		//Node* newNode = _nodePool.Alloc();
 		newNode->Data = data;
 
 		Node* lastTop;
@@ -48,24 +57,25 @@ public:
 		} 
 		while (InterlockedCompareExchange64((LONG64*)&_top, (LONG64)newNode, (LONG64)lastTop) != (LONG64)lastTop);
 	
-		History history;
-		history.Action = 0;
-		history.newNode = (LONG64)newNode;
-		history.lastNode = (LONG64)lastTop;
-		myList->push_back(history);
+		myArray[*myIndex].Action = 0;
+		myArray[*myIndex].newNode = (LONG64)newNode;
+		myArray[*myIndex].lastNode = (LONG64)lastTop;
 
 		InterlockedIncrement((long*)&_size);
+		(*myIndex)++;
 	}
 
 	void Pop(void)
 	{
-		MyList<History>* myList = (MyList<History>*)TlsGetValue(TLSIndex);
-		History history;
-
-		if (myList == nullptr)
+		History* myArray = (History*)TlsGetValue(TLSArray);
+		unsigned int* myIndex = (unsigned int*)TlsGetValue(TLSIndex);
+		if (myArray == nullptr)
 		{
-			myList = new MyList<History>();
-			TlsSetValue(TLSIndex, (LPVOID)myList);
+			myArray = new History[3000];
+			myIndex = new unsigned int;
+			*myIndex = 0;
+			TlsSetValue(TLSArray, (LPVOID)myArray);
+			TlsSetValue(TLSIndex, (LPVOID)myIndex);
 		}
 
 		Node* lastTop;
@@ -80,15 +90,15 @@ public:
 			newTop = _top->Next;
 		} while (InterlockedCompareExchange64((LONG64*)&_top, (LONG64)newTop, (LONG64)lastTop) != (LONG64)lastTop);
 
-		history.Action = 1;
-		history.newNode = (LONG64)newTop;
-		history.lastNode = (LONG64)lastTop;
-		myList->push_back(history);
+		myArray[*myIndex].Action = 1;
+		myArray[*myIndex].newNode = (LONG64)newTop;
+		myArray[*myIndex].lastNode = (LONG64)lastTop;
 
-		_nodePool.Free(lastTop);
-		//delete lastTop;
+		//_nodePool.Free(lastTop);
+		delete lastTop;
 
 		InterlockedDecrement((long*)&_size);
+		(*myIndex)++;
 	}
 
 	int GetSize()
@@ -100,7 +110,8 @@ private:
 	Node* _top;
 
 	int TLSIndex;
-	MemoryPool<Node> _nodePool;
+	int TLSArray;
+	//MemoryPool<Node> _nodePool;
 
 	int _size;
 };
