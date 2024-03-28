@@ -38,7 +38,7 @@ public:
 		unsigned int* myIndex = (unsigned int*)TlsGetValue(TLSIndex);
 		if (myArray == nullptr)
 		{
-			myArray = new History[3000];
+			myArray = new History[10000];
 			myIndex = new unsigned int;
 			*myIndex = 0;
 			TlsSetValue(TLSArray, (LPVOID)myArray);
@@ -71,7 +71,7 @@ public:
 		unsigned int* myIndex = (unsigned int*)TlsGetValue(TLSIndex);
 		if (myArray == nullptr)
 		{
-			myArray = new History[3000];
+			myArray = new History[10000];
 			myIndex = new unsigned int;
 			*myIndex = 0;
 			TlsSetValue(TLSArray, (LPVOID)myArray);
@@ -85,7 +85,7 @@ public:
 			lastTop = _top;
 
 			if (_top == nullptr)
-				continue;
+				return;
 
 			newTop = _top->Next;
 		} while (InterlockedCompareExchange64((LONG64*)&_top, (LONG64)newTop, (LONG64)lastTop) != (LONG64)lastTop);
