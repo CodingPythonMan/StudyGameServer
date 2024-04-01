@@ -4,6 +4,7 @@
 #include "MemoryPool.h"
 
 struct History {
+	unsigned int SequenceNum;
 	unsigned int Action;
 	LONG64 newNode;
 	LONG64 lastNode;
@@ -30,6 +31,7 @@ public:
 			__debugbreak();
 
 		_size = 0;
+		_SequenceNum = 0;
 	}
 
 	void Push(T& data)
@@ -57,6 +59,9 @@ public:
 		} 
 		while (InterlockedCompareExchange64((LONG64*)&_top, (LONG64)newNode, (LONG64)lastTop) != (LONG64)lastTop);
 	
+		InterlockedIncrement((long*)&_SequenceNum);
+
+		myArray[*myIndex].SequenceNum = _SequenceNum;
 		myArray[*myIndex].Action = 0;
 		myArray[*myIndex].newNode = (LONG64)newNode;
 		myArray[*myIndex].lastNode = (LONG64)lastTop;
@@ -88,8 +93,12 @@ public:
 				return;
 
 			newTop = _top->Next;
-		} while (InterlockedCompareExchange64((LONG64*)&_top, (LONG64)newTop, (LONG64)lastTop) != (LONG64)lastTop);
+		} 
+		while (InterlockedCompareExchange64((LONG64*)&_top, (LONG64)newTop, (LONG64)lastTop) != (LONG64)lastTop);
 
+		InterlockedIncrement((long*)&_SequenceNum);
+
+		myArray[*myIndex].SequenceNum = _SequenceNum;
 		myArray[*myIndex].Action = 1;
 		myArray[*myIndex].newNode = (LONG64)newTop;
 		myArray[*myIndex].lastNode = (LONG64)lastTop;
@@ -114,5 +123,8 @@ private:
 	//MemoryPool<Node> _nodePool;
 
 	int _size;
+
+	// Log ¿ë
+	unsigned int _SequenceNum;
 };
 
