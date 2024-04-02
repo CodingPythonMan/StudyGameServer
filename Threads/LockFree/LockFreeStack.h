@@ -40,7 +40,7 @@ public:
 		unsigned int* myIndex = (unsigned int*)TlsGetValue(TLSIndex);
 		if (myArray == nullptr)
 		{
-			myArray = new History[10000];
+			myArray = new History[10000000];
 			myIndex = new unsigned int;
 			*myIndex = 0;
 			TlsSetValue(TLSArray, (LPVOID)myArray);
@@ -76,7 +76,7 @@ public:
 		unsigned int* myIndex = (unsigned int*)TlsGetValue(TLSIndex);
 		if (myArray == nullptr)
 		{
-			myArray = new History[10000];
+			myArray = new History[10000000];
 			myIndex = new unsigned int;
 			*myIndex = 0;
 			TlsSetValue(TLSArray, (LPVOID)myArray);
@@ -89,12 +89,17 @@ public:
 		{
 			lastTop = _top;
 
-			if (_top == nullptr)
+			if (lastTop == nullptr)
 				return;
 
-			newTop = _top->Next;
+			//newTop = _top->Next;
+			// 생각해보니 _top->Next 를 쓰는 건 굉장히 위험한 행위였다.
+			newTop = lastTop->Next;
 		} 
 		while (InterlockedCompareExchange64((LONG64*)&_top, (LONG64)newTop, (LONG64)lastTop) != (LONG64)lastTop);
+
+		if (lastTop == newTop)
+			__debugbreak();
 
 		InterlockedIncrement((long*)&_SequenceNum);
 

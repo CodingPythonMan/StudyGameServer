@@ -29,16 +29,16 @@ unsigned int StackWorkerThread(LPVOID lpParam)
 
 void LockFreeStackTestCode()
 {
-	HANDLE Threads[4];
+	HANDLE Threads[6];
 
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		Threads[i] = (HANDLE)_beginthreadex(nullptr, 0, StackWorkerThread, nullptr, 0, nullptr);
 	}
 
-	Threads[3] = (HANDLE)_beginthreadex(nullptr, 0, StackMonitorThread, nullptr, 0, nullptr);
+	Threads[5] = (HANDLE)_beginthreadex(nullptr, 0, StackMonitorThread, nullptr, 0, nullptr);
 
-	WaitForMultipleObjects(4, Threads, true, INFINITE);
+	WaitForMultipleObjects(6, Threads, true, INFINITE);
 }
 
 unsigned int QueueMonitorThread(LPVOID lpParam)
