@@ -47,8 +47,8 @@ public:
 			TlsSetValue(TLSIndex, (LPVOID)myIndex);
 		}
 
-		Node* newNode = new Node();
-		//Node* newNode = _nodePool.Alloc();
+		//Node* newNode = new Node();
+		Node* newNode = _nodePool.Alloc();
 		newNode->Data = data;
 
 		Node* lastTop;
@@ -108,8 +108,8 @@ public:
 		myArray[*myIndex].newNode = (LONG64)newTop;
 		myArray[*myIndex].lastNode = (LONG64)lastTop;
 
-		//_nodePool.Free(lastTop);
-		delete lastTop;
+		_nodePool.Free(lastTop);
+		//delete lastTop;
 
 		InterlockedDecrement((long*)&_size);
 		(*myIndex)++;
@@ -125,7 +125,7 @@ private:
 
 	int TLSIndex;
 	int TLSArray;
-	//MemoryPool<Node> _nodePool;
+	MemoryPool<Node> _nodePool;
 
 	int _size;
 

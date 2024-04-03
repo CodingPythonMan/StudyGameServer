@@ -2,32 +2,19 @@
 #include <windows.h>
 #include <new>
 
+#define NOT_TAGGING_BIT 48
+
 template <class T>
 class MemoryPool
 {
 public:
-#ifdef _DEBUG
-#pragma pack(push, 1)
-	struct Node {
-		void* First;
-		T Data;
-		void* Last;
-		Node* Next;
-	};
-#pragma pack(pop)
-#else
 	struct Node {
 		T Data;
 		Node* Next;
 	};
-#endif
 
 	//////////////////////////////////////////////////////////////////////////
 	// 생성자, 파괴자.
-	//
-	// Parameters:	(int) 초기 블럭 개수.
-	//				(bool) Alloc 시 생성자 / Free 시 파괴자 호출 여부
-	// Return:
 	//////////////////////////////////////////////////////////////////////////
 	MemoryPool(int BlockNum = 0, bool PlacementNew = false);
 	virtual	~MemoryPool();
@@ -35,49 +22,47 @@ public:
 
 	//////////////////////////////////////////////////////////////////////////
 	// 블럭 하나를 할당받는다.  
-	//
-	// Parameters: 없음.
-	// Return: (DATA *) 데이타 블럭 포인터.
 	//////////////////////////////////////////////////////////////////////////
 	T* Alloc(void);
 
 	//////////////////////////////////////////////////////////////////////////
 	// 사용중이던 블럭을 해제한다.
-	//
-	// Parameters: (DATA *) 블럭 포인터.
-	// Return: (BOOL) TRUE, FALSE.
 	//////////////////////////////////////////////////////////////////////////
 	bool	Free(T* pData);
 
 
 	//////////////////////////////////////////////////////////////////////////
 	// 현재 확보 된 블럭 개수를 얻는다. (메모리풀 내부의 전체 개수)
-	//
-	// Parameters: 없음.
-	// Return: (int) 메모리 풀 내부 전체 개수
 	//////////////////////////////////////////////////////////////////////////
 	int		GetCapacityCount(void) { return _Capacity; }
 
 	//////////////////////////////////////////////////////////////////////////
 	// 현재 사용중인 블럭 개수를 얻는다.
-	//
-	// Parameters: 없음.
-	// Return: (int) 사용중인 블럭 개수.
 	//////////////////////////////////////////////////////////////////////////
 	int		GetUseCount(void) { return _UseCount; }
+
+	//////////////////////////////////////////////////////////////////////////
+	// ABA 문제 해결용 Counter 추출
+	//////////////////////////////////////////////////////////////////////////
+	LONG64 GetCounter(LONG64 ptr) { return  static_cast<unsigned __int64>(ptr) >> NOT_TAGGING_BIT; }
+
+	//////////////////////////////////////////////////////////////////////////
+	// ABA 문제 해결용 Counter 셋팅
+	//////////////////////////////////////////////////////////////////////////
+	LONG64 SetCounter(LONG64 counter) { return  counter << NOT_TAGGING_BIT; }
 
 private:
 	int _Capacity;
 	int _UseCount;
 	bool _PlacementNew;
 	// 스택 방식으로 반환된 (미사용) 오브젝트 블럭을 관리.
-	Node* _FreeNode;
+	LONG64 _FreeNode;
 };
 
 template<class T>
 inline MemoryPool<T>::MemoryPool(int BlockNum, bool PlacementNew)
 {
-	_FreeNode = nullptr;
+	_FreeNode = 0;
 	_Capacity = BlockNum;
 	_PlacementNew = PlacementNew;
 	_UseCount = 0;
@@ -85,21 +70,20 @@ inline MemoryPool<T>::MemoryPool(int BlockNum, bool PlacementNew)
 	for (int i = 0; i < _Capacity; i++)
 	{
 		Node* node = (Node*)malloc(sizeof(Node));
-#ifdef _DEBUG
+
 		if (node == nullptr)
 			return;
 
-		node->First = this;
-		node->Last = this;
-#endif
 		// PlacementNew 가 활성화 안 되어있다면 생성자 호출
 		if (PlacementNew == false)
 		{
 			new(&node->Data) T;
 		}
 
-		node->Next = _FreeNode;
-		_FreeNode = node;
+		// 굳이 처음부터 태깅해둘 필요는 없다.
+		// CAS 가 일어나는 순간부터 태깅이 필요하다.
+		node->Next = reinterpret_cast<Node*>(_FreeNode);
+		_FreeNode = reinterpret_cast<LONG64>(node);
 	}
 }
 
@@ -114,50 +98,51 @@ inline T* MemoryPool<T>::Alloc(void)
 {
 	T* ptr;
 
-	Node* newFree = nullptr;
-	Node* lastFree;
+	LONG64 newFree;
+	LONG64 lastFree;
+	unsigned __int64 Counter;
 
-	if (_Capacity <= 0)
-	{
-		newFree = (Node*)malloc(sizeof(Node));
+	LONG64 ptrValue = _FreeNode;
+	ptrValue -= SetCounter(GetCounter(ptrValue));
+	ptr = &reinterpret_cast<Node*>(ptrValue)->Data;
 
-		if (newFree == nullptr)
-			return nullptr;
-
-#ifdef _DEBUG
-		_FreeNode->First = this;
-		_FreeNode->Last = this;
-#endif
-		ptr = &newFree->Data;
-		new(ptr) T;
-
-		do
-		{
-			lastFree = _FreeNode;
-			newFree->Next = lastFree;
-		} while (InterlockedCompareExchange64((LONG64*)&_FreeNode, (LONG64)newFree, (LONG64)lastFree) != (LONG64)lastFree);
-
-		InterlockedIncrement((long*)&_UseCount);
-
-		return ptr;
-	}
-
-	ptr = &_FreeNode->Data;
 	// Placement New 활성화라면 Alloc 에서 생성자 호출.
-	if (_PlacementNew == true)
+	if (ptrValue != NULL && _PlacementNew == true)
 	{
-		new(ptr) T;
+		new(reinterpret_cast<T*>(ptrValue)) T;
 	}
 
 	do
 	{
 		lastFree = _FreeNode;
 
-		if (_FreeNode == nullptr)
-			continue;
+		if (lastFree == NULL)
+		{
+			Node* newNode = (Node*)malloc(sizeof(Node));
 
-		newFree = _FreeNode->Next;
-	} while (InterlockedCompareExchange64((LONG64*)&_FreeNode, (LONG64)newFree, (LONG64)lastFree) != (LONG64)lastFree);
+			if (newNode == nullptr)
+				return nullptr;
+
+			ptr = &newNode->Data;
+			new(ptr) T;
+
+			do
+			{
+				lastFree = _FreeNode;
+				Counter = GetCounter(lastFree) + 1;
+				newNode->Next = reinterpret_cast<Node*>(lastFree);
+				// new Free 에 태깅
+				newFree = SetCounter(Counter) + reinterpret_cast<LONG64>(newNode);
+			} while (InterlockedCompareExchange64(&_FreeNode, newFree, lastFree) != lastFree);
+
+			InterlockedIncrement((long*)&_UseCount);
+
+			return ptr;
+		}
+
+		Node* newTop = reinterpret_cast<Node*>(lastFree - SetCounter(GetCounter(lastFree)));
+		newFree = reinterpret_cast<LONG64>(newTop->Next);
+	} while (InterlockedCompareExchange64(&_FreeNode, newFree, lastFree) != lastFree);
 
 	InterlockedIncrement((long*)&_UseCount);
 	InterlockedDecrement((long*)&_Capacity);
@@ -168,35 +153,23 @@ inline T* MemoryPool<T>::Alloc(void)
 template<class T>
 inline bool MemoryPool<T>::Free(T* pData)
 {
-#ifdef _DEBUG
-	if (pData == nullptr)
-	{
-		__debugbreak();
-		return false;
-	}
-	Node* ptr = reinterpret_cast<Node*>((char*)pData - sizeof(MemoryPool*));
+	LONG64 newFree;
+	LONG64 lastFree;
+	unsigned __int64 Counter;
 
-	if (ptr->First != this || ptr->Last != this)
-		__debugbreak();
-#endif
-
-	pData->~T();
-
-#ifdef _DEBUG
-	ptr->Next = _FreeNode;
-	_FreeNode = ptr;
-#else
-
-	Node* newFree = reinterpret_cast<Node*>(pData);
-	Node* lastFree;
+	newFree = reinterpret_cast<LONG64>(pData);
+	LONG64 ptr = newFree - SetCounter(GetCounter(newFree));
+	reinterpret_cast<T*>(ptr)->~T();
 
 	do
 	{
 		lastFree = _FreeNode;
-		newFree->Next = lastFree;
-	} while (InterlockedCompareExchange64((LONG64*)&_FreeNode, (LONG64)newFree, (LONG64)lastFree) != (LONG64)lastFree);
+		Counter = GetCounter(lastFree) + 1;
+		reinterpret_cast<Node*>(ptr)->Next = reinterpret_cast<Node*>(lastFree);
+		// new Free 에 태깅
+		newFree = ptr + SetCounter(Counter);
+	} while (InterlockedCompareExchange64(&_FreeNode, newFree, lastFree) != lastFree);
 
-#endif
 	InterlockedDecrement((long*)&_UseCount);
 	InterlockedIncrement((long*)&_Capacity);
 
