@@ -11,3 +11,4 @@ void Test2();
 void Performance();
 
 void BasicTest();
+void BasicTest02();

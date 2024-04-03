@@ -48,5 +48,7 @@ int main()
 	//Performance();
 	//BasicTest();
 
-	ThreadUse();
+	//ThreadUse();
+
+	BasicTest02();
 }

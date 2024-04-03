@@ -115,3 +115,20 @@ void BasicTest()
 	PlayerPool.Free(p6);
 	printf("促几锅掳 Free 林家 : 0x%p\n", p6);
 }
+
+void BasicTest02()
+{
+	Player** players
+
+	for (int i = 0; i < 1000; i++)
+	{
+		Player* p1 = PlayerPool.Alloc();
+		printf("%d锅掳 Alloc 林家 : 0x%p\n", i, p1);
+	}
+
+	for (int i = 0; i < 1000; i++)
+	{
+		Player* p1 = PlayerPool.Free();
+		printf("%d锅掳 Alloc 林家 : 0x%p\n", i, p1);
+	}
+}

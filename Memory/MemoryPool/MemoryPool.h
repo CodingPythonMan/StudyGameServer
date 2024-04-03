@@ -100,10 +100,8 @@ inline T* MemoryPool<T>::Alloc(void)
 
 	LONG64 newFree;
 	LONG64 lastFree;
-	unsigned __int64 Counter;
 
-	LONG64 ptrValue = _FreeNode;
-	ptrValue -= SetCounter(GetCounter(ptrValue));
+	LONG64 ptrValue = _FreeNode - SetCounter(GetCounter(_FreeNode));
 	ptr = &reinterpret_cast<Node*>(ptrValue)->Data;
 
 	// Placement New 활성화라면 Alloc 에서 생성자 호출.
@@ -125,16 +123,6 @@ inline T* MemoryPool<T>::Alloc(void)
 
 			ptr = &newNode->Data;
 			new(ptr) T;
-
-			do
-			{
-				lastFree = _FreeNode;
-				Counter = GetCounter(lastFree) + 1;
-				newNode->Next = reinterpret_cast<Node*>(lastFree);
-				// new Free 에 태깅
-				newFree = SetCounter(Counter) + reinterpret_cast<LONG64>(newNode);
-			} 
-			while (InterlockedCompareExchange64(&_FreeNode, newFree, lastFree) != lastFree);
 
 			InterlockedIncrement((long*)&_UseCount);
 
