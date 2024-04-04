@@ -56,9 +56,9 @@ void ThreadUse()
 int main()
 {
 	//Performance();
-	//BasicTest();
+	BasicTest();
 
-	ThreadUse();
+	//ThreadUse();
 
 	//BasicTest02();
 }

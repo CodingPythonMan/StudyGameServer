@@ -68,8 +68,8 @@ public:
 		} 
 		while (InterlockedCompareExchange64(&_top, newTop, lastTop) != lastTop);
 
-		if (newTop == lastTop)
-			__debugbreak();
+		//if (newTop == lastTop)
+		//	__debugbreak();
 	
 		/*
 		InterlockedIncrement((long*)&_SequenceNum);
@@ -115,8 +115,8 @@ public:
 		} 
 		while (InterlockedCompareExchange64(&_top, newTop, lastTop) != lastTop);
 
-		if (newTop == lastTop)
-			__debugbreak();
+		//if (newTop == lastTop)
+		//	__debugbreak();
 
 		/*
 		InterlockedIncrement((long*)&_SequenceNum);

@@ -70,7 +70,7 @@ inline MemoryPool<T>::MemoryPool(int BlockNum, bool PlacementNew)
 	for (int i = 0; i < _Capacity; i++)
 	{
 		Node* node = (Node*)malloc(sizeof(Node));
-
+		
 		if (node == nullptr)
 			return;
 
@@ -90,14 +90,12 @@ inline MemoryPool<T>::MemoryPool(int BlockNum, bool PlacementNew)
 template<class T>
 inline MemoryPool<T>::~MemoryPool()
 {
-
+	
 }
 
 template<class T>
 inline T* MemoryPool<T>::Alloc(void)
 {
-	T* ptr;
-
 	LONG64 newFree;
 	LONG64 lastFree;
 	Node* lastTop;
@@ -113,21 +111,18 @@ inline T* MemoryPool<T>::Alloc(void)
 			if (newNode == nullptr)
 				return nullptr;
 
-			ptr = &newNode->Data;
-			new(ptr) T;
+			new(&newNode->Data) T;
 
 			InterlockedIncrement((long*)&_UseCount);
 
-			return ptr;
+			return &newNode->Data;
 		}
 
 		// 전 _FreeNode 에서 lastTop 으로 값 복원시킨다.
 		lastTop = reinterpret_cast<Node*>(lastFree - SetCounter(GetCounter(lastFree)));
 		newFree = reinterpret_cast<LONG64>(lastTop->Next);
-	} 
+	}
 	while (InterlockedCompareExchange64(&_FreeNode, newFree, lastFree) != lastFree);
-
-	ptr = &reinterpret_cast<Node*>(lastTop)->Data;
 
 	// Placement New 활성화라면 Alloc 에서 생성자 호출.
 	if (_PlacementNew == true)
@@ -138,7 +133,7 @@ inline T* MemoryPool<T>::Alloc(void)
 	InterlockedIncrement((long*)&_UseCount);
 	InterlockedDecrement((long*)&_Capacity);
 
-	return ptr;
+	return reinterpret_cast<T*>(lastTop);
 }
 
 template<class T>
@@ -151,7 +146,7 @@ inline bool MemoryPool<T>::Free(T* pData)
 	LONG64 ptr = reinterpret_cast<LONG64>(pData);
 	pData->~T();
 
-	do
+	do 
 	{
 		lastFree = _FreeNode;
 		Counter = GetCounter(lastFree) + 1;
