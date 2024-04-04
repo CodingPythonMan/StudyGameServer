@@ -4,6 +4,13 @@
 
 #define NOT_TAGGING_BIT 48
 
+struct History {
+	unsigned int SequenceNum;
+	unsigned int Action;
+	LONG64 newNode;
+	LONG64 lastNode;
+};
+
 template <class T>
 class MemoryPool
 {
@@ -57,6 +64,10 @@ private:
 	bool _PlacementNew;
 	// 스택 방식으로 반환된 (미사용) 오브젝트 블럭을 관리.
 	LONG64 _FreeNode;
+
+	int TLSIndex;
+	int TLSArray;
+	unsigned int _SequenceNum;
 };
 
 template<class T>
@@ -66,6 +77,16 @@ inline MemoryPool<T>::MemoryPool(int BlockNum, bool PlacementNew)
 	_Capacity = BlockNum;
 	_PlacementNew = PlacementNew;
 	_UseCount = 0;
+
+	TLSIndex = TlsAlloc();
+	if (TLSIndex == TLS_OUT_OF_INDEXES)
+		__debugbreak();
+
+	TLSArray = TlsAlloc();
+	if (TLSArray == TLS_OUT_OF_INDEXES)
+		__debugbreak();
+
+	_SequenceNum = 0;
 
 	for (int i = 0; i < _Capacity; i++)
 	{
@@ -96,6 +117,17 @@ inline MemoryPool<T>::~MemoryPool()
 template<class T>
 inline T* MemoryPool<T>::Alloc(void)
 {
+	History* myArray = (History*)TlsGetValue(TLSArray);
+	unsigned int* myIndex = (unsigned int*)TlsGetValue(TLSIndex);
+	if (myArray == nullptr)
+	{
+		myArray = new History[10000000];
+		myIndex = new unsigned int;
+		*myIndex = 0;
+		TlsSetValue(TLSArray, (LPVOID)myArray);
+		TlsSetValue(TLSIndex, (LPVOID)myIndex);
+	}
+
 	LONG64 newFree;
 	LONG64 lastFree;
 	Node* lastTop;
@@ -115,6 +147,11 @@ inline T* MemoryPool<T>::Alloc(void)
 
 			InterlockedIncrement((long*)&_UseCount);
 
+			myArray[*myIndex].SequenceNum = _SequenceNum;
+			myArray[*myIndex].Action = 0;
+			myArray[*myIndex].newNode = (LONG64)newNode;
+			myArray[*myIndex].lastNode = lastFree;
+
 			return &newNode->Data;
 		}
 
@@ -123,6 +160,15 @@ inline T* MemoryPool<T>::Alloc(void)
 		newFree = reinterpret_cast<LONG64>(lastTop->Next);
 	}
 	while (InterlockedCompareExchange64(&_FreeNode, newFree, lastFree) != lastFree);
+
+	InterlockedIncrement((long*)&_SequenceNum);
+
+	myArray[*myIndex].SequenceNum = _SequenceNum;
+	myArray[*myIndex].Action = 1;
+	myArray[*myIndex].newNode = newFree;
+	myArray[*myIndex].lastNode = lastFree;
+
+	(*myIndex)++;
 
 	// Placement New 활성화라면 Alloc 에서 생성자 호출.
 	if (_PlacementNew == true)
@@ -139,6 +185,17 @@ inline T* MemoryPool<T>::Alloc(void)
 template<class T>
 inline bool MemoryPool<T>::Free(T* pData)
 {
+	History* myArray = (History*)TlsGetValue(TLSArray);
+	unsigned int* myIndex = (unsigned int*)TlsGetValue(TLSIndex);
+	if (myArray == nullptr)
+	{
+		myArray = new History[10000000];
+		myIndex = new unsigned int;
+		*myIndex = 0;
+		TlsSetValue(TLSArray, (LPVOID)myArray);
+		TlsSetValue(TLSIndex, (LPVOID)myIndex);
+	}
+
 	LONG64 newFree;
 	LONG64 lastFree;
 	unsigned __int64 Counter;
@@ -155,6 +212,15 @@ inline bool MemoryPool<T>::Free(T* pData)
 		newFree = ptr + SetCounter(Counter);
 	} 
 	while (InterlockedCompareExchange64(&_FreeNode, newFree, lastFree) != lastFree);
+
+	InterlockedIncrement((long*)&_SequenceNum);
+
+	myArray[*myIndex].SequenceNum = _SequenceNum;
+	myArray[*myIndex].Action = 0;
+	myArray[*myIndex].newNode = newFree;
+	myArray[*myIndex].lastNode = lastFree;
+
+	(*myIndex)++;
 
 	InterlockedDecrement((long*)&_UseCount);
 	InterlockedIncrement((long*)&_Capacity);
