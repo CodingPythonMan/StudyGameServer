@@ -20,6 +20,11 @@ Player::~Player()
 #endif
 }
 
+void Player::OnlyOneAdd()
+{
+	_Fly++;
+}
+
 void Player::MakeName(const char* Name)
 {
 	memcpy(_Name, Name, 30);

@@ -44,12 +44,12 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// ABA 문제 해결용 Counter 추출
 	//////////////////////////////////////////////////////////////////////////
-	LONG64 GetCounter(LONG64 ptr) { return  static_cast<unsigned __int64>(ptr) >> NOT_TAGGING_BIT; }
+	inline LONG64 GetCounter(LONG64 ptr) { return  static_cast<unsigned __int64>(ptr) >> NOT_TAGGING_BIT; }
 
 	//////////////////////////////////////////////////////////////////////////
 	// ABA 문제 해결용 Counter 셋팅
 	//////////////////////////////////////////////////////////////////////////
-	LONG64 SetCounter(LONG64 counter) { return  counter << NOT_TAGGING_BIT; }
+	inline LONG64 SetCounter(LONG64 counter) { return  counter << NOT_TAGGING_BIT; }
 
 private:
 	int _Capacity;
@@ -100,15 +100,7 @@ inline T* MemoryPool<T>::Alloc(void)
 
 	LONG64 newFree;
 	LONG64 lastFree;
-
-	LONG64 ptrValue = _FreeNode - SetCounter(GetCounter(_FreeNode));
-	ptr = &reinterpret_cast<Node*>(ptrValue)->Data;
-
-	// Placement New 활성화라면 Alloc 에서 생성자 호출.
-	if (ptrValue != NULL && _PlacementNew == true)
-	{
-		new(reinterpret_cast<T*>(ptrValue)) T;
-	}
+	Node* lastTop;
 
 	do
 	{
@@ -129,10 +121,19 @@ inline T* MemoryPool<T>::Alloc(void)
 			return ptr;
 		}
 
-		Node* newTop = reinterpret_cast<Node*>(lastFree - SetCounter(GetCounter(lastFree)));
-		newFree = reinterpret_cast<LONG64>(newTop->Next);
-	} 
+		// 전 _FreeNode 에서 lastTop 으로 값 복원시킨다.
+		lastTop = reinterpret_cast<Node*>(lastFree - SetCounter(GetCounter(lastFree)));
+		newFree = reinterpret_cast<LONG64>(lastTop->Next);
+	}
 	while (InterlockedCompareExchange64(&_FreeNode, newFree, lastFree) != lastFree);
+
+	ptr = &reinterpret_cast<Node*>(lastTop)->Data;
+
+	// Placement New 활성화라면 Alloc 에서 생성자 호출.
+	if (_PlacementNew == true)
+	{
+		new(reinterpret_cast<T*>(lastTop)) T;
+	}
 
 	InterlockedIncrement((long*)&_UseCount);
 	InterlockedDecrement((long*)&_Capacity);
@@ -147,9 +148,8 @@ inline bool MemoryPool<T>::Free(T* pData)
 	LONG64 lastFree;
 	unsigned __int64 Counter;
 
-	newFree = reinterpret_cast<LONG64>(pData);
-	LONG64 ptr = newFree - SetCounter(GetCounter(newFree));
-	reinterpret_cast<T*>(ptr)->~T();
+	LONG64 ptr = reinterpret_cast<LONG64>(pData);
+	pData->~T();
 
 	do 
 	{

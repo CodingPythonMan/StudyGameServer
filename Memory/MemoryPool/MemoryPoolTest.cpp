@@ -110,6 +110,18 @@ void BasicTest()
 	printf("霉锅掳 Free 林家 : 0x%p\n", p1);
 	PlayerPool.Free(p4);
 	printf("技锅掳 Free 林家 : 0x%p\n", p4);
+	p4 = PlayerPool.Alloc();
+	printf("技锅掳 Alloc 林家 : 0x%p\n", p4);
+	p4->Move(3, 5);
+	p4->MakeName("HHHaaa");
+	p2 = PlayerPool.Alloc();
+	printf("滴锅掳 Alloc 林家 : 0x%p\n", p2);
+	p2->Move(3, 5);
+	p2->MakeName("HHHaaa");
+	PlayerPool.Free(p4);
+	printf("技锅掳 Free 林家 : 0x%p\n", p4);
+	PlayerPool.Free(p2);
+	printf("滴锅掳 Free 林家 : 0x%p\n", p2);
 	PlayerPool.Free(p5);
 	printf("匙锅掳 Free 林家 : 0x%p\n", p5);
 	PlayerPool.Free(p6);
@@ -118,17 +130,17 @@ void BasicTest()
 
 void BasicTest02()
 {
-	Player** players
+	Player** players = new Player*[1000];
 
 	for (int i = 0; i < 1000; i++)
 	{
-		Player* p1 = PlayerPool.Alloc();
-		printf("%d锅掳 Alloc 林家 : 0x%p\n", i, p1);
+		players[i] = PlayerPool.Alloc();
+		printf("%d锅掳 Alloc 林家 : 0x%p\n", i, players[i]);
 	}
 
 	for (int i = 0; i < 1000; i++)
 	{
-		Player* p1 = PlayerPool.Free();
-		printf("%d锅掳 Alloc 林家 : 0x%p\n", i, p1);
+		PlayerPool.Free(players[i]);
+		printf("%d锅掳 Alloc 林家 : 0x%p\n", i, players[i]);
 	}
 }

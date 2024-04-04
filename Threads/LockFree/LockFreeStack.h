@@ -3,12 +3,13 @@
 #include <stdio.h>
 #include "MemoryPool.h"
 
-struct History {
+/*
+struct StackHistory {
 	unsigned int SequenceNum;
 	unsigned int Action;
 	LONG64 newNode;
 	LONG64 lastNode;
-};
+};*/
 
 template<typename T>
 class LockFreeStack
@@ -21,7 +22,9 @@ class LockFreeStack
 public:
 	LockFreeStack()
 	{
-		_top = nullptr;
+		_top = 0;
+		_size = 0;
+		/*
 		TLSIndex = TlsAlloc();
 		if (TLSIndex == TLS_OUT_OF_INDEXES)
 			__debugbreak();
@@ -30,89 +33,106 @@ public:
 		if (TLSArray == TLS_OUT_OF_INDEXES)
 			__debugbreak();
 
-		_size = 0;
-		_SequenceNum = 0;
+		_SequenceNum = 0;*/
 	}
 
 	void Push(T& data)
 	{
-		History* myArray = (History*)TlsGetValue(TLSArray);
+		/*
+		StackHistory* myArray = (StackHistory*)TlsGetValue(TLSArray);
 		unsigned int* myIndex = (unsigned int*)TlsGetValue(TLSIndex);
 		if (myArray == nullptr)
 		{
-			myArray = new History[10000000];
+			myArray = new StackHistory[10000000];
 			myIndex = new unsigned int;
 			*myIndex = 0;
 			TlsSetValue(TLSArray, (LPVOID)myArray);
 			TlsSetValue(TLSIndex, (LPVOID)myIndex);
-		}
+		}*/
 
-		//Node* newNode = new Node();
 		Node* newNode = _nodePool.Alloc();
 		newNode->Data = data;
 
-		Node* lastTop;
+		LONG64 newTop;
+		LONG64 lastTop;
+		unsigned __int64 Counter;
+
+		LONG64 ptr = reinterpret_cast<LONG64>(newNode);
+
 		do 
 		{
 			lastTop = _top;
-			newNode->Next = lastTop;
+			Counter = GetCounter(lastTop) + 1;
+			newNode->Next = reinterpret_cast<Node*>(lastTop);
+			newTop = ptr + SetCounter(Counter);
 		} 
-		while (InterlockedCompareExchange64((LONG64*)&_top, (LONG64)newNode, (LONG64)lastTop) != (LONG64)lastTop);
+		while (InterlockedCompareExchange64(&_top, newTop, lastTop) != lastTop);
+
+		if (newTop == lastTop)
+			__debugbreak();
 	
+		/*
 		InterlockedIncrement((long*)&_SequenceNum);
 
 		myArray[*myIndex].SequenceNum = _SequenceNum;
 		myArray[*myIndex].Action = 0;
-		myArray[*myIndex].newNode = (LONG64)newNode;
-		myArray[*myIndex].lastNode = (LONG64)lastTop;
+		myArray[*myIndex].newNode = newTop;
+		myArray[*myIndex].lastNode = lastTop;
+		
+		(*myIndex)++;
+		*/
 
 		InterlockedIncrement((long*)&_size);
-		(*myIndex)++;
 	}
 
-	void Pop(void)
+	T Pop(void)
 	{
-		History* myArray = (History*)TlsGetValue(TLSArray);
+		/*
+		StackHistory* myArray = (StackHistory*)TlsGetValue(TLSArray);
 		unsigned int* myIndex = (unsigned int*)TlsGetValue(TLSIndex);
 		if (myArray == nullptr)
 		{
-			myArray = new History[10000000];
+			myArray = new StackHistory[10000000];
 			myIndex = new unsigned int;
 			*myIndex = 0;
 			TlsSetValue(TLSArray, (LPVOID)myArray);
 			TlsSetValue(TLSIndex, (LPVOID)myIndex);
-		}
+		}*/
 
-		Node* lastTop;
-		Node* newTop = nullptr;
+		LONG64 lastTop;
+		LONG64 newTop;
+		Node* lastPop;
+
 		do
 		{
 			lastTop = _top;
 
-			if (lastTop == nullptr)
-				return;
+			if (lastTop == NULL)
+				return NULL;
 
-			//newTop = _top->Next;
-			// 생각해보니 _top->Next 를 쓰는 건 굉장히 위험한 행위였다.
-			newTop = lastTop->Next;
+			lastPop = reinterpret_cast<Node*>(lastTop - SetCounter(GetCounter(lastTop)));
+			newTop = reinterpret_cast<LONG64>(lastPop->Next);
 		} 
-		while (InterlockedCompareExchange64((LONG64*)&_top, (LONG64)newTop, (LONG64)lastTop) != (LONG64)lastTop);
+		while (InterlockedCompareExchange64(&_top, newTop, lastTop) != lastTop);
 
-		if (lastTop == newTop)
+		if (newTop == lastTop)
 			__debugbreak();
 
+		/*
 		InterlockedIncrement((long*)&_SequenceNum);
 
 		myArray[*myIndex].SequenceNum = _SequenceNum;
 		myArray[*myIndex].Action = 1;
-		myArray[*myIndex].newNode = (LONG64)newTop;
-		myArray[*myIndex].lastNode = (LONG64)lastTop;
+		myArray[*myIndex].newNode = newTop;
+		myArray[*myIndex].lastNode = lastTop;
 
-		_nodePool.Free(lastTop);
-		//delete lastTop;
+		(*myIndex)++; */
+
+		_nodePool.Free(reinterpret_cast<Node*>(lastPop));
 
 		InterlockedDecrement((long*)&_size);
-		(*myIndex)++;
+		
+		return reinterpret_cast<Node*>(lastPop)->Data;
 	}
 
 	int GetSize()
@@ -120,16 +140,19 @@ public:
 		return _size;
 	}
 
-private:
-	Node* _top;
+	LONG64 GetCounter(LONG64 ptr) { return  static_cast<unsigned __int64>(ptr) >> NOT_TAGGING_BIT; }
+	LONG64 SetCounter(LONG64 counter) { return  counter << NOT_TAGGING_BIT; }
 
-	int TLSIndex;
-	int TLSArray;
+private:
+	LONG64 _top;
 	MemoryPool<Node> _nodePool;
 
 	int _size;
 
 	// Log 용
-	unsigned int _SequenceNum;
+	/*
+	int TLSIndex;
+	int TLSArray;
+	unsigned int _SequenceNum;*/
 };
 

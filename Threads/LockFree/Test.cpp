@@ -1,5 +1,7 @@
 #include "Test.h"
 
+#define THREAD_COUNT 5
+
 LockFreeStack<int> lockFreeStack;
 LockFreeQueue<int> lockFreeQueue;
 
@@ -17,10 +19,10 @@ unsigned int StackWorkerThread(LPVOID lpParam)
 {
 	while (1)
 	{
-		for (int i = 0; i < 500; i++)
+		for (int i = 1; i < 501; i++)
 			lockFreeStack.Push(i);
 
-		for (int i = 0; i < 500; i++)
+		for (int i = 1; i < 501; i++)
 			lockFreeStack.Pop();
 	}
 
@@ -29,16 +31,16 @@ unsigned int StackWorkerThread(LPVOID lpParam)
 
 void LockFreeStackTestCode()
 {
-	HANDLE Threads[6];
+	HANDLE Threads[THREAD_COUNT+1];
 
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < THREAD_COUNT; i++)
 	{
 		Threads[i] = (HANDLE)_beginthreadex(nullptr, 0, StackWorkerThread, nullptr, 0, nullptr);
 	}
 
-	Threads[5] = (HANDLE)_beginthreadex(nullptr, 0, StackMonitorThread, nullptr, 0, nullptr);
+	Threads[THREAD_COUNT] = (HANDLE)_beginthreadex(nullptr, 0, StackMonitorThread, nullptr, 0, nullptr);
 
-	WaitForMultipleObjects(6, Threads, true, INFINITE);
+	WaitForMultipleObjects(THREAD_COUNT+1, Threads, true, INFINITE);
 }
 
 unsigned int QueueMonitorThread(LPVOID lpParam)
