@@ -40,7 +40,7 @@ public:
 
 			if (next == NULL)
 			{
-				if (InterlockedCompareExchangePointer((PVOID*)&tail->next, node, next) == next)
+				if (InterlockedCompareExchangePointer((PVOID*)&_tail->next, node, next) == next)
 				{
 					InterlockedCompareExchangePointer((PVOID*)&_tail, node, tail);
 					break;

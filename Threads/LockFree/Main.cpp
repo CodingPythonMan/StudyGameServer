@@ -2,6 +2,6 @@
 
 int main()
 {
-	LockFreeStackTestCode();
-	//LockFreeQueueTestCode();
+	//LockFreeStackTestCode();
+	LockFreeQueueTestCode();
 }
