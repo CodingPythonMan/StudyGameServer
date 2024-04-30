@@ -127,7 +127,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="FastSpinLock.cpp" />
     <ClCompile Include="SpinLock.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="FastSpinLock.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

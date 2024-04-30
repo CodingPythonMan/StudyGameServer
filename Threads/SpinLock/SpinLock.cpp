@@ -3,10 +3,13 @@
 #include <windows.h>
 using namespace std;
 
+#include "FastSpinLock.h"
+
 int SharedObject = 0;
 long lock = 0;
+FastSpinLock lockObj;
 
-unsigned int WINAPI Spinlock01(LPVOID lpParam)
+unsigned int WINAPI Thread_Basic(LPVOID lpParam)
 {
 	while (1)
 	{
@@ -23,30 +26,43 @@ unsigned int WINAPI Spinlock01(LPVOID lpParam)
 	return 0;
 }
 
-unsigned int WINAPI Spinlock02(LPVOID lpParam)
+unsigned int WINAPI Thread_Fast(LPVOID lpParam)
 {
-	while (1)
-	{
-		long a = InterlockedExchange(&lock, 1);
-		if (a == 0)
-			break;
-	}
+	lockObj.Lock();
 
 	for (int i = 0; i < 500000; i++)
 		SharedObject++;
 
-	lock = 0;
+	lockObj.Unlock();
 
 	return 0;
 }
 
-int main()
+void UseNormalSpinLock()
 {
-	HANDLE hThreads[2];
-	hThreads[0] = (HANDLE)_beginthreadex(nullptr, 0, Spinlock01, 0, 0, nullptr);
-	hThreads[1] = (HANDLE)_beginthreadex(nullptr, 0, Spinlock02, 0, 0, nullptr);
+	HANDLE hThreads[3];
+	for (int i = 0; i < 3; i++)
+		hThreads[i] = (HANDLE)_beginthreadex(nullptr, 0, Thread_Basic, 0, 0, nullptr);
 
-	WaitForMultipleObjects(2, hThreads, true, INFINITE);
+	WaitForMultipleObjects(3, hThreads, true, INFINITE);
 
 	cout << "SharedObject °ª : " << SharedObject << "\n";
+}
+
+void UseFastSpinLock()
+{
+	HANDLE hThreads[3];
+
+	for(int i=0; i<3; i++)
+		hThreads[i] = (HANDLE)_beginthreadex(nullptr, 0, Thread_Fast, 0, 0, nullptr);
+
+	WaitForMultipleObjects(3, hThreads, true, INFINITE);
+
+	cout << "SharedObject °ª : " << SharedObject << "\n";
+}
+
+int main()
+{
+	//UseNormalSpinLock();
+	UseFastSpinLock();
 }
