@@ -220,6 +220,8 @@ bool SelectLoop()
 			}
 		}
 		Flip();
+
+		Sleep(50);
 	}
 
 	return false;
