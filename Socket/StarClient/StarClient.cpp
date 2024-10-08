@@ -1,6 +1,8 @@
 ﻿#include "StarClient.h"
+#include <fstream>
+#include <iostream>
 
-SOCKET sock;
+SOCKET g_sock;
 
 struct Star {
 	int id;
@@ -9,19 +11,25 @@ struct Star {
 	int y;
 };
 
-Star stars[MAX_STARS];
-Star* myStar;
+Star g_stars[MAX_STARS];
+Star* g_myStar;
+
+std::string filePath = "error.txt";
 
 bool SetClientSocket()
 {
 	WSADATA wsa;
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+	{
 		return true;
+	}
 
 	// Socket Ready
-	sock = socket(AF_INET, SOCK_STREAM, 0);
-	if (sock == INVALID_SOCKET)
+	g_sock = socket(AF_INET, SOCK_STREAM, 0);
+	if (g_sock == INVALID_SOCKET)
+	{
 		return true;
+	}
 
     return false;
 }
@@ -34,9 +42,11 @@ bool ConnectClientSocket(WCHAR IP[])
 	serverAddr.sin_family = AF_INET;
 	InetPton(AF_INET, IP, &serverAddr.sin_addr);
 	serverAddr.sin_port = htons(SERVER_PORT);
-	int retval = connect(sock, (SOCKADDR*)&serverAddr, sizeof(serverAddr));
+	int retval = connect(g_sock, (SOCKADDR*)&serverAddr, sizeof(serverAddr));
 	if (retval == SOCKET_ERROR)
+	{
 		return true;
+	}
 
     return false;
 }
@@ -46,7 +56,7 @@ bool TransSocket()
 	// 블락 논블락은 언제든 변할 수 있다.
 	// connect 후 논 블락으로 전환
 	u_long on = 1;
-	int retval = ioctlsocket(sock, FIONBIO, &on);
+	int retval = ioctlsocket(g_sock, FIONBIO, &on);
 	if (retval == SOCKET_ERROR)
 		return true;
 
@@ -60,31 +70,64 @@ bool SelectLoop()
 	char buf[16];
 
 	int retval;
-
+		
 	while (1)
 	{
 		// 네트워크 : FD_SET ReadSet
 		FD_ZERO(&rset);
-		FD_SET(sock, &rset);
+		FD_SET(g_sock, &rset);
 
 		// select
 		const timeval TimeVal{ 0, 0 };
 		retval = select(0, &rset, nullptr, nullptr, &TimeVal);
 		if (retval == SOCKET_ERROR)
+		{
+			int errCode = WSAGetLastError();
+
+			std::ofstream writeFile(filePath.data());
+			if (writeFile.is_open())
+			{
+				writeFile << "에러 종료\n";
+				writeFile << errCode;
+				writeFile.close();
+			}
+
 			return true;
+		}
 
 		// 소켓 셋 검사
-		if (FD_ISSET(sock, &rset))
+		if (FD_ISSET(g_sock, &rset))
 		{
 			// 데이터 받기
-			retval = recv(sock, buf, 16, 0);
+			retval = recv(g_sock, buf, 16, 0);
 			if (retval == SOCKET_ERROR)
 			{
-				// 연결 끊김. 종료
+				// 에러 연결 끊김. 종료
+				// 간단한 파일로그
+				int errCode = WSAGetLastError();
+
+				std::ofstream writeFile(filePath.data());
+				if (writeFile.is_open())
+				{
+					writeFile << "에러 종료\n";
+					writeFile << errCode;
+					writeFile.close();
+				}
+
 				return true;
 			}
 			else if (retval == 0)
 			{
+				// recv 에서 rst 받게 되면, 접속 종료하는 게 맞다.
+				// 플레이 중에 서버의 잘못으로 이걸 받는 것이면, 파일로그로 남겨서 증거를 챙겨도 된다.
+
+				std::ofstream writeFile(filePath.data());
+				if (writeFile.is_open())
+				{
+					writeFile << "정상 종료\n";
+					writeFile.close();
+				}
+
 				return true;
 			}
 
@@ -97,13 +140,13 @@ bool SelectLoop()
 				AssignID* assignID = (AssignID*)buf;
 				for (int i = 0; i < MAX_STARS; i++)
 				{
-					if (stars[i].use == false)
+					if (g_stars[i].use == false)
 					{
-						myStar = &stars[i];
-						myStar->id = assignID->ID;
-						myStar->use = true;
-						myStar->x = MAX_X / 2;
-						myStar->y = MAX_Y / 2;
+						g_myStar = &g_stars[i];
+						g_myStar->id = assignID->ID;
+						g_myStar->use = true;
+						g_myStar->x = MAX_X / 2;
+						g_myStar->y = MAX_Y / 2;
 						break;
 					}
 				}
@@ -112,17 +155,19 @@ bool SelectLoop()
 			case MessageType::CreateStar:
 			{
 				CreateStar* createStar = (CreateStar*)buf;
-				if (myStar != nullptr && myStar->id == createStar->ID)
+				if (g_myStar != nullptr && g_myStar->id == createStar->ID)
+				{
 					break;
+				}
 					
 				for (int i = 0; i < MAX_STARS; i++)
 				{
-					if (stars[i].use == false)
+					if (false == g_stars[i].use)
 					{
-						stars[i].id = createStar->ID;
-						stars[i].x = createStar->X;
-						stars[i].y = createStar->Y;
-						stars[i].use = true;
+						g_stars[i].id = createStar->ID;
+						g_stars[i].x = createStar->X;
+						g_stars[i].y = createStar->Y;
+						g_stars[i].use = true;
 						break;
 					}
 				}
@@ -133,9 +178,9 @@ bool SelectLoop()
 				DeleteStar* deleteStar = (DeleteStar*)buf;
 				for (int i = 0; i < MAX_STARS; i++)
 				{
-					if (stars[i].id == deleteStar->ID)
+					if (g_stars[i].id == deleteStar->ID)
 					{
-						stars[i].use = false;
+						g_stars[i].use = false;
 						break;
 					}
 				}
@@ -149,52 +194,70 @@ bool SelectLoop()
 
 				for (int i = 0; i < MAX_STARS; i++)
 				{
-					if (stars[i].id == moveStar->ID)
+					if (g_stars[i].id == moveStar->ID)
 					{
-						stars[i].x = moveStar->X;
-						stars[i].y = moveStar->Y;
+						g_stars[i].x = moveStar->X;
+						g_stars[i].y = moveStar->Y;
 					}
 				}
 				break;
 			}
 			default:
+			{
+				std::ofstream writeFile(filePath.data());
+				if (writeFile.is_open())
+				{
+					writeFile << "에러 종료\n";
+					writeFile << type;
+					writeFile.close();
+				}
+
 				return true;
+			}
 			}
 		}
 
 		// 송신 : 좌표 변경되었다면, MoveStar send 한다.
-		if (myStar != nullptr)
+		if (g_myStar != nullptr)
 		{
 			bool edit = false;
 			// 왼쪽 방향키.
 			if (GetAsyncKeyState(VK_LEFT))
 			{
-				if (myStar->x > 0)
-					myStar->x--;
+				if (g_myStar->x > 0)
+				{
+					g_myStar->x--;
+				}
 
 				edit = true;
 			}
 			// 오른쪽 방향키.
 			if (GetAsyncKeyState(VK_RIGHT))
 			{
-				if (myStar->x < MAX_X-2)
-					myStar->x++;
+				if (g_myStar->x < MAX_X - 2)
+				{
+					g_myStar->x++;
+				}
 
 				edit = true;
 			}
 			// 위쪽 방향키.
 			if (GetAsyncKeyState(VK_UP) & 0x8001)
 			{
-				if (myStar->y > 0)
-					myStar->y--;
+				if (g_myStar->y > 0)
+				{
+					g_myStar->y--;
+				}
 
 				edit = true;
 			}
 			// 아래쪽 방향키.
 			if (GetAsyncKeyState(VK_DOWN) & 0x8001)
 			{
-				if (myStar->y+1 < MAX_Y-1)
-					myStar->y++;
+				if (g_myStar->y + 1 < MAX_Y - 1)
+				{
+					g_myStar->y++;
+				}
 
 				edit = true;
 			}
@@ -203,10 +266,10 @@ bool SelectLoop()
 			{
 				MoveStar moveStar;
 				moveStar.Type = (int)MessageType::MoveStar;
-				moveStar.ID = myStar->id;
-				moveStar.X = myStar->x;
-				moveStar.Y = myStar->y;
-				retval = send(sock, (char*)&moveStar, sizeof(MoveStar), 0);
+				moveStar.ID = g_myStar->id;
+				moveStar.X = g_myStar->x;
+				moveStar.Y = g_myStar->y;
+				retval = send(g_sock, (char*)&moveStar, sizeof(MoveStar), 0);
 			}
 		}
 		
@@ -214,9 +277,9 @@ bool SelectLoop()
 		Clear();
 		for (int i = 0; i < MAX_STARS; i++)
 		{
-			if (stars[i].use == true)
+			if (g_stars[i].use == true)
 			{
-				SpriteDraw(stars[i].x, stars[i].y, '*');
+				SpriteDraw(g_stars[i].x, g_stars[i].y, '*');
 			}
 		}
 		Flip();
@@ -229,7 +292,7 @@ bool SelectLoop()
 
 bool EndSocket()
 {
-	closesocket(sock);
+	closesocket(g_sock);
 
 	WSACleanup();
 

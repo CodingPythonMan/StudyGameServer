@@ -12,12 +12,16 @@ bool SetServerSocket()
 	// 윈속 초기화
 	WSADATA wsa;
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+	{
 		return true;
+	}
 
 	// 리슨 소켓
 	listenSock = socket(AF_INET, SOCK_STREAM, 0);
 	if (listenSock == INVALID_SOCKET)
+	{
 		return true;
+	}
 
 	// bind
 	SOCKADDR_IN listenAddr;
@@ -28,7 +32,9 @@ bool SetServerSocket()
 	retval = bind(listenSock, (SOCKADDR*)&listenAddr, sizeof(listenAddr));
 
 	if (retval == SOCKET_ERROR)
+	{
 		return true;
+	}
 
 	return false;
 }
@@ -38,13 +44,17 @@ bool ListenSocket()
 	// listen
 	int retval = listen(listenSock, SOMAXCONN);
 	if (retval == SOCKET_ERROR)
+	{
 		return true;
+	}
 
 	// 논블로킹 소켓으로 전환
 	u_long on = 1;
 	retval = ioctlsocket(listenSock, FIONBIO, &on);
 	if (retval == SOCKET_ERROR)
+	{
 		return true;
+	}
 
 	return false;
 }
@@ -78,7 +88,9 @@ bool SelectLoop()
 		// 무한 대기
 		retval = select(0, &rset, &wset, nullptr, nullptr);
 		if (retval == SOCKET_ERROR)
+		{
 			return true;
+		}
 
 		// 리슨소켓 검사
 		if (FD_ISSET(listenSock, &rset))
@@ -336,7 +348,8 @@ void DeleteExecute()
 	{
 		closesocket((*iter)->Sock);
 		ClientList.remove(*iter);
-		delete(*iter);
+		// remove 에서 delete 처리까지 해주고 있으므로, delete 를 또 해줄 필요는 없다.
+		//delete(*iter);
 	}
 
 	DeleteList.clear();
