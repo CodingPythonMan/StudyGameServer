@@ -1,6 +1,7 @@
 #include "RingBuffer.h"
+#include <cstring>
 
-RingBuffer::RingBuffer() : BufferSize{ DEFAULT_SIZE }
+RingBuffer::RingBuffer() : BufferSize{ RING_DEFAULT_SIZE }
 {
 	Buffer = new char[BufferSize + 1];
 	Front = 0;
@@ -30,7 +31,7 @@ int RingBuffer::GetUseSize()
 
 	if (size < 0)
 	{
-		size = BufferSize + size;
+		size += BufferSize + 1;
 	}
 
 	return size;
@@ -43,39 +44,53 @@ int RingBuffer::GetFreeSize()
 
 int RingBuffer::Enqueue(char* src, int size)
 {
-	Rear++;
-
-	if (Rear + size > BufferSize)
+	// 성능상 이유로, Enqueue 실패할 때는 Enqueue 를 호출하기전 걸러냈어야 한다.
+	// 필요한 조건문은 GetFreeSize 로 조사하면 된다.
+	if (size > 0)
 	{
-		int rest = BufferSize + 1 - Rear;
-		memcpy(&Buffer[Rear], src, rest);
-		memcpy(&Buffer[0], src + rest, size - rest);
-		Rear = size - rest - 1;
+		if (Rear + size > BufferSize)
+		{
+			int rest = BufferSize - Rear;
+			memcpy(&Buffer[Rear + 1], src, rest);
+			memcpy(&Buffer[0], src + rest, size - rest);
+			Rear += size - BufferSize - 1;
+		}
+		else
+		{
+			memcpy(&Buffer[Rear + 1], src, size);
+			Rear += size;
+		}
 	}
 	else
 	{
-		memcpy(&Buffer[Rear], src, size);
-		Rear += size - 1;
+		size = 0;
 	}
+
 
 	return size;
 }
 
 int RingBuffer::Dequeue(char* dest, int size)
 {
-	Front++;
-
-	if (Front + size > BufferSize)
+	// 성능상 이유로, Dequeue 실패할 때는 Dequeue 를 호출하기전 걸러냈어야 한다.
+	if (size > 0)
 	{
-		int rest = BufferSize + 1 - Front;
-		memcpy(dest, &Buffer[Front], rest);
-		memcpy(dest + rest, &Buffer[0], size - rest);
-		Front = size - rest - 1;
+		if (Front + size > BufferSize)
+		{
+			int rest = BufferSize - Front;
+			memcpy(dest, &Buffer[Front + 1], rest);
+			memcpy(dest + rest, &Buffer[0], size - rest);
+			Front += size - BufferSize - 1;
+		}
+		else
+		{
+			memcpy(dest, &Buffer[Front + 1], size);
+			Front += size;
+		}
 	}
 	else
 	{
-		memcpy(dest, &Buffer[Front], size);
-		Front += size - 1;
+		size = 0;
 	}
 
 	return size;
@@ -83,15 +98,22 @@ int RingBuffer::Dequeue(char* dest, int size)
 
 int RingBuffer::Peek(char* dest, int size)
 {
-	if (Front + 1 + size > BufferSize)
+	if (size > 0)
 	{
-		int rest = BufferSize - Front;
-		memcpy(dest, &Buffer[Front + 1], rest);
-		memcpy(dest + rest, &Buffer[0], size - rest);
+		if (Front + size > BufferSize)
+		{
+			int rest = BufferSize - Front;
+			memcpy(dest, &Buffer[Front + 1], rest);
+			memcpy(dest + rest, &Buffer[0], size - rest);
+		}
+		else
+		{
+			memcpy(dest, &Buffer[Front + 1], size);
+		}
 	}
 	else
 	{
-		memcpy(dest, &Buffer[Front + 1], size);
+		size = 0;
 	}
 
 	return size;
@@ -112,8 +134,7 @@ int RingBuffer::DirectEnqueueSize()
 	}
 	else
 	{
-		// size 가 0이면 비어있는 상태
-		size = BufferSize - Rear - 1;
+		size = BufferSize - Rear;
 	}
 
 	return size;
@@ -125,7 +146,7 @@ int RingBuffer::DirectDequeueSize()
 
 	if (size < 0)
 	{
-		size = BufferSize - Front + Rear + 1;
+		size = BufferSize - Front;
 	}
 
 	return size;
@@ -133,14 +154,16 @@ int RingBuffer::DirectDequeueSize()
 
 int RingBuffer::MoveRear(int size)
 {
-	if (Rear + size > BufferSize)
+	if (size > 0)
 	{
-		int rest = BufferSize + 1 - Rear;
-		Rear = size - rest;
-	}
-	else
-	{
-		Rear += size;
+		if (Rear + size > BufferSize)
+		{
+			Rear += (size - BufferSize - 1);
+		}
+		else
+		{
+			Rear += size;
+		}
 	}
 
 	return size;
@@ -148,14 +171,16 @@ int RingBuffer::MoveRear(int size)
 
 int RingBuffer::MoveFront(int size)
 {
-	if (Front + size > BufferSize)
+	if (size > 0)
 	{
-		int rest = BufferSize + 1 - Front;
-		Front = size - rest;
-	}
-	else
-	{
-		Front += size;
+		if (Front + size > BufferSize)
+		{
+			Front += (size - BufferSize - 1);
+		}
+		else
+		{
+			Front += size;
+		}
 	}
 
 	return size;
@@ -179,4 +204,9 @@ char* RingBuffer::GetRearBufferPtr()
 		IncreaseRear = Rear + 1;
 
 	return &Buffer[IncreaseRear];
+}
+
+char* RingBuffer::GetStartBufferPtr()
+{
+	return Buffer;
 }
