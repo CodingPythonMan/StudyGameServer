@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Main">
+      <UniqueIdentifier>{c58957ee-2b35-4d32-897f-1bf946e7a3ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Memory">
+      <UniqueIdentifier>{6151cd4e-2e8b-48c5-a8ad-517eeeb3e9b3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="Smart.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="SmartPool.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Service.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Smart.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="SmartPool.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Service.h">
+      <Filter>Main</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
