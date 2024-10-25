@@ -15,9 +15,6 @@
     <ClCompile Include="Item.cpp">
       <Filter>Object</Filter>
     </ClCompile>
-    <ClCompile Include="Smart.cpp">
-      <Filter>Object</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Item.h">
