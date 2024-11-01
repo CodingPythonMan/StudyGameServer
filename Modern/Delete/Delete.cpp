@@ -56,7 +56,7 @@ public:
 
 int main()
 {
-    
+
     for (int i = 0; i < 1000; i++)
     {
         std::shared_ptr<spData> data = std::make_shared<spData>();
