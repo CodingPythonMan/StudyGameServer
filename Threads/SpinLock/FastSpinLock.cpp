@@ -2,12 +2,14 @@
 
 void FastSpinLock::Lock()
 {
-	while (1)
+	do
 	{
-		long a = InterlockedExchange(&lock, 1);
-		if (a == 0)
-			break;
-	}
+		Sleep(0);
+		Sleep(0);
+
+		YieldProcessor();
+	} 
+	while (InterlockedCompareExchange(&lock, 1, 0) != 0);
 }
 
 void FastSpinLock::Unlock()

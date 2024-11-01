@@ -3,37 +3,57 @@
 #include <windows.h>
 using namespace std;
 
+#pragma comment(lib, "winmm.lib")
+
 #include "FastSpinLock.h"
 
 int SharedObject = 0;
 long lock = 0;
 FastSpinLock lockObj;
 
+LARGE_INTEGER Freq;
+
 unsigned int WINAPI Thread_Basic(LPVOID lpParam)
 {
-	while (1)
+	for (int i = 0; i < 500000; i++)
 	{
-		long a = InterlockedExchange(&lock, 1);
-		if(a == 0)
-			break;
+		while (1)
+		{
+			long a = InterlockedExchange(&lock, 1);
+			if (a == 0)
+			{
+				break;
+			}
+		}
+
+		for (int i = 0; i < 10; i++)
+		{
+			SharedObject++;
+			SharedObject--;
+			SharedObject++;
+		}
+
+		lock = 0;
 	}
-
-	for(int i=0; i<500000; i++)
-		SharedObject++;
-
-	lock = 0;
 
 	return 0;
 }
 
 unsigned int WINAPI Thread_Fast(LPVOID lpParam)
 {
-	lockObj.Lock();
-
 	for (int i = 0; i < 500000; i++)
-		SharedObject++;
+	{
+		lockObj.Lock();
 
-	lockObj.Unlock();
+		for (int i = 0; i < 10; i++)
+		{
+			SharedObject++;
+			SharedObject--;
+			SharedObject++;
+		}
+
+		lockObj.Unlock();
+	}
 
 	return 0;
 }
@@ -41,28 +61,50 @@ unsigned int WINAPI Thread_Fast(LPVOID lpParam)
 void UseNormalSpinLock()
 {
 	HANDLE hThreads[3];
+
+	LARGE_INTEGER Start, End;
+	QueryPerformanceCounter(&Start);
 	for (int i = 0; i < 3; i++)
+	{
 		hThreads[i] = (HANDLE)_beginthreadex(nullptr, 0, Thread_Basic, 0, 0, nullptr);
+	}
 
 	WaitForMultipleObjects(3, hThreads, true, INFINITE);
+	QueryPerformanceCounter(&End);
+
+	double normal = (double)(End.QuadPart - Start.QuadPart) / (double)(Freq.QuadPart);
 
 	cout << "SharedObject 값 : " << SharedObject << "\n";
+	cout << "[Normal Spinlock] 값 : " << normal << "\n";
 }
 
 void UseFastSpinLock()
 {
 	HANDLE hThreads[3];
 
-	for(int i=0; i<3; i++)
+	LARGE_INTEGER Start, End;
+	QueryPerformanceCounter(&Start);
+
+	for (int i = 0; i < 3; i++)
+	{
 		hThreads[i] = (HANDLE)_beginthreadex(nullptr, 0, Thread_Fast, 0, 0, nullptr);
+	}
 
 	WaitForMultipleObjects(3, hThreads, true, INFINITE);
+	QueryPerformanceCounter(&End);
+
+	double fast = (double)(End.QuadPart - Start.QuadPart) / (double)(Freq.QuadPart);
 
 	cout << "SharedObject 값 : " << SharedObject << "\n";
+	cout << "[Fast Spinlock] 값 : " << fast << "\n";
 }
 
 int main()
 {
-	//UseNormalSpinLock();
+	timeBeginPeriod(1);
+
+	QueryPerformanceFrequency(&Freq);
+
+	UseNormalSpinLock();
 	UseFastSpinLock();
 }
