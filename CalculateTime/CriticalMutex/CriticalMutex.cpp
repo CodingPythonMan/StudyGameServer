@@ -1,157 +1,206 @@
 ﻿#include <iostream>
+#include <atomic>
+#include <chrono>
+#include <cmath>
+#include <thread>
 #include <Windows.h>
-#include <memory>
-#include <process.h>
+#include <vector>
+#include <mutex>
+#include <winnt.h>
 
-#pragma comment(lib, "winmm.lib")
+#define LOOF_COUNT 1'000'000
+#define THREAD_COUNT 10
 
-LARGE_INTEGER Freq;
+//#define SLEEP
+#define YIELD
 
-#define SAME_COUNT 10000
 
+int sum1 = 0;
+int sum2 = 0;
+int sum3 = 0;
+int sum4 = 0;
+int sum5 = 0;
 
-class IInnerData
-{
-public:
-    IInnerData() = default;
-    virtual ~IInnerData()
-    {
-        Release();
-        //delete this;
-    }
+std::atomic<bool> bACE = false;
+std::mutex m_lock;
+std::mutex m_lock2;
 
-    virtual void Release() {};	// 해제해줘야 하는 항목 있으면 오버라이드
-};
-
-class spData : public IInnerData
-{
-public:
-    int X;
-    int Y;
-
-    spData() { X = 0; Y = 0; }
-};
-
-class B
-{
-public:
-    int X;
-    int Y;
-
-    std::shared_ptr<IInnerData> sData;
-    std::unique_ptr<IInnerData> uData;
-    IInnerData* pData;
-
-    B()
-    {
-        pData = nullptr;
-        X = 0;
-        Y = 0;
-        //printf("B::B()\n");
-    }
-
-    ~B()
-    {
-        //printf("B::~B()\n");
-    }
-};
-
+long lock = 0;
+//std::atomic<long> lock(0);
 CRITICAL_SECTION cs;
+SRWLOCK srwLock;
 
-unsigned int WINAPI Thread001(LPVOID param)
+void AtomicCompare()
 {
-    LARGE_INTEGER Start, End;
+	bool flag = false;
+	std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
+	for (int i = 0; i < LOOF_COUNT;)
+	{
+		flag = false;
+		while (!bACE.compare_exchange_strong(flag, true))
+		{
+			flag = false;
+#ifdef YIELD
+			YieldProcessor();
+#endif // YIELD
 
-    QueryPerformanceCounter(&Start);
-    for (int i = 0; i < SAME_COUNT; i++)
-    {
-        spData* ptr = new spData();
+#ifdef SLEEP
+			Sleep(0);
+#endif // SLEEP
+		}
+		sum1++;
+		i++;
+		bACE.store(false);
+		//flag = true;
+		//bACE.compare_exchange_strong(flag, false);
+	}
+	std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
+	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-        std::shared_ptr<B> b = std::make_unique<B>();
-        b->pData = ptr;
-        //delete ptr;
+	m_lock2.lock();
+	std::cout << "compare_exchange_strong - ms :" << ms.count() << "\n" << std::endl;
+	m_lock2.unlock();
 
-        spData* ptr2 = nullptr;
-        ptr2 = static_cast<spData*>(b->pData);
-        delete ptr2;
-    }
-    QueryPerformanceCounter(&End);
-
-    double New = (double)(End.QuadPart - Start.QuadPart) / (double)(Freq.QuadPart);
-
-    EnterCriticalSection(&cs);
-    printf("new : %fs \n", New);
-    LeaveCriticalSection(&cs);
-
-    return 0;
 }
 
-unsigned int WINAPI Thread002(LPVOID param)
+
+void Interlock()
 {
-    LARGE_INTEGER Start, End;
 
-    QueryPerformanceCounter(&Start);
-    for (int i = 0; i < SAME_COUNT; i++)
-    {
-        std::shared_ptr<spData> ptr = std::make_shared<spData>();
+	std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
+	for (int i = 0; i < LOOF_COUNT;)
+	{
+		int spinCount = 0;
 
-        std::shared_ptr<B> b = std::make_unique<B>();
-        b->sData = ptr;
+		while (1 == _InterlockedCompareExchange(&lock, 1, 0))
+		{
+#ifdef YIELD
+			if (spinCount < 100)
+			{
+				YieldProcessor();
+				spinCount++;
+			}
+			else
+			{
+				Sleep(1);
+			}
+			
+#endif // YIELD
 
-        std::shared_ptr<spData> ptr2 = 
-            std::static_pointer_cast<spData>(b->sData);
-    }
-    QueryPerformanceCounter(&End);
+#ifdef SLEEP
+			Sleep(0);
+#endif // SLEEP
+		}
+		sum2++;
+		i++;
+		lock = 0;
+		//_InterlockedCompareExchange(&lock, 0, 1);
+	}
+	std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
+	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-    double shared = (double)(End.QuadPart - Start.QuadPart) / (double)(Freq.QuadPart);
+	m_lock2.lock();
 
-    EnterCriticalSection(&cs);
-    printf("shared : %fs \n", shared);
-    LeaveCriticalSection(&cs);
-
-    return 0;
+	std::cout << "_InterlockedCompareExchange - ms :" << ms.count() << "\n" << std::endl;
+	m_lock2.unlock();
 }
 
-unsigned int WINAPI Thread003(LPVOID param)
+void mutex()
 {
-    LARGE_INTEGER Start, End;
 
-    QueryPerformanceCounter(&Start);
-    for (int i = 0; i < SAME_COUNT; i++)
-    {
-        std::unique_ptr<spData> ptr = std::make_unique<spData>();
+	std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
+	for (int i = 0; i < LOOF_COUNT;)
+	{
+		m_lock.lock();
+		sum3++;
+		i++;
+		m_lock.unlock();
+	}
+	std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
+	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-        std::shared_ptr<B> b = std::make_unique<B>();
-        b->uData = std::move(ptr);
+	m_lock2.lock();
+	std::cout << "mutex - ms :" << ms.count() << "\n" << std::endl;
+	m_lock2.unlock();
+}
 
-        std::unique_ptr<spData> ptr2 =
-            std::unique_ptr<spData>(static_cast<spData*>(b->uData.release()));
-    }
-    QueryPerformanceCounter(&End);
+void CriticalSection()
+{
 
-    double unique = (double)(End.QuadPart - Start.QuadPart) / (double)(Freq.QuadPart);
+	std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
+	for (int i = 0; i < LOOF_COUNT;)
+	{
+		EnterCriticalSection(&cs);
+		sum4++;
+		i++;
+		LeaveCriticalSection(&cs);
+	}
+	std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
+	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-    EnterCriticalSection(&cs);
-    printf("unique : %fs \n", unique);
-    LeaveCriticalSection(&cs);
+	m_lock2.lock();
+	std::cout << "CriticalSection - ms :" << ms.count() << "\n" << std::endl;
+	m_lock2.unlock();
+}
 
-    return 0;
+void SRWLock()
+{
+
+	std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
+	for (int i = 0; i < LOOF_COUNT;)
+	{
+		AcquireSRWLockExclusive(&srwLock);
+		sum5++;
+		i++;
+		ReleaseSRWLockExclusive(&srwLock);
+	}
+	std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
+	auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+	m_lock2.lock();
+	std::cout << "SRWLock - ms :" << ms.count() << "\n" << std::endl;
+	m_lock2.unlock();
 }
 
 int main()
 {
-    timeBeginPeriod(1);
+	std::vector<std::thread> ths;
 
-    InitializeCriticalSection(&cs);
+	for (int i = 0; i < THREAD_COUNT; i++)
+		ths.emplace_back(std::thread(mutex));
+	for (auto& th : ths)
+		th.join();
+	ths.clear();
 
-    QueryPerformanceFrequency(&Freq);
-    HANDLE handles[3];
+	for (int i = 0; i < THREAD_COUNT; i++)
+		ths.emplace_back(std::thread(AtomicCompare));
+	for (auto& th : ths)
+		th.join();
+	ths.clear();
 
-    handles[2] = (HANDLE)_beginthreadex(nullptr, 0, Thread003, nullptr, 0, nullptr);
-    handles[1] = (HANDLE)_beginthreadex(nullptr, 0, Thread002, nullptr, 0, nullptr);
-    handles[0] = (HANDLE)_beginthreadex(nullptr, 0, Thread001, nullptr, 0, nullptr);
-   
-    WaitForMultipleObjects(3, handles, true, INFINITE);
+	for (int i = 0; i < THREAD_COUNT; i++)
+		ths.emplace_back(std::thread(Interlock));
+	for (auto& th : ths)
+		th.join();
+	ths.clear();
 
-    DeleteCriticalSection(&cs);
+	InitializeCriticalSection(&cs);
+	for (int i = 0; i < THREAD_COUNT; i++)
+		ths.emplace_back(std::thread(CriticalSection));
+	for (auto& th : ths)
+		th.join();
+	DeleteCriticalSection(&cs);
+	ths.clear();
+
+	InitializeSRWLock(&srwLock);
+	for (int i = 0; i < THREAD_COUNT; i++)
+		ths.emplace_back(std::thread(SRWLock));
+	for (auto& th : ths)
+		th.join();
+
+	std::cout << "compare_exchange_strong -> sum :" << sum1 << std::endl;
+	std::cout << "_InterlockedCompareExchange -> sum :" << sum2 << std::endl;
+	std::cout << "mutex -> sum :" << sum3 << std::endl;
+	std::cout << "CriticalSection -> sum :" << sum4 << std::endl;
+	std::cout << "SRWLock -> sum :" << sum5 << std::endl;
 }

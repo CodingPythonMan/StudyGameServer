@@ -75,7 +75,7 @@ void UseNormalSpinLock()
 	double normal = (double)(End.QuadPart - Start.QuadPart) / (double)(Freq.QuadPart);
 
 	cout << "SharedObject 값 : " << SharedObject << "\n";
-	cout << "[Normal Spinlock] 값 : " << normal << "\n";
+	cout << "[Normal Spinlock] 걸린 시간 값 : " << normal << "\n";
 }
 
 void UseFastSpinLock()
@@ -96,7 +96,7 @@ void UseFastSpinLock()
 	double fast = (double)(End.QuadPart - Start.QuadPart) / (double)(Freq.QuadPart);
 
 	cout << "SharedObject 값 : " << SharedObject << "\n";
-	cout << "[Fast Spinlock] 값 : " << fast << "\n";
+	cout << "[Fast Spinlock] 걸린 시간 값 : " << fast << "\n";
 }
 
 int main()

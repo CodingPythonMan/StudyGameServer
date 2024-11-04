@@ -4,27 +4,10 @@
     <Filter Include="Main">
       <UniqueIdentifier>{a0488ed8-6f36-4630-bb1f-71575da96c52}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Service">
-      <UniqueIdentifier>{c6cd19a6-88c0-4a43-84a1-7315078d715d}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CriticalMutex.cpp">
       <Filter>Main</Filter>
     </ClCompile>
-    <ClCompile Include="CriticalService.cpp">
-      <Filter>Service</Filter>
-    </ClCompile>
-    <ClCompile Include="MutexService.cpp">
-      <Filter>Service</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="CriticalService.h">
-      <Filter>Service</Filter>
-    </ClInclude>
-    <ClInclude Include="MutexService.h">
-      <Filter>Service</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

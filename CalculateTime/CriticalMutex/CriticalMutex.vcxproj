@@ -130,12 +130,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CriticalMutex.cpp" />
-    <ClCompile Include="CriticalService.cpp" />
-    <ClCompile Include="MutexService.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="CriticalService.h" />
-    <ClInclude Include="MutexService.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
