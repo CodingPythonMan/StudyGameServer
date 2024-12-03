@@ -1,5 +1,5 @@
 ﻿#include <iostream>
-#include <vector>
+#include "ItemWork.h"
 
 #define Max 4
 
@@ -14,15 +14,25 @@ void MemsetPractice()
 	}
 }
 
+void GetItemList(std::vector<Item>& myItemList)
+{
+	ItemWork itemWork;
+
+	itemWork.InsertItem(1, 2, 3);
+	itemWork.InsertItem(3, 2, 1);
+	itemWork.InsertItem(4, 4, 4);
+
+	myItemList = itemWork.mItemList;
+}
+
 int main()
 {
-	std::vector<int> idList;
+	std::vector<Item> myItemList;
 
-	idList.push_back(1);
-	idList.push_back(2);
-	idList.push_back(3);
+	GetItemList(myItemList);
 
-	std::vector<int> tempList;
-
-	tempList = idList;
+	for (auto& item : myItemList)
+	{
+		printf("x : %d, y : %d, z : %d\n", item.x, item.y, item.x);
+	}
 }

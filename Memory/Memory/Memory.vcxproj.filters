@@ -4,10 +4,27 @@
     <Filter Include="Main">
       <UniqueIdentifier>{f6bc5932-2594-49dc-9627-ac89b4b25e12}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Object">
+      <UniqueIdentifier>{16c6d90a-6656-4719-b27d-eea0f14ecf43}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Memory.cpp">
       <Filter>Main</Filter>
     </ClCompile>
+    <ClCompile Include="UniqueSample.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="ItemWork.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="UniqueSample.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="ItemWork.h">
+      <Filter>Object</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

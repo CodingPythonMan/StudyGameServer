@@ -1,11 +1,38 @@
-﻿#include <iostream>
-#include <future>
-#include <thread>
-#include <windows.h>
-#include <tlhelp32.h>
-#include <string>
+﻿#include "Future.h"
 
-int getThreadCount() 
+void Future::Start()
+{
+    std::cout << "Initial thread count: " << GetThreadCount() << std::endl;
+
+    {
+        std::future<bool> cursor;
+
+        if (cursor.valid())
+        {
+            cursor.get();
+        }
+
+        // ConvertTime 호출 전 스레드 수
+        std::cout << "Before ConvertTime call, thread count: " << GetThreadCount() << std::endl;
+
+        ConvertTime(cursor);
+
+        // ConvertTime 호출 후 스레드 수
+        std::cout << "After ConvertTime call, thread count: " << GetThreadCount() << std::endl;
+
+        // ConvertTime을 호출하여 결과를 cursor에 저장
+        cursor.get();
+    }
+
+    for (int i = 0; i < 100000; i++)
+    {
+        // ConvertTime 호출 후 스레드 수
+        std::cout << "Future 가 삭제된 후 " << 2 * i << "초 후, thread count: " << GetThreadCount() << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+    }
+}
+
+int Future::GetThreadCount()
 {
     DWORD processID = GetCurrentProcessId();
     int threadCount = 0;
@@ -33,7 +60,7 @@ int getThreadCount()
     return threadCount;
 }
 
-bool ConvertTime(std::future<bool>& cursor)
+bool Future::ConvertTime(std::future<bool>& cursor)
 {
     auto asyncTask = []() -> bool 
     {
@@ -54,36 +81,4 @@ bool ConvertTime(std::future<bool>& cursor)
     cursor = std::async(std::launch::async, asyncTask);
 
     return true;
-}
-
-int main()
-{
-    std::cout << "Initial thread count: " << getThreadCount() << std::endl;
-
-    {
-        std::future<bool> cursor;
-
-        if (cursor.valid())
-        {
-            cursor.get();
-        }
-
-        // ConvertTime 호출 전 스레드 수
-        std::cout << "Before ConvertTime call, thread count: " << getThreadCount() << std::endl;
-
-        ConvertTime(cursor);
-
-        // ConvertTime 호출 후 스레드 수
-        std::cout << "After ConvertTime call, thread count: " << getThreadCount() << std::endl;
-
-        // ConvertTime을 호출하여 결과를 cursor에 저장
-        cursor.get();
-    }
-
-    for (int i = 0; i < 100000; i++)
-    {
-        // ConvertTime 호출 후 스레드 수
-        std::cout << "Future 가 삭제된 후 " << 2 * i <<  "초 후, thread count: " << getThreadCount() << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(2));
-    }
 }

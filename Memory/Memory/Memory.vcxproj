@@ -128,7 +128,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ItemWork.cpp" />
     <ClCompile Include="Memory.cpp" />
+    <ClCompile Include="UniqueSample.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ItemWork.h" />
+    <ClInclude Include="UniqueSample.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
