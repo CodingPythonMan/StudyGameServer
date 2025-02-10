@@ -33,5 +33,19 @@ int main() {
     map2.a = 2;
     dualMap.emplace(2, map2);  // "Copy Constructor Called" 출력
 
+    std::unordered_map<int, std::vector<int>> heyMap;
+    auto& hey = heyMap[3];
+
+    hey.push_back(4);
+    hey.push_back(5);
+
+    for (auto heyRow : heyMap)
+    {
+        for (int h : heyRow.second)
+        {
+            printf("%d\n", h);
+        }
+    }
+
     return 0;
 }
