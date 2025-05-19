@@ -56,6 +56,8 @@ public:
 
 	void RoutingStart(HWND hWnd);
 
+	void Route(HWND hWnd);
+
 	void Search(Node* node, Direction direct);
 
 	bool SearchRR(Node* node, int X, int Y);

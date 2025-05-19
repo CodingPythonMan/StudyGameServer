@@ -269,7 +269,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_KEYDOWN:
 		if (wParam == 0x52)
 		{
-			JPS.RoutingStart(hWnd);
+			JPS.Route(hWnd);
 		}
 		break;
 	case WM_CREATE:

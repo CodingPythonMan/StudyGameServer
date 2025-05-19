@@ -199,6 +199,189 @@ void JumpPointSearch::RoutingStart(HWND hWnd)
 	}
 }
 
+void JumpPointSearch::Route(HWND hWnd)
+{
+	Init();
+	_HDC = GetDC(hWnd);
+	_OpenList.push_back(_Start);
+
+	while (_OpenList.size() > 0)
+	{
+		Sleep(1000);
+
+		Node* node = _OpenList[_OpenList.size() - 1];
+		_OpenList.pop_back();
+
+		// 도착지 도착
+		if (node->_X == _End->_X && node->_Y == _End->_Y)
+		{
+			Node* RouteStart = node;
+			Node* RouteEnd = node->_Parent;
+			HPEN FinishPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
+			HPEN OldPen = (HPEN)SelectObject(_HDC, FinishPen);
+			while (RouteStart != nullptr)
+			{
+				MoveToEx(_HDC, RouteStart->_X * GRID_SIZE + 8, RouteStart->_Y * GRID_SIZE + 8, NULL);
+				LineTo(_HDC, RouteEnd->_X * GRID_SIZE + 8, RouteEnd->_Y * GRID_SIZE + 8);
+				RouteEnd = RouteStart;
+				RouteStart = RouteEnd->_Parent;
+			}
+			SelectObject(_HDC, OldPen);
+			gTile[_Start->_Y][_Start->_X] = (char)Mode::START;
+			gTile[_End->_Y][_End->_X] = (char)Mode::END;
+			RenderStart(_HDC);
+			RenderEnd(_HDC);
+			RenderText(_HDC);
+
+			Clear();
+			_OpenList.clear();
+			_CloseList.clear();
+			break;
+		}
+		else
+		{
+			// Close List 추가
+			gTile[node->_Y][node->_X] = (char)Mode::CLOSELIST;
+			if (node != _Start)
+				_CloseList.push_back(node);
+			RenderClose(_HDC);
+		}
+
+		if (node->_Parent == nullptr)
+		{
+			Search(node, Direction::RR);
+			Search(node, Direction::RU);
+			Search(node, Direction::UU);
+			Search(node, Direction::LU);
+			Search(node, Direction::LL);
+			Search(node, Direction::LD);
+			Search(node, Direction::DD);
+			Search(node, Direction::RD);
+		}
+		else
+		{
+			int X = node->_X;
+			int Y = node->_Y;
+			Search(node, node->_Direct);
+			switch (node->_Direct)
+			{
+			case Direction::RR:
+				// 오른쪽으로 향하는 양 대각선 Option 체크 필요
+				if (Y >= 1 && X < GRID_WIDTH - 1 &&
+					gTile[Y - 1][X] == 1 && gTile[Y - 1][X + 1] == 0)
+				{
+					Search(node, Direction::RU);
+				}
+				if (Y < GRID_HEIGHT - 1 && X < GRID_WIDTH - 1 &&
+					gTile[Y + 1][X] == 1 && gTile[Y + 1][X + 1] == 0)
+				{
+					Search(node, Direction::RD);
+				}
+				break;
+			case Direction::RU:
+				Search(node, Direction::RR);
+				Search(node, Direction::UU);
+				if (X >= 1 && Y >= 1 &&
+					gTile[Y][X - 1] == 1 && gTile[Y - 1][X - 1] == 0)
+				{
+					Search(node, Direction::LU);
+				}
+				if (Y < GRID_HEIGHT - 1 && X < GRID_WIDTH - 1 &&
+					gTile[Y + 1][X] == 1 && gTile[Y + 1][X + 1] == 0)
+				{
+					Search(node, Direction::RD);
+				}
+				break;
+			case Direction::UU:
+				if (X >= 1 && Y >= 1 &&
+					gTile[Y][X - 1] > 0 && gTile[Y - 1][X - 1] == 0)
+				{
+					Search(node, Direction::LU);
+				}
+				if (X < GRID_WIDTH - 1 && Y >= 1 &&
+					gTile[Y][X + 1] > 0 && gTile[Y - 1][X + 1] == 0)
+				{
+					Search(node, Direction::RU);
+				}
+				break;
+			case Direction::LU:
+				Search(node, Direction::LL);
+				Search(node, Direction::UU);
+				if (X < GRID_WIDTH - 1 && Y >= 1 &&
+					gTile[Y][X + 1] == 1 && gTile[Y - 1][X + 1] == 0)
+				{
+					Search(node, Direction::RU);
+				}
+				if (X >= 1 && Y < GRID_HEIGHT - 1 &&
+					gTile[Y + 1][X] == 1 && gTile[Y + 1][X - 1] == 0)
+				{
+					Search(node, Direction::LD);
+				}
+				break;
+			case Direction::LL:
+				if (Y >= 1 && X < GRID_WIDTH - 1 &&
+					gTile[Y - 1][X] > 0 && gTile[Y - 1][X - 1] == 0)
+				{
+					Search(node, Direction::LU);
+				}
+				if (Y < GRID_HEIGHT - 1 && X >= 1 &&
+					gTile[Y + 1][X] > 0 && gTile[Y + 1][X - 1] == 0)
+				{
+					Search(node, Direction::LD);
+				}
+				break;
+			case Direction::LD:
+				Search(node, Direction::LL);
+				Search(node, Direction::DD);
+				if (Y >= 1 && X >= 1 &&
+					gTile[Y - 1][X] == 1 && gTile[Y - 1][X - 1] == 0)
+				{
+					Search(node, Direction::LU);
+				}
+				if (X < GRID_WIDTH - 1 && Y < GRID_HEIGHT - 1 &&
+					gTile[Y][X + 1] == 1 && gTile[Y + 1][X + 1] == 0)
+				{
+					Search(node, Direction::RD);
+				}
+				break;
+			case Direction::DD:
+				if (X >= 1 && Y >= 1 &&
+					gTile[Y][X - 1] > 0 && gTile[Y + 1][X - 1] == 0)
+				{
+					Search(node, Direction::LD);
+				}
+				if (X < GRID_WIDTH - 1 && Y >= 1 &&
+					gTile[Y][X + 1] > 0 && gTile[Y + 1][X + 1] == 0)
+				{
+					Search(node, Direction::RD);
+				}
+				break;
+			case Direction::RD:
+				Search(node, Direction::RR);
+				Search(node, Direction::DD);
+				if (Y >= 1 && X < GRID_WIDTH - 1 &&
+					gTile[Y - 1][X] == 1 && gTile[Y - 1][X + 1] == 0)
+				{
+					Search(node, Direction::RU);
+				}
+				if (X >= 1 && Y < GRID_HEIGHT - 1 &&
+					gTile[Y][X - 1] == 1 && gTile[Y + 1][X - 1] == 0)
+				{
+					Search(node, Direction::LD);
+				}
+				break;
+			}
+		}
+
+		RenderSearch(_HDC);
+		RenderOpen(_HDC);
+
+		sort(_OpenList.begin(), _OpenList.end(), [](Node* node1, Node* node2) {
+			return node1->_F > node2->_F;
+			});
+	}
+}
+
 void JumpPointSearch::Search(Node* node, Direction direct)
 {
 	int X = node->_X;

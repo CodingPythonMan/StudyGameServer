@@ -27,6 +27,7 @@ void Astar::RoutingStart(HWND hWnd)
 	// 2. 반복문을 돈다.
 	while (1)
 	{
+		Sleep(1000);
 		// 3. F가 가장 작은 아이를 참조한다.
 		Node* node = _OpenList[(int)_OpenList.size() - 1];
 		_OpenList.pop_back();
